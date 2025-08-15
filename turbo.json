@@ -1,0 +1,61 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "build/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {
+      "dependsOn": ["^lint"],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "**/*.test.*", "**/*.spec.*"],
+      "outputs": ["coverage/**"]
+    },
+    "test:e2e": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "test/**", "e2e/**"],
+      "outputs": []
+    },
+    "clean": {
+      "cache": false,
+      "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", "**/*.ts", "**/*.tsx"],
+      "outputs": []
+    },
+    "contracts:build": {
+      "inputs": ["src/**/*.sol", "foundry.toml", "remappings.txt"],
+      "outputs": ["out/**", "cache/**"]
+    },
+    "contracts:test": {
+      "dependsOn": ["contracts:build"],
+      "inputs": ["src/**/*.sol", "test/**/*.sol", "foundry.toml"],
+      "outputs": []
+    },
+    "contracts:deploy": {
+      "dependsOn": ["contracts:build"],
+      "cache": false,
+      "outputs": []
+    },
+    "db:generate": {
+      "inputs": ["prisma/schema.prisma"],
+      "outputs": ["node_modules/.prisma/**"]
+    },
+    "db:migrate": {
+      "dependsOn": ["db:generate"],
+      "cache": false,
+      "outputs": []
+    }
+  }
+}

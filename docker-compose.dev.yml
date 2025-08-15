@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  # Development overrides for API
+  api:
+    build:
+      target: development
+    command: pnpm run dev
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=file:./dev.db
+    volumes:
+      - ./apps/api:/app
+      - /app/node_modules
+      - ./packages:/packages
+
+  # Development overrides for Web
+  web:
+    build:
+      target: development
+    command: pnpm run dev --turbo
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+      - /app/.next
+      - ./packages:/packages
+
+  # SQLite for development (no separate DB container needed)
+  db:
+    profiles:
+      - disabled  # Disable PostgreSQL in development

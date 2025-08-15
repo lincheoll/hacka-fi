@@ -1,0 +1,31 @@
+{
+  "name": "hacka-fi",
+  "private": true,
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:e2e": "turbo run test:e2e",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "clean": "turbo run clean",
+    "contracts:build": "turbo run contracts:build",
+    "contracts:test": "turbo run contracts:test",
+    "contracts:deploy": "turbo run contracts:deploy",
+    "db:generate": "turbo run db:generate",
+    "db:migrate": "turbo run db:migrate",
+    "docker:dev": "docker-compose -f docker-compose.yml -f docker-compose.dev.yml up",
+    "docker:prod": "docker-compose up",
+    "docker:down": "docker-compose down"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "turbo": "^2.5.5",
+    "typescript": "5.9.2"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=18"
+  }
+}

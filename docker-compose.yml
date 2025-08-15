@@ -1,0 +1,92 @@
+version: '3.8'
+
+services:
+  # Database service (SQLite for development, PostgreSQL for production)
+  db:
+    image: postgres:15
+    container_name: hacka-fi-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-hacka_fi}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+    ports:
+      - "${DATABASE_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./apps/api/prisma/migrations:/docker-entrypoint-initdb.d
+    networks:
+      - hacka-fi-network
+    profiles:
+      - production
+
+  # NestJS Backend API
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    container_name: hacka-fi-api
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DATABASE_URL=${DATABASE_URL:-file:./dev.db}
+      - JWT_SECRET=${JWT_SECRET:-your-jwt-secret}
+      - KAIA_RPC_URL=${KAIA_RPC_URL:-https://public-en-kairos.node.kaia.io}
+      - PORT=3001
+    ports:
+      - "${API_PORT:-3001}:3001"
+    volumes:
+      - ./apps/api:/app
+      - /app/node_modules
+      - ./packages:/packages
+    depends_on:
+      - db
+    networks:
+      - hacka-fi-network
+    profiles:
+      - development
+      - production
+
+  # Next.js Frontend
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: hacka-fi-web
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+      - NEXT_PUBLIC_KAIA_CHAIN_ID=${NEXT_PUBLIC_KAIA_CHAIN_ID:-1001}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules
+      - /app/.next
+      - ./packages:/packages
+    depends_on:
+      - api
+    networks:
+      - hacka-fi-network
+    profiles:
+      - development
+      - production
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: hacka-fi-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - hacka-fi-network
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  hacka-fi-network:
+    driver: bridge

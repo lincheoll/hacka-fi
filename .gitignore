@@ -1,0 +1,91 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Turborepo
+.turbo/
+
+# Build outputs
+dist/
+build/
+out/
+lib/
+
+# Next.js
+.next/
+.vercel/
+
+# Production
+/build
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE
+# .vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Foundry
+cache/
+out/
+broadcast/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Docker
+.dockerignore
+
+# Temporary folders
+tmp/
+temp/
+
+
+
+
+**/.taskmaster/
+**/.kiro/
+**/.claude/
+**/.cursor/
+
+# MCP
+.mcp.json
