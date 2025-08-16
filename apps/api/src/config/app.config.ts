@@ -8,6 +8,9 @@ export const configValidationSchema = Joi.object({
 
   // Database
   DATABASE_URL: Joi.string().required(),
+  DATABASE_PROVIDER: Joi.string()
+    .valid('sqlite', 'postgresql', 'mysql')
+    .default('sqlite'),
 
   // JWT
   JWT_SECRET: Joi.string().required(),
@@ -28,6 +31,7 @@ export interface AppConfig {
   port: number;
   database: {
     url: string;
+    provider: 'sqlite' | 'postgresql' | 'mysql';
   };
   jwt: {
     secret: string;
@@ -61,6 +65,10 @@ export const getAppConfig = (): AppConfig => ({
   port: parseInt(process.env.PORT || '3001', 10),
   database: {
     url: getRequiredEnv('DATABASE_URL'),
+    provider: (process.env.DATABASE_PROVIDER || 'sqlite') as
+      | 'sqlite'
+      | 'postgresql'
+      | 'mysql',
   },
   jwt: {
     secret: getRequiredEnv('JWT_SECRET'),
