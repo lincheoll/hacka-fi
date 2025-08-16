@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # Database service (SQLite for development, PostgreSQL for production)
@@ -29,7 +29,7 @@ services:
       - NODE_ENV=${NODE_ENV:-development}
       - DATABASE_URL=${DATABASE_URL:-file:./dev.db}
       - JWT_SECRET=${JWT_SECRET:-your-jwt-secret}
-      - KAIA_RPC_URL=${KAIA_RPC_URL:-https://public-en-kairos.node.kaia.io}
+      - RPC_URL=${RPC_URL:-https://public-en-kairos.node.kaia.io}
       - PORT=3001
     ports:
       - "${API_PORT:-3001}:3001"

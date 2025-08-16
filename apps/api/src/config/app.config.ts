@@ -17,7 +17,9 @@ export const configValidationSchema = Joi.object({
   JWT_EXPIRES_IN: Joi.string().default('1d'),
 
   // Blockchain
-  KAIA_RPC_URL: Joi.string().required(),
+  RPC_URL: Joi.string().required(),
+  CHAIN_ID: Joi.number().required(),
+  PRIVATE_KEY: Joi.string().optional(),
   HACKATHON_REGISTRY_ADDRESS: Joi.string().required(),
   PRIZE_POOL_ADDRESS: Joi.string().required(),
 
@@ -38,7 +40,9 @@ export interface AppConfig {
     expiresIn: string;
   };
   blockchain: {
-    kaiaRpcUrl: string;
+    rpcUrl: string;
+    chainId: number;
+    privateKey?: string;
     hackathonRegistryAddress: string;
     prizePoolAddress: string;
   };
@@ -60,27 +64,36 @@ const getRequiredEnv = (key: string): string => {
   return value;
 };
 
-export const getAppConfig = (): AppConfig => ({
-  nodeEnv: process.env.NODE_ENV || 'development',
-  port: parseInt(process.env.PORT || '3001', 10),
-  database: {
-    url: getRequiredEnv('DATABASE_URL'),
-    provider: (process.env.DATABASE_PROVIDER || 'sqlite') as
-      | 'sqlite'
-      | 'postgresql'
-      | 'mysql',
-  },
-  jwt: {
-    secret: getRequiredEnv('JWT_SECRET'),
-    expiresIn: process.env.JWT_EXPIRES_IN || '1d',
-  },
-  blockchain: {
-    kaiaRpcUrl: getRequiredEnv('KAIA_RPC_URL'),
+export const getAppConfig = (): AppConfig => {
+  const blockchainConfig: AppConfig['blockchain'] = {
+    rpcUrl: getRequiredEnv('RPC_URL'),
+    chainId: parseInt(getRequiredEnv('CHAIN_ID'), 10),
     hackathonRegistryAddress: getRequiredEnv('HACKATHON_REGISTRY_ADDRESS'),
     prizePoolAddress: getRequiredEnv('PRIZE_POOL_ADDRESS'),
-  },
-  redis: process.env.REDIS_URL ? { url: process.env.REDIS_URL } : undefined,
-  cors: {
-    origin: process.env.CORS_ORIGIN || '*',
-  },
-});
+  };
+
+  if (process.env.PRIVATE_KEY) {
+    blockchainConfig.privateKey = process.env.PRIVATE_KEY;
+  }
+
+  return {
+    nodeEnv: process.env.NODE_ENV || 'development',
+    port: parseInt(process.env.PORT || '3001', 10),
+    database: {
+      url: getRequiredEnv('DATABASE_URL'),
+      provider: (process.env.DATABASE_PROVIDER || 'sqlite') as
+        | 'sqlite'
+        | 'postgresql'
+        | 'mysql',
+    },
+    jwt: {
+      secret: getRequiredEnv('JWT_SECRET'),
+      expiresIn: process.env.JWT_EXPIRES_IN || '1d',
+    },
+    blockchain: blockchainConfig,
+    redis: process.env.REDIS_URL ? { url: process.env.REDIS_URL } : undefined,
+    cors: {
+      origin: process.env.CORS_ORIGIN || '*',
+    },
+  };
+};
