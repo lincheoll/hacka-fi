@@ -1,0 +1,93 @@
+{
+	"meta": {
+		"generatedAt": "2025-08-15T08:59:32.234Z",
+		"tasksAnalyzed": 10,
+		"totalTasks": 10,
+		"analysisCount": 10,
+		"thresholdScore": 5,
+		"projectName": "Taskmaster",
+		"usedResearch": true
+	},
+	"complexityAnalysis": [
+		{
+			"taskId": 1,
+			"taskTitle": "Setup Monorepo Infrastructure and Base Configuration",
+			"complexityScore": 4,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Break down monorepo setup into: workspace configuration, directory structure creation, Docker Compose setup with multi-service orchestration, environment management across apps, git repository initialization, and root-level script coordination. Focus on pnpm workspace dependencies and proper service networking.",
+			"reasoning": "Foundation task requiring multiple tools (pnpm, Docker, git) but follows established patterns. Complexity increased due to multi-app coordination and Docker networking configuration."
+		},
+		{
+			"taskId": 2,
+			"taskTitle": "Smart Contract Development - HackathonRegistry and PrizePool",
+			"complexityScore": 8,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Separate into: Foundry project setup, OpenZeppelin integration, HackathonRegistry core functions, judge management system, voting mechanism with score aggregation, PrizePool contract with automated distribution, security patterns implementation, and Kaia testnet deployment with testing.",
+			"reasoning": "High complexity due to multiple interconnected contracts, complex business logic for voting/scoring, automated prize distribution, security requirements, and blockchain deployment. Requires deep Solidity expertise."
+		},
+		{
+			"taskId": 3,
+			"taskTitle": "Database Schema and Prisma ORM Setup",
+			"complexityScore": 6,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Divide into: Prisma installation and configuration, database schema design with complex relationships, SQLite/PostgreSQL provider switching logic, migration system setup, seed data creation, model validation and constraints, and database connection management across environments.",
+			"reasoning": "Moderate-high complexity due to dual database support, complex relationships between hackathons/participants/votes, and proper migration handling. Requires careful schema design for performance."
+		},
+		{
+			"taskId": 4,
+			"taskTitle": "NestJS Backend API with Authentication",
+			"complexityScore": 7,
+			"recommendedSubtasks": 9,
+			"expansionPrompt": "Break into: NestJS project setup with TypeScript, wallet signature authentication module, AuthModule with JWT strategy, HackathonModule with CRUD operations, UserModule for profile management, VotingModule for judge operations, smart contract integration with viem, API security (CORS, rate limiting), and comprehensive error handling.",
+			"reasoning": "High complexity due to custom wallet authentication, multiple modules with complex business logic, blockchain integration, and security requirements. Backend serves as core orchestrator."
+		},
+		{
+			"taskId": 5,
+			"taskTitle": "Next.js Frontend with Web3 Integration",
+			"complexityScore": 7,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Separate into: Next.js 14 App Router setup, wagmi v2 + viem Web3 configuration for Kaia network, wallet connection component (MetaMask/Kaia Wallet), page structure implementation, shadcn/ui component library integration, TanStack Query setup for API management, TypeScript types for all interfaces, and responsive design with Tailwind CSS.",
+			"reasoning": "High complexity due to Next.js 14 App Router patterns, Web3 wallet integration complexity, multiple wallet support, and modern React patterns. Requires expertise in latest frontend stack."
+		},
+		{
+			"taskId": 6,
+			"taskTitle": "Hackathon Management System",
+			"complexityScore": 6,
+			"recommendedSubtasks": 7,
+			"expansionPrompt": "Divide into: hackathon creation forms with validation, participant registration flow with submission tracking, hackathon listing with filtering/search, submission management with file uploads, status management and timeline enforcement, smart contract integration for on-chain operations, and image optimization with Next.js.",
+			"reasoning": "Moderate-high complexity due to full lifecycle management, file uploads, timeline automation, and frontend-backend-blockchain coordination. Builds on established patterns from previous tasks."
+		},
+		{
+			"taskId": 7,
+			"taskTitle": "Voting System Implementation",
+			"complexityScore": 7,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Break into: judge whitelist management integration, voting interface for score submission, vote aggregation and ranking algorithms, results calculation and winner determination, voting period management with state transitions, vote validation and duplicate prevention, judge dashboard for voting status, and results display with prize distribution.",
+			"reasoning": "High complexity due to complex voting logic, score aggregation algorithms, state management across voting phases, and integration with smart contracts for judge management."
+		},
+		{
+			"taskId": 8,
+			"taskTitle": "Automated Prize Distribution System",
+			"complexityScore": 8,
+			"recommendedSubtasks": 8,
+			"expansionPrompt": "Separate into: automated trigger system for voting completion, smart contract payout integration, transaction monitoring and status tracking, prize pool balance management, distribution calculation with percentage splits, audit trail and transaction logging, error handling and retry mechanisms, and manual override system for disputes.",
+			"reasoning": "High complexity due to automated systems, blockchain transaction handling, error recovery, financial calculations, and audit requirements. Critical system requiring robust error handling."
+		},
+		{
+			"taskId": 9,
+			"taskTitle": "User Profile and Achievement System",
+			"complexityScore": 5,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Divide into: wallet-based user profile creation, profile editing with avatar uploads, achievement tracking across multiple hackathons, statistics calculation and leaderboards, badge system with different achievement tiers, and social features for profile sharing.",
+			"reasoning": "Moderate complexity involving user data management, achievement calculation logic, and social features. Builds on existing user and hackathon systems."
+		},
+		{
+			"taskId": 10,
+			"taskTitle": "Winner Dashboard and Demo Preparation",
+			"complexityScore": 4,
+			"recommendedSubtasks": 6,
+			"expansionPrompt": "Break into: public winner dashboard design, results page with winner showcases, public hackathon browsing for completed events, demo environment with realistic test data, demo script and user journey documentation, and production deployment configuration with analytics.",
+			"reasoning": "Lower complexity as mainly involves UI/presentation layer and demo setup. Most complex logic already implemented in previous tasks."
+		}
+	]
+}

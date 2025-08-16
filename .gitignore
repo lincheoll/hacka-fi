@@ -82,7 +82,12 @@ temp/
 
 
 
-**/.taskmaster/
+# **/.taskmaster/
+
+**/.taskmaster/docs/
+
+
+
 **/.kiro/
 **/.claude/
 **/.cursor/

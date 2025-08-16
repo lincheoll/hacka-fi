@@ -1,0 +1,414 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Monorepo Infrastructure and Base Configuration",
+        "description": "Initialize Turborepo monorepo structure with pnpm workspaces, Docker Compose, environment configuration, and foundational tooling for Hacka-Fi platform",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "details": "Create Turborepo monorepo in project root with pnpm workspaces containing apps/web (Next.js 14+), apps/api (NestJS 11+), and contracts (Foundry) directories. Install Turborepo and setup turbo.json configuration with build pipelines, caching strategies, and task orchestration for faster builds and smart dependency management. Setup package.json with workspace configuration and Turborepo scripts. Create Docker Compose configuration for development environment with services for database (SQLite/PostgreSQL toggle via env), backend, and frontend. Setup base .env.example with DATABASE_URL, NODE_ENV, and Kaia network configuration. Initialize git repository with appropriate .gitignore for Node.js, Next.js, Solidity projects, and Turborepo cache. Configure root-level Turborepo scripts for building, testing, linting, and running all services with proper task dependencies and caching.",
+        "testStrategy": "Verify Turborepo task execution works correctly with proper caching, pnpm workspace resolution functions as expected, Docker Compose services start without errors, environment variables load properly across all applications, turbo build/test/lint commands execute successfully from root with cache hits on subsequent runs, and task dependencies are respected in the pipeline.",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize pnpm workspace and Turborepo setup",
+            "description": "Create project structure with pnpm workspaces and install Turborepo",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Configure turbo.json with build pipelines and caching",
+            "description": "Setup Turborepo configuration with task dependencies, caching strategies, and pipeline definitions",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Create workspace directories and base package.json files",
+            "description": "Setup apps/web, apps/api, and contracts directories with initial package.json configurations",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Setup Docker Compose development environment",
+            "description": "Create docker-compose.yml with database, backend, and frontend services",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Configure environment variables and git repository",
+            "description": "Setup .env.example, initialize git with proper .gitignore including Turborepo cache exclusions",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Configure root-level Turborepo scripts and task orchestration",
+            "description": "Setup package.json scripts using Turborepo for build, test, lint, and dev commands with proper task dependencies",
+            "status": "done",
+            "dependencies": [],
+            "details": "",
+            "testStrategy": ""
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Smart Contract Development - HackathonRegistry and PrizePool",
+        "description": "Develop Solidity smart contracts for hackathon management, voting system, and automated prize distribution on Kaia blockchain",
+        "details": "Create HackathonRegistry contract with functions for hackathon creation (createHackathon), participant registration (registerParticipant), judge whitelist management (addJudge, removeJudge), and score-based voting (castVote) with 1-10 point scale. Implement PrizePool contract with prize deposit functionality, winner determination based on vote aggregation, and automated distribution with 60/25/15% split for 1st/2nd/3rd place. Use OpenZeppelin contracts for access control and security patterns. Deploy to Kaia testnet using Foundry. Include events: HackathonCreated, ParticipantRegistered, VoteCast, PrizeDistributed. Implement proper access modifiers and reentrancy guards.",
+        "testStrategy": "Write comprehensive Foundry test suite covering all contract functions, edge cases, and security scenarios. Test voting mechanism accuracy, prize calculation logic, access control enforcement, and gas optimization. Deploy to Kaia testnet and verify all functions work as expected.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup Foundry Project Structure and Dependencies",
+            "description": "Initialize Foundry project in contracts directory with OpenZeppelin dependencies and Kaia network configuration",
+            "dependencies": [],
+            "details": "Create contracts directory with foundry.toml configuration for Solidity 0.8.20+. Install OpenZeppelin contracts (@openzeppelin/contracts) for access control, security patterns, and reentrancy guards. Configure remappings for clean imports. Setup basic project structure with src/, test/, and script/ directories. Configure Kaia testnet RPC endpoints and deployment settings.",
+            "status": "done",
+            "testStrategy": "Verify Foundry installation works correctly, test OpenZeppelin contract compilation, validate network configuration for Kaia testnet, and ensure clean project structure is established."
+          },
+          {
+            "id": 2,
+            "title": "Implement HackathonRegistry Smart Contract",
+            "description": "Develop core HackathonRegistry contract with hackathon creation, participant registration, and judge management",
+            "dependencies": [
+              "2.1"
+            ],
+            "details": "Create HackathonRegistry.sol with struct definitions for Hackathon and Participant. Implement createHackathon function with proper validation and HackathonCreated event emission. Add registerParticipant function with registration checks and ParticipantRegistered event. Implement judge whitelist management with addJudge/removeJudge functions using OpenZeppelin AccessControl. Include proper access modifiers, input validation, and state management for hackathon lifecycle phases.",
+            "status": "done",
+            "testStrategy": "Write comprehensive Foundry tests covering hackathon creation with various parameters, participant registration edge cases, judge management authorization, and event emission verification."
+          },
+          {
+            "id": 3,
+            "title": "Implement Voting System in HackathonRegistry",
+            "description": "Add score-based voting functionality with 1-10 point scale and vote aggregation logic",
+            "dependencies": [
+              "2.2"
+            ],
+            "details": "Extend HackathonRegistry with castVote function implementing 1-10 point scoring system. Add vote storage mapping and validation to prevent duplicate voting by same judge. Implement voting period restrictions and judge authorization checks. Create vote aggregation functions to calculate average scores and determine winners. Include VoteCast event emission with proper indexed parameters for efficient querying.",
+            "status": "done",
+            "testStrategy": "Test voting functionality with multiple judges and participants, verify score validation (1-10 range), test duplicate vote prevention, validate voting period restrictions, and ensure accurate score aggregation calculations."
+          },
+          {
+            "id": 4,
+            "title": "Implement PrizePool Smart Contract",
+            "description": "Create PrizePool contract with deposit functionality, winner determination, and automated 60/25/15% distribution",
+            "dependencies": [
+              "2.3"
+            ],
+            "details": "Develop PrizePool.sol contract with prize deposit functions accepting ETH/KAIA transfers. Implement winner determination logic integrating with HackathonRegistry vote results. Create automated distribution function with 60/25/15% split calculation for 1st/2nd/3rd place winners. Add proper balance tracking, withdrawal functions, and PrizeDistributed event emission. Implement reentrancy guards using OpenZeppelin ReentrancyGuard.",
+            "status": "done",
+            "testStrategy": "Test prize pool deposit and balance tracking, verify winner determination accuracy, validate distribution calculation precision, test reentrancy attack prevention, and ensure proper fund transfer execution."
+          },
+          {
+            "id": 5,
+            "title": "Deploy Contracts and Create Integration Scripts",
+            "description": "Deploy contracts to Kaia testnet and create deployment/interaction scripts for integration testing",
+            "dependencies": [
+              "2.4"
+            ],
+            "details": "Create Foundry deployment scripts for both HackathonRegistry and PrizePool contracts on Kaia testnet. Implement contract verification and ABI generation. Create interaction scripts for testing contract functions end-to-end. Setup environment variables for testnet deployment keys and RPC endpoints. Generate TypeScript interfaces for frontend integration using viem/wagmi compatibility.",
+            "status": "done",
+            "testStrategy": "Verify successful deployment on Kaia testnet, test all contract functions via scripts, validate contract verification on blockchain explorer, ensure ABI exports work correctly, and confirm frontend integration compatibility."
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Database Schema and Prisma ORM Setup",
+        "description": "Design and implement database schema with Prisma ORM supporting SQLite for development and PostgreSQL for production",
+        "details": "Create Prisma schema with models: Hackathon (id, title, description, deadline, status, lottery_percentage, contract_address, creator_address), Participant (hackathon_id, wallet_address, submission_url, entry_fee, rank, prize_amount), Vote (hackathon_id, judge_address, participant_id, score), Result (hackathon_id, winners JSON, total_prize_pool, distribution_tx_hash), UserProfile (wallet_address as primary key, username, bio, avatar_url, created_at), UserAchievement (user_address, achievement_type, hackathon_id, rank, prize_amount, earned_at). Configure database provider switching via DATABASE_URL environment variable. Setup Prisma migrations and seed scripts for development data.",
+        "testStrategy": "Test database migrations work correctly for both SQLite and PostgreSQL, verify all relationships and constraints function properly, test seed data insertion, and validate Prisma client generation and type safety.",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "done",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "NestJS Backend API with Authentication",
+        "description": "Build NestJS backend with wallet signature-based authentication, RESTful APIs, and blockchain integration",
+        "details": "Setup NestJS 11+ application with TypeScript, class-validator, and class-transformer. Implement wallet signature authentication using ethers.js/viem for Kaia network - verify wallet ownership through signed messages. Create modules: AuthModule (signature verification), HackathonModule (CRUD operations), UserModule (profile management), VotingModule (judge operations). Implement REST endpoints: POST /hackathons (create), GET /hackathons (list), GET /hackathons/:id (details), POST /hackathons/:id/participate (register), POST /hackathons/:id/vote (judge scoring), GET /users/:address (profile), POST /users/profile (update). Integrate with smart contracts using viem for reading/writing blockchain data. Setup CORS, rate limiting, and error handling.",
+        "testStrategy": "Create unit tests for all services and controllers, integration tests for API endpoints using Supertest, test wallet authentication flow with mock signatures, verify smart contract integration works correctly, and test error handling for invalid requests.",
+        "priority": "high",
+        "dependencies": [
+          2,
+          3
+        ],
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup NestJS Project Structure and Core Dependencies",
+            "description": "Initialize NestJS 11+ application in apps/api directory with TypeScript, essential dependencies, and basic module structure",
+            "dependencies": [],
+            "details": "Create apps/api directory and initialize NestJS 11+ project with CLI. Install core dependencies: @nestjs/core, @nestjs/common, @nestjs/platform-express, class-validator, class-transformer, @nestjs/config, @nestjs/jwt, @nestjs/passport, passport-jwt, @nestjs/swagger. Setup TypeScript configuration with strict mode enabled. Create basic module structure: AppModule, AuthModule, HackathonModule, UserModule, VotingModule. Configure environment variables loading with @nestjs/config and Joi validation. Setup global validation pipe and exception filters.\n<info added on 2025-08-16T08:38:48.440Z>\nTask 4.1 successfully completed with full NestJS project infrastructure established. Application running on port 3002 with Swagger documentation available at http://localhost:3002/api/docs. All core modules (AuthModule, HackathonModule, UserModule, VotingModule, CommonModule) properly registered in DI container. TypeScript 5.7+ with strict mode, global validation pipes, exception filters, and CORS configuration all operational. API endpoints tested and responding correctly. Ready for wallet signature authentication implementation in next subtask.\n</info added on 2025-08-16T08:38:48.440Z>",
+            "status": "done",
+            "testStrategy": "Verify NestJS application starts successfully, test environment configuration loading, validate TypeScript compilation works without errors, and confirm all core modules are properly registered in the DI container."
+          },
+          {
+            "id": 2,
+            "title": "Implement Wallet Signature Authentication System",
+            "description": "Create wallet signature-based authentication using viem for Kaia network signature verification",
+            "dependencies": [
+              "4.1"
+            ],
+            "details": "Install viem and create AuthService with wallet signature verification logic for Kaia network. Implement signature verification using viem's verifyMessage function to validate wallet ownership. Create JWT strategy and guards using @nestjs/passport for protecting routes. Build AuthController with POST /auth/login endpoint accepting wallet address and signature. Implement custom AuthGuard extending passport JWT guard. Create authentication DTOs with class-validator decorators for request validation. Add proper error handling for invalid signatures and expired tokens.\n<info added on 2025-08-16T11:23:35.196Z>\nTask 4.2 successfully completed.\n\nImplementation completed:\n✅ AuthService - Kaia network wallet signature verification using viem (verifyMessage)\n✅ JWT strategy and Passport setup - JwtStrategy, JwtAuthGuard implementation\n✅ AuthController - POST /auth/login, GET /auth/profile, GET /auth/health endpoints\n✅ Authentication DTOs - LoginDto, LoginResponseDto with class-validator decorators\n✅ AuthGuard - JWT-based route protection + @Public decorator\n✅ Error handling - TypeScript strict mode compatible, 401 Unauthorized responses\n\nAPI test results:\n- /auth/health → {\"status\":\"ok\",\"timestamp\":\"2025-08-16T11:17:07.909Z\"}\n- /auth/profile (unauthenticated) → 401 Unauthorized (working correctly)\n\nTechnical implementation details:\n- viem verifyMessage for wallet signature verification\n- PassportJS JWT strategy with Bearer token\n- Swagger automatic documentation completed\n- TypeScript strict mode fully compatible\n- Global validation pipe and exception filter integration\n</info added on 2025-08-16T11:23:35.196Z>",
+            "status": "done",
+            "testStrategy": "Test signature verification with valid/invalid signatures, verify JWT token generation and validation, test authentication guard protection on secured endpoints, and validate proper error responses for authentication failures."
+          },
+          {
+            "id": 3,
+            "title": "Setup Prisma Integration and Database Connection",
+            "description": "Configure Prisma ORM integration with NestJS and establish database connectivity using existing schema",
+            "dependencies": [
+              "4.2"
+            ],
+            "details": "Install @prisma/client and integrate with NestJS using PrismaService. Create PrismaModule as a global module for dependency injection across all feature modules. Setup database connection configuration using environment variables for SQLite (development) and PostgreSQL (production) switching. Configure Prisma client generation and database connection pooling. Create database service wrapper with error handling and transaction support. Setup proper shutdown hooks for graceful database connection closure.",
+            "status": "done",
+            "testStrategy": "Verify database connections work for both SQLite and PostgreSQL configurations, test Prisma client dependency injection in services, validate database transactions work correctly, and ensure proper connection cleanup during application shutdown."
+          },
+          {
+            "id": 4,
+            "title": "Implement RESTful API Endpoints for Hackathon Management",
+            "description": "Create comprehensive REST API endpoints for hackathon CRUD operations with proper validation and error handling",
+            "dependencies": [
+              "4.3"
+            ],
+            "details": "Create HackathonController with endpoints: POST /hackathons (create), GET /hackathons (list with filtering), GET /hackathons/:id (details), POST /hackathons/:id/participate (participant registration), PUT /hackathons/:id (update), DELETE /hackathons/:id (soft delete). Implement HackathonService with business logic for hackathon management, participant registration, and status transitions. Create comprehensive DTOs for request/response validation using class-validator. Add query parameter support for filtering by status, creator, and search terms. Implement proper error handling with custom exceptions and HTTP status codes. Add Swagger/OpenAPI documentation with @ApiProperty decorators.",
+            "status": "done",
+            "testStrategy": "Test all CRUD operations with various input scenarios, verify request/response validation works correctly, test filtering and pagination functionality, validate authentication requirements for protected endpoints, and ensure proper error responses for edge cases."
+          },
+          {
+            "id": 5,
+            "title": "Integrate Smart Contract Communication and Blockchain Features",
+            "description": "Implement viem-based smart contract integration for reading blockchain data and writing transactions",
+            "dependencies": [
+              "4.4"
+            ],
+            "details": "Install viem and configure Web3Service for Kaia network communication. Create contract interfaces and ABI imports for HackathonRegistry and PrizePool contracts. Implement contract read operations for fetching hackathon data, participant lists, voting results, and prize distributions. Add contract write operations for creating hackathons, adding judges, and triggering distributions. Create transaction monitoring service to track on-chain events and update database accordingly. Implement proper error handling for contract calls, gas estimation, and transaction failures. Add contract event listening using viem's event subscription features.",
+            "status": "done",
+            "testStrategy": "Test contract read operations return accurate data, verify contract write operations execute successfully on testnet, validate transaction monitoring captures events correctly, test error handling for network failures and invalid contract calls, and ensure proper gas estimation for all transactions."
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "Next.js Frontend with Web3 Integration",
+        "description": "Develop Next.js 14+ frontend with App Router, Web3 wallet connectivity, and responsive UI using Tailwind CSS",
+        "details": "Create Next.js 14+ application with App Router in apps/web directory. Setup wagmi v2 + viem for Kaia network integration with wallet connectivity (MetaMask, Kaia Wallet). Implement pages: / (landing/dashboard), /hackathons (list), /hackathons/[id] (details), /hackathons/create (creation form), /profile/[address] (user profile), /profile/me (own profile). Use Tailwind CSS 3+ with shadcn/ui components for consistent design. Implement TanStack Query v5 for API data fetching and caching. Create components: WalletConnect, HackathonCard, HackathonForm, VotingInterface, UserProfile. Setup proper TypeScript types for all API responses and blockchain interactions.",
+        "testStrategy": "Test wallet connection flow with different providers, verify all pages render correctly with proper responsive design, test form validation and submission, ensure proper loading states and error handling, and validate Web3 integration works with testnet.",
+        "priority": "high",
+        "dependencies": [
+          4
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Setup Next.js 14+ Project Structure with App Router",
+            "description": "Initialize Next.js 14+ application in apps/web directory with TypeScript, App Router architecture, and basic folder structure following monorepo standards",
+            "dependencies": [],
+            "details": "Create Next.js 14+ project in apps/web using create-next-app with TypeScript. Setup App Router structure with /app directory containing layout.tsx, page.tsx, loading.tsx, error.tsx, not-found.tsx. Create folder structure: /components (ui, providers, features, layout, common), /lib (utils, validations, constants, api, fonts), /hooks, /store, /types, /styles. Configure package.json with proper dependencies and scripts. Setup next.config.js with proper configurations.",
+            "status": "pending",
+            "testStrategy": "Verify Next.js project initializes correctly, App Router structure works, TypeScript compilation passes, and all folders are properly structured according to monorepo standards"
+          },
+          {
+            "id": 2,
+            "title": "Configure Tailwind CSS and shadcn/ui Components",
+            "description": "Setup Tailwind CSS 3+ with CSS Variables and initialize shadcn/ui component library for consistent design system",
+            "dependencies": [
+              "5.1"
+            ],
+            "details": "Install and configure Tailwind CSS 3+ with postcss and autoprefixer. Setup tailwind.config.js with proper theme configuration and CSS variables. Initialize shadcn/ui with components.json configuration. Install and configure base shadcn/ui components: button, card, form, input, label, textarea, select, dialog, toast, dropdown-menu. Create /components/ui directory with index.ts barrel exports. Setup globals.css with Tailwind directives and CSS custom properties for theme variables.",
+            "status": "pending",
+            "testStrategy": "Verify Tailwind CSS styles apply correctly, shadcn/ui components render and function properly, theme variables work correctly in both light and dark modes, and component styling is consistent"
+          },
+          {
+            "id": 3,
+            "title": "Implement Web3 Integration with wagmi v2 and viem",
+            "description": "Setup Web3 providers, wallet connectivity, and Kaia network configuration using wagmi v2 and viem",
+            "dependencies": [
+              "5.1"
+            ],
+            "details": "Install wagmi v2, viem, and @tanstack/react-query. Create Web3Provider component with wagmi configuration for Kaia network (mainnet and testnet). Configure supported wallets: MetaMask and Kaia Wallet. Create web3.ts configuration file with Kaia network RPC endpoints, chain IDs, and contract addresses. Implement WalletConnect component with connection, disconnection, and account display functionality. Setup global Web3 state management using Zustand store. Create custom hooks: use-web3.ts for wallet interactions.",
+            "status": "pending",
+            "testStrategy": "Test wallet connection with MetaMask and Kaia Wallet, verify network switching to Kaia, test wallet disconnection, validate contract interaction setup, and ensure proper error handling for Web3 operations"
+          },
+          {
+            "id": 4,
+            "title": "Create Core Pages and Routing Structure",
+            "description": "Implement all required pages with App Router: landing, hackathons list/detail/create, and user profiles with proper layouts and navigation",
+            "dependencies": [
+              "5.1",
+              "5.2"
+            ],
+            "details": "Create App Router pages: / (landing/dashboard), /hackathons (list), /hackathons/[id] (details), /hackathons/create (creation form), /profile/[address] (user profile), /profile/me (own profile). Implement proper page layouts with loading.tsx and error.tsx for each route. Create Header component with navigation and wallet connection. Setup responsive navigation with mobile menu. Implement proper TypeScript types for page props and params. Create basic page layouts with placeholder content following the defined component structure.",
+            "status": "pending",
+            "testStrategy": "Verify all pages render correctly, navigation works properly, responsive design functions on mobile and desktop, loading and error states display correctly, and TypeScript types are properly defined for all pages"
+          },
+          {
+            "id": 5,
+            "title": "Build Core Components and API Integration",
+            "description": "Develop key components (HackathonCard, HackathonForm, VotingInterface, UserProfile) and setup TanStack Query for API data fetching",
+            "dependencies": [
+              "5.1",
+              "5.2",
+              "5.3"
+            ],
+            "details": "Install and configure TanStack Query v5 with QueryProvider. Create core components: HackathonCard (display hackathon info with voting), HackathonForm (create/edit hackathons with validation), VotingInterface (judge voting with score input), UserProfile (display user stats and achievements). Implement proper TypeScript interfaces for all API responses and component props. Setup API client in lib/api.ts with proper error handling. Create custom hooks for data fetching: use-hackathon.ts. Implement form validation using Zod schemas. Setup proper loading states and error boundaries for all components.",
+            "status": "pending",
+            "testStrategy": "Test all components render correctly with mock data, form validation works properly, API integration handles loading and error states, TypeScript types are correct for all props and responses, and responsive design works across all components"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Hackathon Management System",
+        "description": "Implement complete hackathon lifecycle management including creation, participation, and submission tracking",
+        "details": "Build comprehensive hackathon management system with frontend forms for hackathon creation (title, description, deadline, prize amount), backend validation and smart contract integration for creating hackathons on-chain. Implement participant registration flow with submission URL storage and optional entry fee handling. Create hackathon listing page with filtering by status (active, voting, completed) and search functionality. Implement submission management allowing participants to update their project URLs before deadline. Add status tracking (created, active, voting, completed) with automatic transitions based on timeline. Include basic file upload support for hackathon images and participant avatars using Next.js image optimization.",
+        "testStrategy": "Test entire hackathon creation and participation flow end-to-end, verify smart contract interactions work correctly, test form validation and error states, ensure proper status transitions and timeline enforcement, and validate image upload and optimization functionality.",
+        "priority": "medium",
+        "dependencies": [
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Voting System Implementation",
+        "description": "Build comprehensive voting system for judges with score aggregation and result calculation",
+        "details": "Implement judge management system with whitelist-based access control - hackathon creators can add/remove judges via smart contract. Create voting interface for judges to review submissions and assign scores (1-10 point scale) with optional comments. Implement vote aggregation logic calculating average scores for each participant and determining winners (1st, 2nd, 3rd place). Build results display showing final rankings, scores, and prize distributions. Add voting period management with automatic transitions from registration to voting to completed phases. Include vote validation ensuring judges can only vote once per participant and within voting period. Create voting dashboard for judges showing their assigned hackathons and voting status.",
+        "testStrategy": "Test judge whitelist management functions correctly, verify voting interface works for all judge scenarios, test score calculation and ranking accuracy, ensure voting period restrictions are enforced properly, and validate vote submission and aggregation logic through various test cases.",
+        "priority": "medium",
+        "dependencies": [
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Automated Prize Distribution System",
+        "description": "Implement automated prize distribution based on voting results with proper transaction handling and logging",
+        "details": "Create automated prize distribution system that executes after voting period ends. Implement smart contract integration to call payout functions with calculated winner addresses and amounts (60/25/15% distribution). Build backend service to monitor voting completion and trigger distribution automatically. Add transaction monitoring to track distribution success/failure and update database records. Implement prize pool management with deposit tracking and balance verification before distribution. Create distribution history and audit trail for all prize payments. Add manual override capability for organizers in case of disputes. Include proper error handling for failed transactions and retry mechanisms.",
+        "testStrategy": "Test automated distribution triggers correctly after voting ends, verify prize calculations match expected ratios, test transaction success/failure scenarios, ensure proper balance checks before distribution, validate audit trail completeness, and test manual override functionality works as expected.",
+        "priority": "medium",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "User Profile and Achievement System",
+        "description": "Build comprehensive user profile system with participation history, achievements, and statistics tracking",
+        "details": "Implement user profile system with wallet-based identity management. Create profile pages showing username, bio, avatar, participation history, and achievement badges. Build achievement system tracking hackathon participation, wins, total prize earnings, and special accomplishments. Implement user statistics including participation count, win rate, average ranking, and total earnings. Create profile editing functionality allowing users to update display name, bio, and avatar. Add achievement badge system with different tiers (participant, winner, frequent competitor, etc.). Implement leaderboards showing top participants by various metrics. Include social features like profile sharing and achievement showcase.",
+        "testStrategy": "Test profile creation and editing functionality, verify achievement tracking accuracy across multiple hackathons, validate statistics calculations, ensure proper badge assignment and display, test leaderboard sorting and filtering, and verify profile data persistence and retrieval.",
+        "priority": "medium",
+        "dependencies": [
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Winner Dashboard and Demo Preparation",
+        "description": "Create comprehensive winner dashboard, public results display, and prepare complete demo environment",
+        "details": "Build public winner dashboard displaying hackathon results, winning submissions, prize distributions, and participant achievements. Create results page with winner announcements, project showcases, and prize distribution transaction links. Implement public hackathon browsing for completed events with winner highlights and submission galleries. Setup demo environment with pre-populated test data including sample hackathons, participants, votes, and results. Create demo script covering complete user journey from hackathon creation to prize distribution. Add analytics dashboard for organizers showing participation metrics, voting statistics, and prize distribution summaries. Include export functionality for hackathon data and results. Prepare production deployment configuration and documentation.",
+        "testStrategy": "Test winner dashboard displays correct results and formatting, verify all public pages load properly without authentication, validate demo data completeness and realistic scenarios, ensure export functionality works correctly, test production deployment configuration, and verify entire demo flow works smoothly for presentation.",
+        "priority": "medium",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Build Public Winner Dashboard and Results Pages",
+            "description": "Create public-facing winner dashboard displaying hackathon results, winning submissions, and prize distributions with proper formatting and responsive design",
+            "dependencies": [],
+            "details": "Develop public winner dashboard page at /winners or /results showing completed hackathons with winning participants, project details, and prize amounts. Create results page layout with winner announcements, project showcases, submission links, and transaction hashes for prize distributions. Implement responsive card layouts for winner displays with project images, descriptions, and ranking information. Add public hackathon browsing for completed events with winner highlights and submission galleries. Include filtering and search functionality for browsing historical results. Ensure all pages work without authentication requirements for public access.",
+            "status": "pending",
+            "testStrategy": "Test winner dashboard displays correct results and formatting, verify responsive design works on mobile and desktop, test public access without authentication, validate winner information accuracy, and ensure proper loading states for all result data"
+          },
+          {
+            "id": 2,
+            "title": "Create Analytics Dashboard for Organizers",
+            "description": "Build comprehensive analytics dashboard showing participation metrics, voting statistics, and prize distribution summaries with export functionality",
+            "dependencies": [
+              "10.1"
+            ],
+            "details": "Implement analytics dashboard accessible to hackathon organizers showing participation metrics (total participants, registration trends, submission rates), voting statistics (total votes cast, judge participation, score distributions), and prize distribution summaries. Create data visualization components using charts and graphs to display metrics over time. Add export functionality for hackathon data including participant lists, voting results, and financial summaries in CSV/JSON formats. Include filtering options by date range, hackathon status, and specific metrics. Implement proper authentication to restrict access to organizer-only data.",
+            "status": "pending",
+            "testStrategy": "Test analytics dashboard displays accurate metrics, verify data visualization components render correctly, test export functionality generates proper files, validate organizer authentication restrictions, and ensure proper data filtering and aggregation"
+          },
+          {
+            "id": 3,
+            "title": "Setup Demo Environment with Pre-populated Test Data",
+            "description": "Create comprehensive demo environment with realistic sample data including hackathons, participants, votes, and results for demonstration purposes",
+            "dependencies": [],
+            "details": "Create demo database seed script with realistic test data including 5-10 sample hackathons in various states (active, voting, completed), 20-30 mock participants with varied profiles and achievements, realistic voting data with proper score distributions, and completed prize distribution records. Setup demo user accounts with different roles (organizers, participants, judges) and wallet addresses. Create demo script documentation covering complete user journey from hackathon creation to prize distribution. Include varied prize amounts, submission types, and achievement levels to showcase full platform functionality. Ensure demo data follows realistic patterns and user behaviors.",
+            "status": "pending",
+            "testStrategy": "Validate demo data completeness covers all platform features, test realistic scenarios work properly, verify demo accounts have proper permissions, ensure demo script covers complete user journey, and confirm all demo data displays correctly in UI components"
+          },
+          {
+            "id": 4,
+            "title": "Prepare Production Deployment Configuration and Documentation",
+            "description": "Setup production deployment configuration with Docker, environment variables, and create comprehensive deployment documentation",
+            "dependencies": [
+              "10.1",
+              "10.2"
+            ],
+            "details": "Create production-ready Docker Compose configuration with optimized builds for Next.js frontend and NestJS backend. Setup environment variable templates and configuration for production database (PostgreSQL), Kaia mainnet RPC endpoints, and production API keys. Create deployment documentation covering server requirements, SSL certificate setup, domain configuration, and database migration procedures. Implement proper logging configuration for production monitoring. Setup health check endpoints and monitoring configurations. Create backup and disaster recovery procedures. Include performance optimization settings for production loads.",
+            "status": "pending",
+            "testStrategy": "Test production deployment configuration works correctly, verify all environment variables load properly, test SSL certificate configuration, validate health check endpoints respond correctly, and ensure documentation completeness for deployment procedures"
+          },
+          {
+            "id": 5,
+            "title": "Create Complete Demo Script and Presentation Flow",
+            "description": "Develop comprehensive demo script covering entire platform functionality from hackathon creation to prize distribution with smooth presentation flow",
+            "dependencies": [
+              "10.3",
+              "10.4"
+            ],
+            "details": "Create detailed demo script covering complete user journey: wallet connection, hackathon creation with prize pool setup, participant registration and submission, judge assignment and voting process, result calculation and winner announcement, automated prize distribution, and winner dashboard display. Include backup scenarios for potential technical issues during live demonstration. Create presentation slides highlighting key features, technical architecture, and business value propositions. Prepare demo timing and flow optimization for different presentation durations (5, 10, 15 minute versions). Include interactive elements allowing audience participation in voting or viewing results.",
+            "status": "pending",
+            "testStrategy": "Test entire demo flow works smoothly end-to-end, verify demo timing fits presentation constraints, validate all demo features work reliably, ensure backup scenarios function properly, and confirm presentation materials are clear and engaging"
+          }
+        ]
+      }
+    ],
+    "metadata": {
+      "created": "2025-08-15T08:54:10.658Z",
+      "updated": "2025-08-16T13:43:00.237Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
