@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { create } from 'zustand';
-import type { Hackathon } from '@/types/global';
+import { create } from "zustand";
+import type { Hackathon } from "@/types/global";
 
 interface HackathonState {
   hackathons: Hackathon[];
@@ -47,7 +47,7 @@ export const useHackathonStore = create<HackathonState>((set, get) => ({
   updateHackathon: (id: string, updates: Partial<Hackathon>) => {
     const { hackathons } = get();
     const updatedHackathons = hackathons.map((h) =>
-      h.id === id ? { ...h, ...updates } : h
+      h.id === id ? { ...h, ...updates } : h,
     );
     set({ hackathons: updatedHackathons });
   },

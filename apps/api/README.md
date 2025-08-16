@@ -5,6 +5,7 @@ A NestJS-based backend API for the Hacka-Fi hackathon platform with blockchain i
 ## 🏗️ Architecture Overview
 
 This API provides:
+
 - **Wallet Signature Authentication**: Secure authentication using wallet signatures on Kaia blockchain
 - **RESTful APIs**: CRUD operations for hackathons, users, and voting
 - **Smart Contract Integration**: Read/write operations with HackathonRegistry and PrizePool contracts
@@ -103,7 +104,7 @@ src/
 Smart contract ABIs are located in `src/modules/web3/contracts/`:
 
 1. **Source**: ABIs are copied from the `contracts/` directory after compilation with Foundry
-2. **Location**: 
+2. **Location**:
    - `HackathonRegistry.json` - Main hackathon management contract
    - `PrizePool.json` - Prize distribution contract
 3. **Types**: TypeScript interfaces are auto-generated in `types.ts`
@@ -170,6 +171,7 @@ After modifying `prisma/schema.prisma`:
 The API uses wallet signatures for secure authentication:
 
 1. **Login Flow**:
+
    ```
    POST /auth/login
    {
@@ -204,23 +206,27 @@ Available at: `http://localhost:3004/api/docs`
 ### Key Endpoints
 
 #### Authentication
+
 - `POST /auth/login` - Wallet signature login
 - `GET /auth/profile` - Get user profile
 - `GET /auth/health` - Health check
 
 #### Hackathons
+
 - `POST /hackathons` - Create hackathon
 - `GET /hackathons` - List hackathons
 - `GET /hackathons/:id` - Get hackathon details
 - `POST /hackathons/:id/participate` - Register for hackathon
 
 #### Contract Testing
+
 - `GET /contracts/hackathon/current-id` - Get current hackathon ID
 - `GET /contracts/hackathon/:id/info` - Get hackathon from contract
 - `GET /contracts/hackathon/:id/participants` - Get participants
 - `GET /contracts/prize-pool/:id` - Get prize pool info
 
 #### Health Checks
+
 - `GET /health/database` - Database connectivity
 - `GET /health/web3` - Blockchain connectivity
 
@@ -277,18 +283,21 @@ The application will fail to start if required environment variables are missing
 ## 🚨 Production Considerations
 
 ### Security
+
 - Use strong `JWT_SECRET` (32+ characters)
 - Set `PRIVATE_KEY` only when write operations are needed
 - Configure CORS for frontend domain only
 - Use HTTPS in production
 
 ### Performance
+
 - Use PostgreSQL for production database
 - Configure database connection pooling
 - Set appropriate JWT expiration times
 - Monitor RPC usage and rate limits
 
 ### Deployment
+
 - Set `NODE_ENV=production`
 - Use process manager (PM2, Docker, etc.)
 - Configure log aggregation

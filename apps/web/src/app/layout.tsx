@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { Web3Provider } from "@/components/providers/web3-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -9,12 +10,14 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Hacka-Fi | Blockchain Hackathon Platform",
-  description: "Discover and participate in blockchain hackathons with automated prize distribution",
+  description:
+    "Discover and participate in blockchain hackathons with automated prize distribution",
   keywords: ["hackathon", "blockchain", "Kaia", "Web3", "decentralized"],
   authors: [{ name: "Hacka-Fi Team" }],
   openGraph: {
     title: "Hacka-Fi | Blockchain Hackathon Platform",
-    description: "Discover and participate in blockchain hackathons with automated prize distribution",
+    description:
+      "Discover and participate in blockchain hackathons with automated prize distribution",
     type: "website",
   },
 };
@@ -27,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
-        {children}
+        <Web3Provider>{children}</Web3Provider>
       </body>
     </html>
   );

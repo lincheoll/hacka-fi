@@ -1,8 +1,8 @@
-import { Metadata } from 'next';
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Hackathons | Hacka-Fi',
-  description: 'Discover and participate in blockchain hackathons',
+  title: "Hackathons | Hacka-Fi",
+  description: "Discover and participate in blockchain hackathons",
 };
 
 export default function HackathonsPage() {

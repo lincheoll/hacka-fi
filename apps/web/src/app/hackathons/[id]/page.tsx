@@ -1,10 +1,12 @@
-import { Metadata } from 'next';
+import { Metadata } from "next";
 
 interface HackathonDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export async function generateMetadata({ params }: HackathonDetailPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: HackathonDetailPageProps): Promise<Metadata> {
   const { id } = await params;
   return {
     title: `Hackathon ${id} | Hacka-Fi`,
@@ -12,7 +14,9 @@ export async function generateMetadata({ params }: HackathonDetailPageProps): Pr
   };
 }
 
-export default async function HackathonDetailPage({ params }: HackathonDetailPageProps) {
+export default async function HackathonDetailPage({
+  params,
+}: HackathonDetailPageProps) {
   const { id } = await params;
 
   return (

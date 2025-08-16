@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import type { User } from '@/types/global';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+import type { User } from "@/types/global";
 
 interface AuthState {
   user: User | null;
@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: 'auth-storage',
-    }
-  )
+      name: "auth-storage",
+    },
+  ),
 );

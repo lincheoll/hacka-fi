@@ -1,4 +1,4 @@
-import { Hackathon, User, Participant, Vote } from './global';
+import { Hackathon, User, Participant, Vote } from "./global";
 
 // API Response types
 export interface ApiResponse<T = unknown> {
@@ -37,7 +37,8 @@ export interface CreateHackathonRequest {
   votingDeadline: string;
 }
 
-export interface UpdateHackathonRequest extends Partial<CreateHackathonRequest> {}
+export interface UpdateHackathonRequest
+  extends Partial<CreateHackathonRequest> {}
 
 export interface HackathonListResponse extends PaginatedResponse<Hackathon> {}
 

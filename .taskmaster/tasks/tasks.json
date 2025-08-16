@@ -158,7 +158,7 @@
           2,
           3
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -225,7 +225,7 @@
         "dependencies": [
           4
         ],
-        "status": "pending",
+        "status": "in-progress",
         "subtasks": [
           {
             "id": 1,
@@ -233,7 +233,7 @@
             "description": "Initialize Next.js 14+ application in apps/web directory with TypeScript, App Router architecture, and basic folder structure following monorepo standards",
             "dependencies": [],
             "details": "Create Next.js 14+ project in apps/web using create-next-app with TypeScript. Setup App Router structure with /app directory containing layout.tsx, page.tsx, loading.tsx, error.tsx, not-found.tsx. Create folder structure: /components (ui, providers, features, layout, common), /lib (utils, validations, constants, api, fonts), /hooks, /store, /types, /styles. Configure package.json with proper dependencies and scripts. Setup next.config.js with proper configurations.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify Next.js project initializes correctly, App Router structure works, TypeScript compilation passes, and all folders are properly structured according to monorepo standards"
           },
           {
@@ -244,7 +244,7 @@
               "5.1"
             ],
             "details": "Install and configure Tailwind CSS 3+ with postcss and autoprefixer. Setup tailwind.config.js with proper theme configuration and CSS variables. Initialize shadcn/ui with components.json configuration. Install and configure base shadcn/ui components: button, card, form, input, label, textarea, select, dialog, toast, dropdown-menu. Create /components/ui directory with index.ts barrel exports. Setup globals.css with Tailwind directives and CSS custom properties for theme variables.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Verify Tailwind CSS styles apply correctly, shadcn/ui components render and function properly, theme variables work correctly in both light and dark modes, and component styling is consistent"
           },
           {
@@ -255,7 +255,7 @@
               "5.1"
             ],
             "details": "Install wagmi v2, viem, and @tanstack/react-query. Create Web3Provider component with wagmi configuration for Kaia network (mainnet and testnet). Configure supported wallets: MetaMask and Kaia Wallet. Create web3.ts configuration file with Kaia network RPC endpoints, chain IDs, and contract addresses. Implement WalletConnect component with connection, disconnection, and account display functionality. Setup global Web3 state management using Zustand store. Create custom hooks: use-web3.ts for wallet interactions.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Test wallet connection with MetaMask and Kaia Wallet, verify network switching to Kaia, test wallet disconnection, validate contract interaction setup, and ensure proper error handling for Web3 operations"
           },
           {
@@ -407,7 +407,7 @@
     ],
     "metadata": {
       "created": "2025-08-15T08:54:10.658Z",
-      "updated": "2025-08-16T13:43:00.237Z",
+      "updated": "2025-08-16T14:54:40.359Z",
       "description": "Tasks for master context"
     }
   }

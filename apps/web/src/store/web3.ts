@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { create } from 'zustand';
-import type { Address } from 'viem';
-import type { WalletInfo, TransactionStatus } from '@/types/web3';
+import { create } from "zustand";
+import type { Address } from "viem";
+import type { WalletInfo, TransactionStatus } from "@/types/web3";
 
 interface Web3State {
   wallet: WalletInfo;
@@ -16,13 +16,13 @@ interface Web3State {
 
 export const useWeb3Store = create<Web3State>((set) => ({
   wallet: {
-    address: '0x' as Address,
+    address: "0x" as Address,
     isConnected: false,
     chainId: undefined,
   },
   isConnecting: false,
   transaction: {
-    status: 'idle',
+    status: "idle",
   },
 
   setWallet: (wallet: WalletInfo) => {
@@ -40,12 +40,12 @@ export const useWeb3Store = create<Web3State>((set) => ({
   disconnect: () => {
     set({
       wallet: {
-        address: '0x' as Address,
+        address: "0x" as Address,
         isConnected: false,
         chainId: undefined,
       },
       isConnecting: false,
-      transaction: { status: 'idle' },
+      transaction: { status: "idle" },
     });
   },
 }));

@@ -1,4 +1,4 @@
-import { Address } from 'viem';
+import { Address } from "viem";
 
 // Wallet types
 export interface WalletInfo {
@@ -51,6 +51,6 @@ export interface PrizePool {
 // Transaction types
 export interface TransactionStatus {
   hash?: Address;
-  status: 'idle' | 'pending' | 'success' | 'error';
+  status: "idle" | "pending" | "success" | "error";
   error?: string;
 }
