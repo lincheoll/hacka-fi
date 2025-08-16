@@ -1,98 +1,295 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Hacka-Fi API Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A NestJS-based backend API for the Hacka-Fi hackathon platform with blockchain integration and wallet-based authentication.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🏗️ Architecture Overview
 
-## Description
+This API provides:
+- **Wallet Signature Authentication**: Secure authentication using wallet signatures on Kaia blockchain
+- **RESTful APIs**: CRUD operations for hackathons, users, and voting
+- **Smart Contract Integration**: Read/write operations with HackathonRegistry and PrizePool contracts
+- **Database Management**: Prisma ORM with SQLite (dev) / PostgreSQL (prod) support
+- **API Documentation**: Auto-generated Swagger/OpenAPI documentation
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Quick Start
 
-## Project setup
+### Prerequisites
+
+- Node.js 22+ and pnpm
+- SQLite (development) or PostgreSQL (production)
+- Access to Kaia blockchain RPC (testnet or mainnet)
+
+### Installation
 
 ```bash
-$ pnpm install
+# Install dependencies
+pnpm install
+
+# Generate Prisma client types
+pnpm prisma generate
+
+# Run database migrations
+pnpm prisma db push
+
+# Start development server
+pnpm run start:dev
 ```
 
-## Compile and run the project
+### Environment Configuration
+
+Create `.env` file in the project root:
+
+```env
+# Database Configuration
+DATABASE_URL="file:./dev.db"           # SQLite for development
+DATABASE_PROVIDER="sqlite"             # or "postgresql" for production
+
+# Blockchain Configuration
+RPC_URL="https://rpc.ankr.com/kaia_testnet"
+CHAIN_ID=1001                          # 1001 for testnet, 8217 for mainnet
+HACKATHON_REGISTRY_ADDRESS="0x..."     # Deployed contract address
+PRIZE_POOL_ADDRESS="0x..."             # Deployed contract address
+PRIVATE_KEY="0x..."                    # Optional: for write operations
+
+# JWT Configuration
+JWT_SECRET="your-secret-key"
+JWT_EXPIRES_IN="7d"
+
+# Server Configuration
+PORT=3004
+```
+
+## 📁 Project Structure
+
+```
+src/
+├── common/                    # Shared utilities and decorators
+│   ├── decorators/           # Custom decorators (@Public, etc.)
+│   ├── filters/              # Exception filters
+│   ├── guards/               # Auth guards
+│   └── pipes/                # Validation pipes
+├── config/                   # Configuration modules
+│   └── app.config.ts         # Environment validation
+├── modules/                  # Feature modules
+│   ├── auth/                 # Wallet signature authentication
+│   │   ├── auth.controller.ts
+│   │   ├── auth.service.ts
+│   │   ├── jwt.strategy.ts
+│   │   └── dto/              # Auth DTOs
+│   ├── hackathon/            # Hackathon management
+│   │   ├── hackathon.controller.ts
+│   │   ├── hackathon.service.ts
+│   │   └── dto/              # Hackathon DTOs
+│   ├── user/                 # User profile management
+│   ├── voting/               # Voting and judging
+│   └── web3/                 # Blockchain integration
+│       ├── web3.service.ts           # Core Web3 service
+│       ├── hackathon-contract.service.ts
+│       ├── prize-pool-contract.service.ts
+│       ├── contract-test.controller.ts
+│       └── contracts/        # Smart contract interfaces
+│           ├── HackathonRegistry.json
+│           ├── PrizePool.json
+│           ├── types.ts      # TypeScript interfaces
+│           └── index.ts      # ABI exports
+└── prisma/                   # Database schema and migrations
+    └── schema.prisma
+```
+
+## 🔧 Smart Contract Integration
+
+### ABI Setup
+
+Smart contract ABIs are located in `src/modules/web3/contracts/`:
+
+1. **Source**: ABIs are copied from the `contracts/` directory after compilation with Foundry
+2. **Location**: 
+   - `HackathonRegistry.json` - Main hackathon management contract
+   - `PrizePool.json` - Prize distribution contract
+3. **Types**: TypeScript interfaces are auto-generated in `types.ts`
+
+### Contract Services
+
+- **HackathonContractService**: Read/write operations for hackathon management
+  - Create hackathons, register participants, cast votes
+  - Query hackathon info, participants, leaderboards
+- **PrizePoolContractService**: Prize pool management
+  - Create and fund prize pools, distribute prizes
+  - Query prize distributions and balances
+
+### Important Notes
+
+⚠️ **Write Operations**: Require `PRIVATE_KEY` in environment variables
+⚠️ **Chain Configuration**: Use `CHAIN_ID` (not URL parsing) for network selection
+⚠️ **viem v2 Compatibility**: All contract calls include `chain` and `account` parameters
+
+## 💾 Database Management
+
+### Prisma Setup
 
 ```bash
-# development
-$ pnpm run start
+# Generate TypeScript types from schema
+pnpm prisma generate
 
-# watch mode
-$ pnpm run start:dev
+# Apply schema changes to database
+pnpm prisma db push
 
-# production mode
-$ pnpm run start:prod
+# View database in browser
+pnpm prisma studio
+
+# Reset database (development only)
+pnpm prisma db push --force-reset
 ```
 
-## Run tests
+### Database Switching
+
+The application supports both SQLite and PostgreSQL:
+
+```env
+# SQLite (Development)
+DATABASE_URL="file:./dev.db"
+DATABASE_PROVIDER="sqlite"
+
+# PostgreSQL (Production)
+DATABASE_URL="postgresql://user:password@localhost:5432/hacka_fi"
+DATABASE_PROVIDER="postgresql"
+```
+
+### Schema Updates
+
+After modifying `prisma/schema.prisma`:
+
+1. Run `pnpm prisma generate` to update TypeScript types
+2. Run `pnpm prisma db push` to apply changes to database
+3. Restart the development server to load new types
+
+## 🔐 Authentication System
+
+### Wallet Signature Authentication
+
+The API uses wallet signatures for secure authentication:
+
+1. **Login Flow**:
+   ```
+   POST /auth/login
+   {
+     "walletAddress": "0x...",
+     "signature": "0x...",
+     "message": "Login to Hacka-Fi"
+   }
+   ```
+
+2. **Signature Verification**: Uses viem's `verifyMessage` with Kaia network support
+
+3. **JWT Token**: Returns JWT token for subsequent requests
+
+4. **Protected Routes**: Use `@UseGuards(JwtAuthGuard)` or mark public with `@Public()`
+
+### Testing Authentication
 
 ```bash
-# unit tests
-$ pnpm run test
+# Health check (public)
+curl http://localhost:3004/auth/health
 
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+# Profile (requires authentication)
+curl -H "Authorization: Bearer <jwt-token>" http://localhost:3004/auth/profile
 ```
 
-## Deployment
+## 📚 API Documentation
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Swagger Documentation
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Available at: `http://localhost:3004/api/docs`
+
+### Key Endpoints
+
+#### Authentication
+- `POST /auth/login` - Wallet signature login
+- `GET /auth/profile` - Get user profile
+- `GET /auth/health` - Health check
+
+#### Hackathons
+- `POST /hackathons` - Create hackathon
+- `GET /hackathons` - List hackathons
+- `GET /hackathons/:id` - Get hackathon details
+- `POST /hackathons/:id/participate` - Register for hackathon
+
+#### Contract Testing
+- `GET /contracts/hackathon/current-id` - Get current hackathon ID
+- `GET /contracts/hackathon/:id/info` - Get hackathon from contract
+- `GET /contracts/hackathon/:id/participants` - Get participants
+- `GET /contracts/prize-pool/:id` - Get prize pool info
+
+#### Health Checks
+- `GET /health/database` - Database connectivity
+- `GET /health/web3` - Blockchain connectivity
+
+## 🧪 Development & Testing
+
+### Running the Application
 
 ```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+# Development with hot reload
+pnpm run start:dev
+
+# Production build
+pnpm run build
+pnpm run start:prod
+
+# Type checking
+pnpm run type-check
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Testing
 
-## Resources
+```bash
+# Unit tests
+pnpm run test
 
-Check out a few resources that may come in handy when working with NestJS:
+# E2E tests
+pnpm run test:e2e
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# Test coverage
+pnpm run test:cov
+```
 
-## Support
+### Debugging
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+1. **TypeScript Errors**: Ensure `pnpm prisma generate` has been run
+2. **Database Connection**: Check `DATABASE_URL` and `DATABASE_PROVIDER`
+3. **Blockchain Connection**: Verify `RPC_URL` and `CHAIN_ID`
+4. **Contract Calls**: Ensure `PRIVATE_KEY` is set for write operations
 
-## Stay in touch
+## 🔧 Configuration Management
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### Environment Variables
 
-## License
+All configuration is validated using Joi schemas in `src/config/app.config.ts`:
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **Required**: `RPC_URL`, `CHAIN_ID`, `JWT_SECRET`
+- **Optional**: `PRIVATE_KEY` (only needed for write operations)
+- **Database**: Auto-detected based on `DATABASE_URL` if `DATABASE_PROVIDER` not set
+
+### Validation
+
+The application will fail to start if required environment variables are missing or invalid.
+
+## 🚨 Production Considerations
+
+### Security
+- Use strong `JWT_SECRET` (32+ characters)
+- Set `PRIVATE_KEY` only when write operations are needed
+- Configure CORS for frontend domain only
+- Use HTTPS in production
+
+### Performance
+- Use PostgreSQL for production database
+- Configure database connection pooling
+- Set appropriate JWT expiration times
+- Monitor RPC usage and rate limits
+
+### Deployment
+- Set `NODE_ENV=production`
+- Use process manager (PM2, Docker, etc.)
+- Configure log aggregation
+- Set up health check monitoring
