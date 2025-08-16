@@ -3,6 +3,7 @@
 This document covers comprehensive aspects of smart contract development using Foundry.
 
 ## 📚 Table of Contents
+
 1. [Foundry Basics](#1-foundry-basics)
 2. [Project Setup](#2-project-setup)
 3. [Solidity Syntax Overview](#3-solidity-syntax-overview)
@@ -17,15 +18,18 @@ This document covers comprehensive aspects of smart contract development using F
 ## 1. Foundry Basics
 
 ### 🔧 **What is Foundry?**
+
 Foundry is a fast, portable, and modular Ethereum development toolkit written in Rust.
 
 ### 📦 **Core Tools**
+
 - **`forge`**: Compilation, testing, and deployment tool
 - **`cast`**: RPC calls and Ethereum utilities
 - **`anvil`**: Local testnet node
 - **`chisel`**: Solidity REPL
 
 ### 🏗️ **Directory Structure**
+
 ```
 my-project/
 ├── src/              # Smart contract source code
@@ -43,6 +47,7 @@ my-project/
 ## 2. Project Setup
 
 ### 🚀 **Installation and Initialization**
+
 ```bash
 # Install Foundry
 curl -L https://foundry.paradigm.xyz | bash
@@ -57,10 +62,12 @@ forge init --force .
 ```
 
 **⚠️ Warning:**
+
 - `--force` flag can overwrite existing files, use ONLY in empty directories
 - For directories with existing files, backup first or set up manually
 
 ### ⚙️ **foundry.toml Configuration**
+
 ```toml
 [profile.default]
 src = "src"
@@ -94,6 +101,7 @@ mainnet = { key = "your-etherscan-api-key" }
 ```
 
 ### 📦 **Installing Dependencies**
+
 ```bash
 # Install OpenZeppelin
 forge install OpenZeppelin/openzeppelin-contracts
@@ -108,6 +116,7 @@ forge update
 ```
 
 ### 🔧 **remappings.txt Configuration**
+
 ```
 @openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
 @forge-std/=lib/forge-std/src/
@@ -119,6 +128,7 @@ forge update
 ## 3. Solidity Syntax Overview
 
 ### 📝 **Basic Structure**
+
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
@@ -130,31 +140,31 @@ contract MyContract is AccessControl, ReentrancyGuard {
     // Constants
     uint256 public constant MAX_SUPPLY = 10000;
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    
+
     // State variables
     mapping(address => uint256) public balances;
     address[] private users;
-    
+
     // Events
     event Transfer(address indexed from, address indexed to, uint256 amount);
     event RoleGranted(bytes32 indexed role, address indexed account);
-    
+
     // Errors (Gas efficient)
     error InsufficientBalance();
     error Unauthorized();
-    
+
     // Modifiers
     modifier onlyAdmin() {
         if (!hasRole(ADMIN_ROLE, msg.sender)) revert Unauthorized();
         _;
     }
-    
+
     // Constructor
     constructor() {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(ADMIN_ROLE, msg.sender);
     }
-    
+
     // Functions
     function deposit() external payable nonReentrant {
         require(msg.value > 0, "Amount must be greater than 0");
@@ -165,13 +175,14 @@ contract MyContract is AccessControl, ReentrancyGuard {
 ```
 
 ### 🔒 **Access Control Patterns**
+
 ```solidity
 // 1. Using OpenZeppelin AccessControl (recommended)
 import {AccessControl} from "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract MyContract is AccessControl {
     bytes32 public constant MANAGER_ROLE = keccak256("MANAGER_ROLE");
-    
+
     modifier onlyManager() {
         require(hasRole(MANAGER_ROLE, msg.sender), "Not a manager");
         _;
@@ -184,12 +195,12 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 contract SimpleContract is Ownable {
     // OpenZeppelin v5.0+ (latest)
     constructor() Ownable(msg.sender) {}
-    
+
     // OpenZeppelin v4.x (old) - no constructor argument
     // constructor() {
     //     _transferOwnership(msg.sender);
     // }
-    
+
     function adminFunction() external onlyOwner {
         // Only owner can execute
     }
@@ -202,6 +213,7 @@ contract SimpleContract is Ownable {
 ```
 
 ### 💰 **Safe ETH Transfer**
+
 ```solidity
 // ⚠️ Warning: using transfer (2300 gas limit)
 // May fail in modern EVM due to gas cost changes
@@ -215,28 +227,30 @@ require(success, "Send failed");
 function withdraw(uint256 amount) external nonReentrant {
     require(balances[msg.sender] >= amount, "Insufficient balance");
     balances[msg.sender] -= amount;
-    
+
     (bool success, ) = payable(msg.sender).call{value: amount}("");
     require(success, "Transfer failed");
 }
 
 // 📝 ETH transfer method characteristics:
 // - transfer: 2300 gas limit, reverts on failure (not recommended now)
-// - send: 2300 gas limit, returns false on failure (not recommended)  
+// - send: 2300 gas limit, returns false on failure (not recommended)
 // - call: forwards all gas, most flexible (recommended)
 ```
 
 **⚠️ Important Notes:**
+
 - **Use transfer/send only for legacy code compatibility**
 - **call + ReentrancyGuard is the current standard**
 - **transfer may fail due to recent EVM changes**
 
 ### 📊 **Data Types and Optimization**
+
 ```solidity
 // Gas optimization through packing
 struct User {
     uint128 balance;      // 16 bytes
-    uint64 timestamp;     // 8 bytes  
+    uint64 timestamp;     // 8 bytes
     uint32 id;           // 4 bytes
     bool isActive;       // 1 byte (but uses 32-byte slot)
 }                        // Total 32 bytes = 1 slot
@@ -255,6 +269,7 @@ mapping(address => mapping(uint256 => bool)) public userVotes;
 ### 🏗️ **Contract Architecture Patterns**
 
 #### **1. Single Responsibility Principle (SRP)**
+
 ```solidity
 // Good example: Each contract has one responsibility
 contract HackathonRegistry {
@@ -267,6 +282,7 @@ contract PrizePool {
 ```
 
 #### **2. Upgradeable Contracts**
+
 ```solidity
 import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -274,17 +290,17 @@ import {OwnableUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Own
 
 contract MyUpgradeableContract is Initializable, UUPSUpgradeable, OwnableUpgradeable {
     uint256 public value;
-    
+
     function initialize(uint256 _value) public initializer {
         // Initialization order matters!
         __Ownable_init(msg.sender);        // Initialize Ownable first
         __UUPSUpgradeable_init();          // Then initialize UUPS
         // Or use _init_unchained version
         // __UUPSUpgradeable_init_unchained();
-        
+
         value = _value;
     }
-    
+
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }
 
@@ -301,15 +317,16 @@ contract MyUpgradeableContract is Initializable, UUPSUpgradeable, OwnableUpgrade
 ### 🛡️ **Security Patterns**
 
 #### **1. Checks-Effects-Interactions Pattern**
+
 ```solidity
 function withdraw(uint256 amount) external {
     // 1. Checks - verify conditions
     require(balances[msg.sender] >= amount, "Insufficient balance");
     require(amount > 0, "Amount must be positive");
-    
+
     // 2. Effects - state changes
     balances[msg.sender] -= amount;
-    
+
     // 3. Interactions - external calls
     (bool success, ) = payable(msg.sender).call{value: amount}("");
     require(success, "Transfer failed");
@@ -317,6 +334,7 @@ function withdraw(uint256 amount) external {
 ```
 
 #### **2. Using ReentrancyGuard**
+
 ```solidity
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
@@ -328,6 +346,7 @@ contract SafeContract is ReentrancyGuard {
 ```
 
 ### 🎯 **Events and Error Handling**
+
 ```solidity
 contract EventExample {
     // Event definition (max 3 indexed)
@@ -337,19 +356,19 @@ contract EventExample {
         uint256 amount,
         uint256 timestamp
     );
-    
+
     // Custom errors (gas efficient)
     error InsufficientBalance(uint256 required, uint256 available);
     error Unauthorized(address caller);
-    
+
     function transfer(address to, uint256 amount) external {
         if (balances[msg.sender] < amount) {
             revert InsufficientBalance(amount, balances[msg.sender]);
         }
-        
+
         balances[msg.sender] -= amount;
         balances[to] += amount;
-        
+
         emit Transfer(msg.sender, to, amount, block.timestamp);
     }
 }
@@ -360,6 +379,7 @@ contract EventExample {
 ## 5. Testing Guide
 
 ### 🧪 **Basic Test Structure**
+
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
@@ -370,91 +390,93 @@ import {MyContract} from "../src/MyContract.sol";
 
 contract MyContractTest is Test {
     MyContract public myContract;
-    
+
     address public owner = makeAddr("owner");
     address public user1 = makeAddr("user1");
     address public user2 = makeAddr("user2");
-    
+
     function setUp() public {
         vm.prank(owner);
         myContract = new MyContract();
-        
+
         // Provide test ETH
         vm.deal(user1, 10 ether);
         vm.deal(user2, 5 ether);
     }
-    
+
     function test_BasicFunctionality() public {
         // Given
         uint256 amount = 1 ether;
-        
+
         // When
         vm.prank(user1);
         myContract.deposit{value: amount}();
-        
+
         // Then
         assertEq(myContract.balanceOf(user1), amount);
     }
-    
+
     function test_RevertOnInvalidInput() public {
         vm.prank(user1);
         vm.expectRevert("Amount must be greater than 0");
         myContract.deposit{value: 0}();
     }
-    
+
     function testFuzz_Deposit(uint256 amount) public {
         vm.assume(amount > 0 && amount <= 100 ether);
-        
+
         vm.deal(user1, amount);
         vm.prank(user1);
         myContract.deposit{value: amount}();
-        
+
         assertEq(myContract.balanceOf(user1), amount);
     }
 }
 ```
 
 ### 🔧 **Foundry Cheatcodes Usage**
+
 ```solidity
 function test_CheatCodes() public {
     // Time manipulation
     vm.warp(block.timestamp + 1 days);
-    
+
     // Block number manipulation
     vm.roll(block.number + 100);
-    
+
     // Address manipulation
     vm.prank(user1);              // Next call as user1
     vm.startPrank(user1);         // Continue as user1
     vm.stopPrank();               // Stop prank
-    
+
     // Event testing
     vm.expectEmit(true, true, false, true);
     emit Transfer(user1, user2, 1 ether);
     myContract.transfer(user2, 1 ether);
-    
+
     // Revert testing
     vm.expectRevert("Insufficient balance");
     myContract.withdraw(1000 ether);
-    
+
     // Storage manipulation
     vm.store(address(myContract), bytes32(uint256(0)), bytes32(uint256(100)));
-    
+
     // Balance setting
     vm.deal(user1, 50 ether);
 }
 ```
 
 ### 📊 **Gas Optimization Testing**
+
 ```solidity
 function test_GasOptimization() public {
     uint256 gasBefore = gasleft();
-    
+
     myContract.expensiveOperation();
-    
+
     uint256 gasUsed = gasBefore - gasleft();
     console.log("Gas used:", gasUsed);
-    
+
     // Gas usage limit test
     assertTrue(gasUsed < 100000, "Gas usage too high");
 }
@@ -465,6 +487,7 @@ function test_GasOptimization() public {
 ## 6. Deployment and Verification
 
 ### 🚀 **Writing Deployment Scripts**
+
 ```solidity
 // script/Deploy.s.sol
 pragma solidity ^0.8.20;
@@ -476,13 +499,13 @@ import {MyContract} from "../src/MyContract.sol";
 contract DeployScript is Script {
     function run() public {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        
+
         vm.startBroadcast(deployerPrivateKey);
-        
+
         MyContract myContract = new MyContract();
-        
+
         vm.stopBroadcast();
-        
+
         console.log("Contract deployed at:", address(myContract));
     }
 }
@@ -491,6 +514,7 @@ contract DeployScript is Script {
 ### 🌐 **Network-Specific Deployment**
 
 #### **1. Local Testnet (Anvil)**
+
 ```bash
 # Terminal 1: Run local node
 anvil
@@ -500,6 +524,7 @@ forge script script/DeployContracts.s.sol --rpc-url http://localhost:8545 --broa
 ```
 
 #### **2. Kaia Testnet (Kairos) Deployment**
+
 ```bash
 # Set environment variables
 export PRIVATE_KEY="your_private_key_here"
@@ -522,6 +547,7 @@ forge script script/DeployContracts.s.sol \
 ```
 
 #### **3. Kaia Mainnet (Cypress) Deployment**
+
 ```bash
 export KAIA_MAINNET_RPC="https://rpc.ankr.com/kaia"
 
@@ -535,11 +561,13 @@ forge script script/DeployContracts.s.sol \
 ```
 
 #### **4. Kaia Network Specifics**
+
 - **`--legacy` flag required**: Kaia doesn't support EIP-1559
 - **Gas price setting**: `--gas-price 25000000000` (25 Gwei)
 - **Verification**: May need manual verification on Klaytnscope
 
 #### **5. Pre-deployment Checklist**
+
 ```bash
 # 1. Check wallet balance
 cast balance $DEPLOYER_ADDRESS --rpc-url $KAIA_TESTNET_RPC
@@ -555,6 +583,7 @@ forge script script/DeployContracts.s.sol --rpc-url $KAIA_TESTNET_RPC
 ```
 
 ### 🔍 **Contract Verification**
+
 ```bash
 # Verify during deployment
 forge create MyContract \
@@ -582,6 +611,7 @@ forge verify-contract \
 ## 7. Debugging and Optimization
 
 ### 🐛 **Debugging Tools**
+
 ```bash
 # Detailed trace
 forge test -vvvv
@@ -600,11 +630,12 @@ forge test --debug test_function_name
 ```
 
 ### ⚡ **Gas Optimization**
+
 ```solidity
 // 1. Packing optimization
 struct OptimizedStruct {
     uint128 a;    // 16 bytes
-    uint64 b;     // 8 bytes  
+    uint64 b;     // 8 bytes
     uint32 c;     // 4 bytes
     bool d;       // 1 byte (but 4 bytes padding)
 }                 // Total 32 bytes = 1 slot
@@ -629,6 +660,7 @@ function optimizedLoop(uint256 n) external pure returns (uint256) {
 ```
 
 ### 🔧 **Compilation Optimization**
+
 ```toml
 # foundry.toml
 [profile.default]
@@ -645,26 +677,27 @@ optimizer = false       # Fast compilation in CI
 ## 8. Best Practices
 
 ### ✅ **Coding Conventions**
+
 ```solidity
 contract MyContract {
     // 1. State variable order
     // - Constants
     uint256 public constant MAX_SUPPLY = 10000;
-    
+
     // - Immutable variables
     address public immutable owner;
-    
+
     // - Regular state variables
     mapping(address => uint256) public balances;
-    
+
     // 2. Function order
     // - constructor
     // - receive/fallback
     // - external functions
-    // - public functions  
+    // - public functions
     // - internal functions
     // - private functions
-    
+
     // 3. Naming conventions
     // - functions/variables: camelCase
     // - constants: SCREAMING_SNAKE_CASE
@@ -674,6 +707,7 @@ contract MyContract {
 ```
 
 ### 🔒 **Security Checklist**
+
 - [ ] Use ReentrancyGuard
 - [ ] Check integer overflow (automatic in Solidity 0.8+)
 - [ ] State changes before external calls (CEI pattern)
@@ -683,6 +717,7 @@ contract MyContract {
 - [ ] Handle errors
 
 ### 📝 **Documentation**
+
 ```solidity
 /**
  * @title MyContract
@@ -709,6 +744,7 @@ contract MyContract {
 ## 🔗 Useful Command Collection
 
 ### 🛠️ **Development Workflow**
+
 ```bash
 # Initialize project
 forge init my-project
@@ -746,6 +782,7 @@ forge create MyContract --private-key $PK --rpc-url $RPC_URL
 ```
 
 ### 🔍 **Analysis Tools**
+
 ```bash
 # Static analysis
 slither .
@@ -762,6 +799,7 @@ forge test --gas-report > gas-report.txt
 ## 🔍 Version Compatibility Check
 
 ### **Check Foundry Version**
+
 ```bash
 # Check current installed version
 forge --version
@@ -773,6 +811,7 @@ foundryup
 ```
 
 ### **Check OpenZeppelin Version**
+
 ```bash
 # Check installed OpenZeppelin version
 ls lib/openzeppelin-contracts/package.json
@@ -784,15 +823,16 @@ forge install OpenZeppelin/openzeppelin-contracts@v5.0.0
 
 ### **Version Change Summary**
 
-| Tool/Library | Version | Key Changes |
-|-------------|---------|-------------|
-| **Foundry** | v0.2.0+ | `solc = "0.8.20"` (old: `solc_version`) |
-| **OpenZeppelin** | v5.0+ | `Ownable(msg.sender)` constructor arg required |
-| **OpenZeppelin** | v4.x | Use `_transferOwnership(msg.sender)` |
-| **OpenZeppelin** | v5.0+ | Stricter upgrade initialization order |
-| **Solidity** | 0.8.20+ | Stricter type checking, improved gas optimization |
+| Tool/Library     | Version | Key Changes                                       |
+| ---------------- | ------- | ------------------------------------------------- |
+| **Foundry**      | v0.2.0+ | `solc = "0.8.20"` (old: `solc_version`)           |
+| **OpenZeppelin** | v5.0+   | `Ownable(msg.sender)` constructor arg required    |
+| **OpenZeppelin** | v4.x    | Use `_transferOwnership(msg.sender)`              |
+| **OpenZeppelin** | v5.0+   | Stricter upgrade initialization order             |
+| **Solidity**     | 0.8.20+ | Stricter type checking, improved gas optimization |
 
 ### **Compatibility Issue Solutions**
+
 ```bash
 # 1. foundry.toml settings not working
 # Old version: solc_version = "0.8.20"
@@ -819,4 +859,4 @@ forge install OpenZeppelin/openzeppelin-contracts@v5.0.0
 
 ---
 
-*This document is continuously updated. Please add new patterns or best practices as you discover them.*
+_This document is continuously updated. Please add new patterns or best practices as you discover them._

@@ -1,9 +1,9 @@
-import { PrismaClient, HackathonStatus, AchievementType } from '@prisma/client'
+import { PrismaClient, HackathonStatus, AchievementType } from '@prisma/client';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Starting database seed...')
+  console.log('Starting database seed...');
 
   // Create sample users
   const users = await Promise.all([
@@ -57,9 +57,9 @@ async function main() {
         avatarUrl: 'https://avatar.iran.liara.run/public/5',
       },
     }),
-  ])
+  ]);
 
-  console.log('Created users:', users.length)
+  console.log('Created users:', users.length);
 
   // Create sample hackathons
   const hackathons = await Promise.all([
@@ -68,7 +68,8 @@ async function main() {
       update: {},
       create: {
         title: 'DeFi Innovation Challenge',
-        description: 'Build the next generation of decentralized finance applications on Kaia blockchain',
+        description:
+          'Build the next generation of decentralized finance applications on Kaia blockchain',
         deadline: new Date('2024-12-31T23:59:59Z'),
         status: HackathonStatus.ACTIVE,
         lotteryPercentage: 10,
@@ -81,7 +82,8 @@ async function main() {
       update: {},
       create: {
         title: 'NFT Marketplace Revolution',
-        description: 'Create innovative NFT marketplaces with unique features and user experiences',
+        description:
+          'Create innovative NFT marketplaces with unique features and user experiences',
         deadline: new Date('2024-11-30T23:59:59Z'),
         status: HackathonStatus.VOTING,
         lotteryPercentage: 15,
@@ -94,25 +96,26 @@ async function main() {
       update: {},
       create: {
         title: 'GameFi Revolution',
-        description: 'Develop engaging blockchain games that combine DeFi mechanics with fun gameplay',
+        description:
+          'Develop engaging blockchain games that combine DeFi mechanics with fun gameplay',
         deadline: new Date('2025-01-15T23:59:59Z'),
         status: HackathonStatus.UPCOMING,
         lotteryPercentage: 5,
         creatorAddress: users[4].walletAddress, // eve_creator
       },
     }),
-  ])
+  ]);
 
-  console.log('Created hackathons:', hackathons.length)
+  console.log('Created hackathons:', hackathons.length);
 
   // Create participants for active hackathon
   const participants = await Promise.all([
     prisma.participant.upsert({
-      where: { 
+      where: {
         hackathonId_walletAddress: {
           hackathonId: 1,
-          walletAddress: users[0].walletAddress
-        }
+          walletAddress: users[0].walletAddress,
+        },
       },
       update: {},
       create: {
@@ -123,11 +126,11 @@ async function main() {
       },
     }),
     prisma.participant.upsert({
-      where: { 
+      where: {
         hackathonId_walletAddress: {
           hackathonId: 1,
-          walletAddress: users[1].walletAddress
-        }
+          walletAddress: users[1].walletAddress,
+        },
       },
       update: {},
       create: {
@@ -138,11 +141,11 @@ async function main() {
       },
     }),
     prisma.participant.upsert({
-      where: { 
+      where: {
         hackathonId_walletAddress: {
           hackathonId: 1,
-          walletAddress: users[2].walletAddress
-        }
+          walletAddress: users[2].walletAddress,
+        },
       },
       update: {},
       create: {
@@ -152,18 +155,18 @@ async function main() {
         entryFee: '1000000000000000000', // 1 ETH in wei
       },
     }),
-  ])
+  ]);
 
-  console.log('Created participants:', participants.length)
+  console.log('Created participants:', participants.length);
 
   // Create participants for completed hackathon with results
   const completedParticipants = await Promise.all([
     prisma.participant.upsert({
-      where: { 
+      where: {
         hackathonId_walletAddress: {
           hackathonId: 2,
-          walletAddress: users[0].walletAddress
-        }
+          walletAddress: users[0].walletAddress,
+        },
       },
       update: {},
       create: {
@@ -176,11 +179,11 @@ async function main() {
       },
     }),
     prisma.participant.upsert({
-      where: { 
+      where: {
         hackathonId_walletAddress: {
           hackathonId: 2,
-          walletAddress: users[1].walletAddress
-        }
+          walletAddress: users[1].walletAddress,
+        },
       },
       update: {},
       create: {
@@ -192,9 +195,12 @@ async function main() {
         prizeAmount: '3000000000000000000', // 3 ETH prize
       },
     }),
-  ])
+  ]);
 
-  console.log('Created completed hackathon participants:', completedParticipants.length)
+  console.log(
+    'Created completed hackathon participants:',
+    completedParticipants.length,
+  );
 
   // Create sample votes
   const votes = await Promise.all([
@@ -204,7 +210,7 @@ async function main() {
           hackathonId: 2,
           judgeAddress: users[3].walletAddress, // diana_judge
           participantId: completedParticipants[0].id,
-        }
+        },
       },
       update: {},
       create: {
@@ -220,7 +226,7 @@ async function main() {
           hackathonId: 2,
           judgeAddress: users[3].walletAddress, // diana_judge
           participantId: completedParticipants[1].id,
-        }
+        },
       },
       update: {},
       create: {
@@ -230,9 +236,9 @@ async function main() {
         score: 88,
       },
     }),
-  ])
+  ]);
 
-  console.log('Created votes:', votes.length)
+  console.log('Created votes:', votes.length);
 
   // Create results for completed hackathon
   const result = await prisma.result.upsert({
@@ -255,11 +261,12 @@ async function main() {
         },
       ]),
       totalPrizePool: '8000000000000000000', // 8 ETH total
-      distributionTxHash: '0x1a2b3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890',
+      distributionTxHash:
+        '0x1a2b3c4d5e6f7890abcdef1234567890abcdef1234567890abcdef1234567890',
     },
-  })
+  });
 
-  console.log('Created result:', result.id)
+  console.log('Created result:', result.id);
 
   // Create user achievements
   const achievements = await Promise.all([
@@ -312,19 +319,19 @@ async function main() {
         hackathonId: 2,
       },
     }),
-  ])
+  ]);
 
-  console.log('Created achievements:', achievements.length)
+  console.log('Created achievements:', achievements.length);
 
-  console.log('Database seed completed successfully!')
+  console.log('Database seed completed successfully!');
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

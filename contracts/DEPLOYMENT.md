@@ -5,22 +5,26 @@ This guide explains how to deploy Hacka-Fi smart contracts to the Kaia network.
 ## 📋 Prerequisites
 
 ### 1. Development Environment
+
 - **Install Foundry**: `curl -L https://foundry.paradigm.xyz | bash && foundryup`
 - **Node.js**: v18 or higher
 - **Git**: Latest version
 
 ### 2. Wallet Setup
+
 - Deployment wallet address and private key
 - Testnet: Kaia Kairos testnet KAIA
 - Mainnet: Kaia Cypress mainnet KAIA
 
 ### 3. RPC Endpoints
+
 - **Mainnet**: `https://rpc.ankr.com/kaia`
 - **Testnet**: `https://rpc.ankr.com/kaia_testnet`
 
 ## ⚙️ Environment Setup
 
 ### 1. Setting Environment Variables
+
 ```bash
 # Create .env file
 cp .env.example .env
@@ -30,6 +34,7 @@ vim .env
 ```
 
 ### 2. Required Environment Variables
+
 ```env
 PRIVATE_KEY=your_private_key_here
 DEPLOYER_ADDRESS=your_deployer_address_here
@@ -40,6 +45,7 @@ KAIA_TESTNET_RPC=https://rpc.ankr.com/kaia_testnet
 ## 🔧 Deployment Process
 
 ### 1. Local Testing
+
 ```bash
 # Verify compilation
 forge build
@@ -54,6 +60,7 @@ forge test --gas-report
 ### 2. Kaia Testnet Deployment
 
 #### **Kaia Kairos Testnet Information**
+
 - **Network Name**: Kaia Kairos
 - **Chain ID**: 1001
 - **RPC URL**: `https://rpc.ankr.com/kaia_testnet`
@@ -61,11 +68,13 @@ forge test --gas-report
 - **Faucet**: https://kairos.wallet.kaia.io/faucet
 
 #### **Getting KAIA Test Tokens**
+
 1. Visit https://kairos.wallet.kaia.io/faucet
 2. Enter wallet address
 3. Receive 5 KAIA (sufficient for deployment)
 
 #### **Deployment Commands**
+
 ```bash
 # 1. Set environment variables
 export PRIVATE_KEY="your_private_key_here"
@@ -93,11 +102,12 @@ export PRIZE_POOL_ADDRESS="deployed_address_here"
 ```
 
 #### **Common Deployment Error Solutions**
+
 ```bash
 # Error: "transaction type not supported"
 # Solution: Add --legacy flag
 
-# Error: "insufficient funds"  
+# Error: "insufficient funds"
 # Solution: Get KAIA from faucet above
 
 # Error: "gas price too low"
@@ -108,6 +118,7 @@ export PRIZE_POOL_ADDRESS="deployed_address_here"
 ```
 
 ### 3. Run Integration Tests
+
 ```bash
 # Set deployed addresses in environment variables
 export HACKATHON_REGISTRY_ADDRESS=deployed_registry_address
@@ -121,6 +132,7 @@ forge script script/SetupIntegration.s.sol \
 ```
 
 ### 4. Mainnet Deployment
+
 ```bash
 # Deploy to mainnet after final testing
 forge script script/DeployContracts.s.sol \
@@ -133,12 +145,14 @@ forge script script/DeployContracts.s.sol \
 ## 📊 Post-Deployment Checklist
 
 ### 1. Contract Verification
+
 - [ ] Verify HackathonRegistry deployment
 - [ ] Verify PrizePool deployment
 - [ ] Verify contract integration
 - [ ] Complete verification on block explorer
 
 ### 2. Function Testing
+
 ```bash
 # Basic function tests
 forge test --match-contract HackathonRegistryTest
@@ -149,6 +163,7 @@ forge script script/SetupIntegration.s.sol --rpc-url $RPC_URL
 ```
 
 ### 3. Gas Cost Optimization
+
 ```bash
 # Analyze gas usage
 forge test --gas-report
@@ -160,11 +175,13 @@ forge build --optimize
 ## 🔗 Deployed Contract Addresses
 
 ### Kaia Testnet (Kairos)
+
 - **HackathonRegistry**: `TBD`
 - **PrizePool**: `TBD`
 - **Explorer**: https://kairos.kaiascan.io/ko
 
 ### Kaia Mainnet (Cypress)
+
 - **HackathonRegistry**: `TBD`
 - **PrizePool**: `TBD`
 - **Explorer**: https://kaiascan.io
@@ -172,6 +189,7 @@ forge build --optimize
 ## 📖 Usage
 
 ### 1. Create Hackathon
+
 ```solidity
 uint256 hackathonId = hackathonRegistry.createHackathon(
     "Hackathon Title",
@@ -183,6 +201,7 @@ uint256 hackathonId = hackathonRegistry.createHackathon(
 ```
 
 ### 2. Create Prize Pool
+
 ```solidity
 // Create 1 KAIA prize pool
 prizePool.createPrizePool{value: 1 ether}(hackathonId);
@@ -196,6 +215,7 @@ prizePool.setPrizeDistribution(hackathonId, percentages);
 ```
 
 ### 3. Voting and Winner Selection
+
 ```solidity
 // Start voting phase
 hackathonRegistry.startVotingPhase(hackathonId);
@@ -208,6 +228,7 @@ hackathonRegistry.completeVoting(hackathonId);
 ```
 
 ### 4. Prize Distribution and Withdrawal
+
 ```solidity
 // Distribute prizes
 prizePool.distributePrizes(hackathonId);
@@ -221,30 +242,39 @@ prizePool.withdrawPrize(hackathonId, 1); // Withdraw 1st place prize
 ### Common Issues
 
 #### 1. Deployment Failure
+
 ```
 Error: insufficient funds for gas * price + value
 ```
+
 **Solution**: Ensure sufficient KAIA balance in wallet
 
 #### 2. Contract Verification Failure
+
 ```
 Error: contract verification failed
 ```
-**Solution**: 
+
+**Solution**:
+
 - Check API key
 - Verify compiler version match
 - Use `--verify` flag
 
 #### 3. RPC Connection Error
+
 ```
 Error: connection failed
 ```
-**Solution**: 
+
+**Solution**:
+
 - Check RPC URL
 - Verify network connection status
 - Use alternative RPC endpoint
 
 ### Debugging Commands
+
 ```bash
 # Output detailed logs
 forge script script/DeployContracts.s.sol --rpc-url $RPC_URL -vvvv
@@ -266,6 +296,7 @@ forge script script/DeployContracts.s.sol --rpc-url $RPC_URL --estimate-gas
 ## 🤝 Support
 
 If you encounter issues or have questions:
+
 1. Create an issue on GitHub
 2. Provide detailed description with logs
 3. Include environment information (OS, Foundry version, etc.)
@@ -273,6 +304,7 @@ If you encounter issues or have questions:
 ---
 
 **⚠️ Important Notes**
+
 - Thorough testing on testnet is required before mainnet deployment
 - Never expose your private key
 - Source code verification is recommended after contract deployment

@@ -5,6 +5,7 @@ This document explains how to integrate Hacka-Fi smart contracts with your front
 ## 📋 Overview
 
 What we currently have:
+
 - ✅ **Locally deployed contracts** (Anvil network)
 - ✅ **ABI files** (in JSON format in the `abi/` folder)
 - ✅ **Integration tests completed** (all functionality verified)
@@ -15,6 +16,7 @@ What we currently have:
 ### 1. **Local Development Environment Integration**
 
 #### **Option A: Anvil (Recommended) - Fully Local Environment**
+
 ```bash
 # Terminal 1: Run local blockchain
 anvil
@@ -28,12 +30,14 @@ forge script script/DeployContracts.s.sol --rpc-url http://localhost:8545 --broa
 ```
 
 **Advantages:**
+
 - 💨 Fast transactions (instant confirmation)
 - 💰 Free (no gas costs)
 - 🔄 Full control (time, block manipulation, etc.)
 - 🧪 Freedom to create test data
 
 #### **Option B: Kaia Testnet**
+
 ```bash
 # Deploy to Kaia Kairos testnet
 forge script script/DeployContracts.s.sol \
@@ -44,6 +48,7 @@ forge script script/DeployContracts.s.sol \
 ```
 
 **Advantages:**
+
 - 🌐 Real network environment
 - 🔗 Public accessibility
 - 📱 Mobile wallet integration testing
@@ -51,33 +56,35 @@ forge script script/DeployContracts.s.sol \
 ### 2. **Frontend Configuration**
 
 #### **Next.js + wagmi + viem Example**
+
 ```typescript
 // config/contracts.ts
 export const contracts = {
   hackathonRegistry: {
-    address: '0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496' as `0x${string}`,
+    address: "0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496" as `0x${string}`,
     abi: hackathonRegistryABI, // Import from ABI file
   },
   prizePool: {
-    address: '0x34A1D3fff3958843C43aD80F30b94c510645C316' as `0x${string}`,
+    address: "0x34A1D3fff3958843C43aD80F30b94c510645C316" as `0x${string}`,
     abi: prizePoolABI,
   },
 } as const;
 
 // config/wagmi.ts
-import { http, createConfig } from 'wagmi'
-import { foundry, kaia } from 'wagmi/chains'
+import { http, createConfig } from "wagmi";
+import { foundry, kaia } from "wagmi/chains";
 
 export const config = createConfig({
   chains: [foundry, kaia], // For development/testing
   transports: {
-    [foundry.id]: http('http://localhost:8545'),
-    [kaia.id]: http('https://rpc.ankr.com/kaia_testnet'),
+    [foundry.id]: http("http://localhost:8545"),
+    [kaia.id]: http("https://rpc.ankr.com/kaia_testnet"),
   },
-})
+});
 ```
 
 #### **Contract Function Call Examples**
+
 ```typescript
 // Create hackathon
 import { useWriteContract } from 'wagmi'
@@ -85,12 +92,12 @@ import { contracts } from '@/config/contracts'
 
 export function CreateHackathonForm() {
   const { writeContract } = useWriteContract()
-  
+
   const createHackathon = async () => {
     const registrationDeadline = Math.floor(Date.now() / 1000) + 86400 // 1 day later
     const submissionDeadline = registrationDeadline + 604800 // 7 days later
     const votingDeadline = submissionDeadline + 604800 // 7 days later
-    
+
     writeContract({
       ...contracts.hackathonRegistry,
       functionName: 'createHackathon',
@@ -103,7 +110,7 @@ export function CreateHackathonForm() {
       ],
     })
   }
-  
+
   return <button onClick={createHackathon}>Create Hackathon</button>
 }
 
@@ -116,11 +123,11 @@ export function HackathonInfo({ hackathonId }: { hackathonId: bigint }) {
     functionName: 'getHackathonInfo',
     args: [hackathonId],
   })
-  
+
   if (!hackathonInfo) return <div>Loading...</div>
-  
+
   const [title, description, organizer, regDeadline, subDeadline, voteDeadline, status] = hackathonInfo
-  
+
   return (
     <div>
       <h2>{title}</h2>
@@ -134,7 +141,7 @@ export function HackathonInfo({ hackathonId }: { hackathonId: bigint }) {
 // Create prize pool
 export function CreatePrizePool({ hackathonId }: { hackathonId: bigint }) {
   const { writeContract } = useWriteContract()
-  
+
   const createPrizePool = () => {
     writeContract({
       ...contracts.prizePool,
@@ -143,7 +150,7 @@ export function CreatePrizePool({ hackathonId }: { hackathonId: bigint }) {
       value: parseEther('1'), // 1 ETH prize
     })
   }
-  
+
   return <button onClick={createPrizePool}>Create 1 ETH Prize Pool</button>
 }
 ```
@@ -151,22 +158,24 @@ export function CreatePrizePool({ hackathonId }: { hackathonId: bigint }) {
 ### 3. **Using ABI Files**
 
 #### **ABI File Import**
+
 ```typescript
 // types/contracts.ts
-import HackathonRegistryABI from '../contracts/abi/HackathonRegistry.json'
-import PrizePoolABI from '../contracts/abi/PrizePool.json'
+import HackathonRegistryABI from "../contracts/abi/HackathonRegistry.json";
+import PrizePoolABI from "../contracts/abi/PrizePool.json";
 
-export const hackathonRegistryABI = HackathonRegistryABI as const
-export const prizePoolABI = PrizePoolABI as const
+export const hackathonRegistryABI = HackathonRegistryABI as const;
+export const prizePoolABI = PrizePoolABI as const;
 
 // Create types for type safety (optional)
-export type HackathonRegistryABI = typeof hackathonRegistryABI
-export type PrizePoolABI = typeof prizePoolABI
+export type HackathonRegistryABI = typeof hackathonRegistryABI;
+export type PrizePoolABI = typeof prizePoolABI;
 ```
 
 ### 4. **Development Workflow**
 
 #### **Typical Development Process**
+
 ```bash
 # 1. Start local blockchain
 anvil
@@ -189,6 +198,7 @@ npm run dev
 ```
 
 #### **Quick Test Data Generation**
+
 ```bash
 # Generate sample data using integration test script
 export HACKATHON_REGISTRY_ADDRESS="0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496"
@@ -202,41 +212,42 @@ forge script script/SetupIntegration.s.sol \
 ### 5. **Considerations for Production Network Deployment**
 
 #### **Environment Configuration Management**
+
 ```typescript
 // config/networks.ts
 const networks = {
   development: {
     chainId: 31337,
-    rpcUrl: 'http://localhost:8545',
+    rpcUrl: "http://localhost:8545",
     contracts: {
-      hackathonRegistry: '0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496',
-      prizePool: '0x34A1D3fff3958843C43aD80F30b94c510645C316',
-    }
+      hackathonRegistry: "0x7FA9385bE102ac3EAc297483Dd6233D62b3e1496",
+      prizePool: "0x34A1D3fff3958843C43aD80F30b94c510645C316",
+    },
   },
   testnet: {
     chainId: 1001, // Kaia Kairos
-    rpcUrl: 'https://rpc.ankr.com/kaia_testnet',
+    rpcUrl: "https://rpc.ankr.com/kaia_testnet",
     contracts: {
       hackathonRegistry: process.env.NEXT_PUBLIC_HACKATHON_REGISTRY_TESTNET,
       prizePool: process.env.NEXT_PUBLIC_PRIZE_POOL_TESTNET,
-    }
+    },
   },
   mainnet: {
     chainId: 8217, // Kaia Cypress
-    rpcUrl: 'https://rpc.ankr.com/kaia',
+    rpcUrl: "https://rpc.ankr.com/kaia",
     contracts: {
       hackathonRegistry: process.env.NEXT_PUBLIC_HACKATHON_REGISTRY_MAINNET,
       prizePool: process.env.NEXT_PUBLIC_PRIZE_POOL_MAINNET,
-    }
-  }
-}
+    },
+  },
+};
 
 export const getCurrentNetwork = () => {
-  const env = process.env.NODE_ENV
-  if (env === 'development') return networks.development
-  if (env === 'production') return networks.mainnet
-  return networks.testnet
-}
+  const env = process.env.NODE_ENV;
+  if (env === "development") return networks.development;
+  if (env === "production") return networks.mainnet;
+  return networks.testnet;
+};
 ```
 
 ## 🔄 Current Status Summary
