@@ -1,4 +1,4 @@
-import { Hackathon, User, Participant, Vote } from "./global";
+import { Hackathon, User } from "./global";
 
 // API Response types
 export interface ApiResponse<T = unknown> {
@@ -38,9 +38,13 @@ export interface CreateHackathonRequest {
 }
 
 export interface UpdateHackathonRequest
-  extends Partial<CreateHackathonRequest> {}
+  extends Partial<CreateHackathonRequest> {
+  // Additional update-specific fields can be added here
+}
 
-export interface HackathonListResponse extends PaginatedResponse<Hackathon> {}
+export interface HackathonListResponse extends PaginatedResponse<Hackathon> {
+  // Additional hackathon list response fields can be added here
+}
 
 // Voting API types
 export interface CastVoteRequest {

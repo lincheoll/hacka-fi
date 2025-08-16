@@ -7,32 +7,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { WalletConnect } from "@/components/common/wallet-connect";
+import { Header } from "@/components/layout/header";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      {/* Header */}
-      <header className="container mx-auto px-4 py-6">
-        <nav className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-gray-900">Hacka-Fi</div>
-          <div className="flex gap-6">
-            <Link
-              href="/hackathons"
-              className="text-gray-600 hover:text-gray-900"
-            >
-              Hackathons
-            </Link>
-            <Link
-              href="/profile/me"
-              className="text-gray-600 hover:text-gray-900"
-            >
-              Profile
-            </Link>
-            <WalletConnect />
-          </div>
-        </nav>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <main className="container mx-auto px-4 py-16">
