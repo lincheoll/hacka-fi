@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model UserProfile {
+  walletAddress String @id @map("wallet_address")
+  username      String? @unique
+  bio           String?
+  avatarUrl     String? @map("avatar_url")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  createdHackathons Hackathon[] @relation("HackathonCreator")
+  participations    Participant[]
+  votes            Vote[]
+  achievements     UserAchievement[]
+
+  @@map("user_profiles")
+}
+
+model Hackathon {
+  id                  Int      @id @default(autoincrement())
+  title              String
+  description        String
+  deadline           DateTime
+  status             HackathonStatus @default(UPCOMING)
+  lotteryPercentage  Int      @default(0) @map("lottery_percentage")
+  contractAddress    String?  @map("contract_address")
+  creatorAddress     String   @map("creator_address")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  creator      UserProfile   @relation("HackathonCreator", fields: [creatorAddress], references: [walletAddress])
+  participants Participant[]
+  votes        Vote[]
+  results      Result[]
+  achievements UserAchievement[]
+
+  @@map("hackathons")
+}
+
+model Participant {
+  id             Int      @id @default(autoincrement())
+  hackathonId    Int      @map("hackathon_id")
+  walletAddress  String   @map("wallet_address")
+  submissionUrl  String?  @map("submission_url")
+  entryFee       String?  @map("entry_fee") // Using String for BigInt compatibility
+  rank           Int?
+  prizeAmount    String?  @map("prize_amount") // Using String for BigInt compatibility
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  hackathon Hackathon   @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  user      UserProfile @relation(fields: [walletAddress], references: [walletAddress])
+  votes     Vote[]
+
+  @@unique([hackathonId, walletAddress])
+  @@map("participants")
+}
+
+model Vote {
+  id            Int      @id @default(autoincrement())
+  hackathonId   Int      @map("hackathon_id")
+  judgeAddress  String   @map("judge_address")
+  participantId Int      @map("participant_id")
+  score         Int
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  hackathon   Hackathon   @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  judge       UserProfile @relation(fields: [judgeAddress], references: [walletAddress])
+  participant Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  @@unique([hackathonId, judgeAddress, participantId])
+  @@map("votes")
+}
+
+model Result {
+  id                  Int      @id @default(autoincrement())
+  hackathonId         Int      @unique @map("hackathon_id")
+  winners             String   // JSON string of winner data
+  totalPrizePool      String   @map("total_prize_pool") // Using String for BigInt compatibility
+  distributionTxHash  String?  @map("distribution_tx_hash")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+
+  @@map("results")
+}
+
+model UserAchievement {
+  id           Int                 @id @default(autoincrement())
+  userAddress  String              @map("user_address")
+  achievementType AchievementType  @map("achievement_type")
+  hackathonId  Int?                @map("hackathon_id")
+  rank         Int?
+  prizeAmount  String?             @map("prize_amount") // Using String for BigInt compatibility
+  earnedAt     DateTime            @default(now()) @map("earned_at")
+
+  user      UserProfile @relation(fields: [userAddress], references: [walletAddress])
+  hackathon Hackathon?  @relation(fields: [hackathonId], references: [id])
+
+  @@map("user_achievements")
+}
+
+enum HackathonStatus {
+  UPCOMING
+  ACTIVE
+  VOTING
+  COMPLETED
+  CANCELLED
+}
+
+enum AchievementType {
+  WINNER
+  RUNNER_UP
+  PARTICIPANT
+  JUDGE
+  CREATOR
+}
