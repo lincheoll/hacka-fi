@@ -118,6 +118,16 @@ export class Web3Service {
   }
 
   /**
+   * Get wallet account
+   */
+  getWalletAccount() {
+    if (!this.walletClient || !this.walletClient.account) {
+      throw new Error('Wallet client not initialized');
+    }
+    return this.walletClient.account;
+  }
+
+  /**
    * Get current block number
    */
   async getCurrentBlockNumber(): Promise<bigint> {
