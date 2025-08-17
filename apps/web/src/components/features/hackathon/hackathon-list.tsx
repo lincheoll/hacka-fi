@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { fetchHackathons } from '@/lib/api-functions';
+import { HackathonCoverImage } from '@/components/common/optimized-image';
 import type { Hackathon } from '@/types/global';
 
 interface HackathonListProps {
@@ -245,16 +246,25 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedHackathons.map((hackathon) => (
-            <Card key={hackathon.id} className="hover:shadow-lg transition-shadow duration-200">
-              <CardHeader>
-                <div className="flex items-start justify-between mb-2">
+            <Card key={hackathon.id} className="hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+              {/* Cover Image */}
+              <div className="aspect-[2/1] relative overflow-hidden">
+                <HackathonCoverImage
+                  src={hackathon.coverImageUrl}
+                  alt={hackathon.title}
+                  className="w-full h-full"
+                />
+                <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
                   <Badge className={getStatusColor(hackathon.status)}>
                     {formatStatus(hackathon.status)}
                   </Badge>
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-white bg-black/50 px-2 py-1 rounded">
                     {getTimeRemaining(hackathon.submissionDeadline)}
                   </span>
                 </div>
+              </div>
+              
+              <CardHeader>
                 <CardTitle className="line-clamp-2">
                   <Link 
                     href={`/hackathons/${hackathon.id}`}

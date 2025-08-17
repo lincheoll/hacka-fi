@@ -2,6 +2,7 @@
 export interface User {
   id: string;
   walletAddress: string;
+  avatarUrl?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -18,6 +19,7 @@ export interface Hackathon {
   prizeAmount?: string;
   entryFee?: string;
   maxParticipants?: number;
+  coverImageUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

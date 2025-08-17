@@ -12,7 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { createHackathonSchema, type CreateHackathonFormData } from '@/lib/validations';
-import { createHackathon } from '@/lib/api-functions';
+import { createHackathon, uploadImage } from '@/lib/api-functions';
+import { ImageUpload } from '@/components/common/image-upload';
 import type { Hackathon } from '@/types/global';
 
 interface HackathonFormProps {
@@ -23,6 +24,8 @@ interface HackathonFormProps {
 export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
+  const [coverImage, setCoverImage] = useState<File | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
 
   const {
     register,
@@ -51,19 +54,42 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
     setSubmitError(null);
     setSubmitSuccess(null);
     
-    // Transform form data to match API expectations
-    const apiData = {
-      title: data.title,
-      description: data.description,
-      registrationDeadline: data.registrationDeadline,
-      submissionDeadline: data.submissionDeadline,
-      votingDeadline: data.votingDeadline,
-      prizeAmount: data.prizeAmount ? parseFloat(data.prizeAmount) : undefined,
-      entryFee: data.entryFee ? parseFloat(data.entryFee) : undefined,
-      maxParticipants: data.maxParticipants ? parseInt(data.maxParticipants, 10) : undefined,
-    };
-    
-    await createHackathonMutation.mutateAsync(apiData);
+    try {
+      // First, create the hackathon
+      const apiData = {
+        title: data.title,
+        description: data.description,
+        registrationDeadline: data.registrationDeadline,
+        submissionDeadline: data.submissionDeadline,
+        votingDeadline: data.votingDeadline,
+        prizeAmount: data.prizeAmount ? parseFloat(data.prizeAmount) : undefined,
+        entryFee: data.entryFee ? parseFloat(data.entryFee) : undefined,
+        maxParticipants: data.maxParticipants ? parseInt(data.maxParticipants, 10) : undefined,
+      };
+      
+      const hackathon = await createHackathonMutation.mutateAsync(apiData);
+      
+      // If there's a cover image, upload it
+      if (coverImage && hackathon.id) {
+        try {
+          await uploadImage({
+            file: coverImage,
+            type: 'hackathon-cover',
+            entityId: hackathon.id,
+            width: 800,
+            height: 400,
+            quality: 80,
+          });
+        } catch (imageError) {
+          console.warn('Failed to upload cover image:', imageError);
+          // Don't fail the whole process if image upload fails
+        }
+      }
+      
+      return hackathon;
+    } catch (error) {
+      throw error;
+    }
   };
 
   const formatDateTimeLocal = (date: Date) => {
@@ -136,6 +162,25 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
               {errors.description && (
                 <p className="text-sm text-red-500">{errors.description.message}</p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="coverImage">Cover Image (Optional)</Label>
+              <ImageUpload
+                value={coverImagePreview || undefined}
+                onChange={(file, preview) => {
+                  setCoverImage(file);
+                  setCoverImagePreview(preview || null);
+                }}
+                placeholder="Upload a cover image for your hackathon"
+                width={800}
+                height={400}
+                variant="rectangle"
+                maxSize={5 * 1024 * 1024} // 5MB
+              />
+              <p className="text-xs text-gray-500">
+                Recommended: 800x400px, JPEG/PNG/WebP format, max 5MB
+              </p>
             </div>
           </div>
 

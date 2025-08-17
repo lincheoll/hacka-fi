@@ -336,7 +336,7 @@
               "6.2"
             ],
             "details": "Set up file upload system supporting hackathon cover images and participant avatars. Implement Next.js Image component with optimization for different screen sizes and formats. Add file validation for supported formats (JPEG, PNG, WebP) and size limits. Create image storage solution with proper file naming and organization. Include image compression and automatic format conversion for optimal performance. Add fallback images for hackathons and users without uploaded images.",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": ""
           },
           {
@@ -462,7 +462,7 @@
     ],
     "metadata": {
       "created": "2025-08-15T08:54:10.658Z",
-      "updated": "2025-08-17T01:54:10.828Z",
+      "updated": "2025-08-17T08:12:23.007Z",
       "description": "Tasks for master context"
     }
   }

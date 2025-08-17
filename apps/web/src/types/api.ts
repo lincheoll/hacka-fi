@@ -76,6 +76,27 @@ export interface ParticipantListResponse extends PaginatedResponse<Participant> 
   // Additional participant list response fields can be added here
 }
 
+// File upload API types
+export interface FileUploadRequest {
+  file: File;
+  type: 'hackathon-cover' | 'user-avatar' | 'project-image';
+  entityId?: string; // hackathon ID or user ID
+}
+
+export interface FileUploadResponse {
+  url: string;
+  filename: string;
+  size: number;
+  mimeType: string;
+  uploadedAt: string;
+}
+
+export interface ImageUploadRequest extends FileUploadRequest {
+  width?: number;
+  height?: number;
+  quality?: number;
+}
+
 // Voting API types
 export interface CastVoteRequest {
   participantAddress: string;

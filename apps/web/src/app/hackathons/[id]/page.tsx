@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ParticipantRegistration } from '@/components/features/hackathon/participant-registration';
 import { SubmissionTracker } from '@/components/features/hackathon/submission-tracker';
+import { HackathonCoverImage } from '@/components/common/optimized-image';
 import { fetchHackathon, fetchParticipantStatus, fetchHackathonParticipants } from '@/lib/api-functions';
 
 interface HackathonDetailPageProps {
@@ -127,6 +128,15 @@ export default function HackathonDetailPage({
       <Header />
       
       <div className="container mx-auto px-4 py-8">
+        {/* Cover Image */}
+        <div className="mb-8">
+          <HackathonCoverImage
+            src={hackathon.coverImageUrl}
+            alt={hackathon.title}
+            className="w-full max-w-4xl mx-auto"
+          />
+        </div>
+
         {/* Header Section */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-4">
