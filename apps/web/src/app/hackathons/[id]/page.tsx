@@ -11,6 +11,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ParticipantRegistration } from '@/components/features/hackathon/participant-registration';
 import { SubmissionTracker } from '@/components/features/hackathon/submission-tracker';
 import { HackathonCoverImage } from '@/components/common/optimized-image';
+import { HackathonStatusBadge } from '@/components/features/hackathon/hackathon-status-badge';
+import { HackathonCountdown } from '@/components/features/hackathon/hackathon-countdown';
+import { StatusManagement } from '@/components/features/hackathon/status-management';
+import { ActionButtons } from '@/components/features/hackathon/action-buttons';
+import { useStatusMonitor } from '@/hooks/use-status-monitor';
+import { AuditLogger } from '@/lib/audit-logger';
 import { fetchHackathon, fetchParticipantStatus, fetchHackathonParticipants } from '@/lib/api-functions';
 
 interface HackathonDetailPageProps {
@@ -104,24 +110,59 @@ export default function HackathonDetailPage({
     );
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'REGISTRATION_OPEN':
-        return 'bg-green-100 text-green-800';
-      case 'SUBMISSION_OPEN':
-        return 'bg-blue-100 text-blue-800';
-      case 'VOTING_OPEN':
-        return 'bg-purple-100 text-purple-800';
-      case 'COMPLETED':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-yellow-100 text-yellow-800';
+  // Check if current user is the organizer
+  const isOrganizer = walletAddress?.toLowerCase() === hackathon.organizerAddress.toLowerCase();
+
+  // Mock functions for action handlers (to be implemented with actual API calls)
+  const handleRegister = async () => {
+    console.log('Register for hackathon');
+    // TODO: Implement registration API call
+  };
+
+  const handleSubmit = async () => {
+    console.log('Submit project');
+    // TODO: Implement submission API call
+  };
+
+  const handleVote = async () => {
+    console.log('Vote on projects');
+    // TODO: Implement voting API call
+  };
+
+  const handleStatusUpdate = async (newStatus: any) => {
+    console.log('Update status to:', newStatus);
+    // TODO: Implement status update API call
+    
+    // Log the manual status change
+    if (hackathon && walletAddress) {
+      await AuditLogger.logManualOverride(
+        hackathon.id,
+        hackathon.status,
+        newStatus,
+        'Manual status change by organizer',
+        walletAddress
+      );
     }
   };
 
-  const formatStatus = (status: string) => {
-    return status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
-  };
+  // Set up status monitoring
+  // TODO: This is temporary client-side monitoring
+  // Real status updates should come from NestJS backend cron job
+  useStatusMonitor(hackathon, {
+    enabled: true,
+    interval: 300000, // Check every 5 minutes (reduced from 1 minute)
+    onStatusChange: async (hackathon, newStatus, reason) => {
+      console.log('Automatic status change detected:', { newStatus, reason });
+      
+      // Log automatic transition
+      await AuditLogger.logAutomaticTransition(
+        hackathon.id,
+        hackathon.status,
+        newStatus as any,
+        reason
+      );
+    },
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -148,9 +189,7 @@ export default function HackathonDetailPage({
                 Organized by {hackathon.organizerAddress.slice(0, 6)}...{hackathon.organizerAddress.slice(-4)}
               </p>
             </div>
-            <Badge className={getStatusColor(hackathon.status)}>
-              {formatStatus(hackathon.status)}
-            </Badge>
+            <HackathonStatusBadge status={hackathon.status} size="lg" />
           </div>
         </div>
 
@@ -247,7 +286,38 @@ export default function HackathonDetailPage({
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Timeline */}
+            {/* Status and Countdown */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Current Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <HackathonCountdown hackathon={hackathon} />
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons */}
+            <ActionButtons
+              hackathon={hackathon}
+              userAddress={walletAddress}
+              isRegistered={!!participantStatus}
+              hasSubmitted={!!participantStatus?.submissionUrl}
+              hasVoted={false} // TODO: Check voting status
+              onRegister={handleRegister}
+              onSubmit={handleSubmit}
+              onVote={handleVote}
+            />
+
+            {/* Status Management (for organizers) */}
+            {isOrganizer && (
+              <StatusManagement
+                hackathon={hackathon}
+                isOrganizer={isOrganizer}
+                onStatusUpdate={handleStatusUpdate}
+              />
+            )}
+
+            {/* Timeline Details */}
             <Card>
               <CardHeader>
                 <CardTitle>Timeline</CardTitle>
