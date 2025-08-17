@@ -51,7 +51,19 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
     setSubmitError(null);
     setSubmitSuccess(null);
     
-    await createHackathonMutation.mutateAsync(data);
+    // Transform form data to match API expectations
+    const apiData = {
+      title: data.title,
+      description: data.description,
+      registrationDeadline: data.registrationDeadline,
+      submissionDeadline: data.submissionDeadline,
+      votingDeadline: data.votingDeadline,
+      prizeAmount: data.prizeAmount ? parseFloat(data.prizeAmount) : undefined,
+      entryFee: data.entryFee ? parseFloat(data.entryFee) : undefined,
+      maxParticipants: data.maxParticipants ? parseInt(data.maxParticipants, 10) : undefined,
+    };
+    
+    await createHackathonMutation.mutateAsync(apiData);
   };
 
   const formatDateTimeLocal = (date: Date) => {

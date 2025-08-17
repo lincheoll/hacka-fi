@@ -14,11 +14,6 @@ export function WalletConnect() {
     setMounted(true);
   }, []);
 
-  const { address, isConnected } = useAccount();
-  const { connect, connectors, isPending } = useConnect();
-  const { disconnect } = useDisconnect();
-  const chainId = useChainId();
-
   // Don't render anything until client-side hydration is complete
   if (!mounted) {
     return (
@@ -27,6 +22,21 @@ export function WalletConnect() {
       </Button>
     );
   }
+
+  return <WalletConnectInner isOpen={isOpen} setIsOpen={setIsOpen} />;
+}
+
+function WalletConnectInner({ 
+  isOpen, 
+  setIsOpen 
+}: { 
+  isOpen: boolean; 
+  setIsOpen: (open: boolean) => void; 
+}) {
+  const { address, isConnected } = useAccount();
+  const { connect, connectors, isPending } = useConnect();
+  const { disconnect } = useDisconnect();
+  const chainId = useChainId();
 
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;

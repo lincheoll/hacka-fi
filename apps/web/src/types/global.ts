@@ -15,6 +15,9 @@ export interface Hackathon {
   submissionDeadline: string;
   votingDeadline: string;
   status: HackathonStatus;
+  prizeAmount?: string;
+  entryFee?: string;
+  maxParticipants?: number;
   createdAt: string;
   updatedAt: string;
 }
