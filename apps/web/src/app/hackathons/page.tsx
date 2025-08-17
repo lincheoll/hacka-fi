@@ -1,10 +1,7 @@
-import { Metadata } from "next";
-import { Header } from "@/components/layout/header";
+'use client';
+export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: "Hackathons | Hacka-Fi",
-  description: "Discover and participate in blockchain hackathons",
-};
+import { Header } from "@/components/layout/header";
 
 export default function HackathonsPage() {
   return (

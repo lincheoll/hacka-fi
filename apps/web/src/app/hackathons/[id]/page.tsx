@@ -1,24 +1,17 @@
-import { Metadata } from "next";
+'use client';
+export const dynamic = 'force-dynamic';
+
+import { use } from 'react';
 import { Header } from "@/components/layout/header";
 
 interface HackathonDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export async function generateMetadata({
-  params,
-}: HackathonDetailPageProps): Promise<Metadata> {
-  const { id } = await params;
-  return {
-    title: `Hackathon ${id} | Hacka-Fi`,
-    description: `View details for hackathon ${id}`,
-  };
-}
-
-export default async function HackathonDetailPage({
+export default function HackathonDetailPage({
   params,
 }: HackathonDetailPageProps) {
-  const { id } = await params;
+  const { id } = use(params);
 
   return (
     <div className="min-h-screen bg-gray-50">

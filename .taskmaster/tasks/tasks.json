@@ -225,7 +225,7 @@
         "dependencies": [
           4
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -295,8 +295,63 @@
         "dependencies": [
           5
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Hackathon Creation Forms with Validation",
+            "description": "Build frontend forms for hackathon creation with comprehensive validation and smart contract integration",
+            "dependencies": [],
+            "details": "Create React forms for hackathon creation with fields for title, description, deadline, prize amount, and optional entry fee. Implement client-side validation for all fields including date validation for deadlines, numeric validation for prize amounts, and text length limits. Add backend API endpoints for form submission with server-side validation. Integrate with smart contract to create hackathons on-chain and store contract addresses in database. Include error handling for failed transactions and user feedback for successful creation.\n<info added on 2025-08-17T01:09:34.658Z>\nIMPLEMENTATION COMPLETED - Hackathon Creation Forms with Validation\n\n✅ COMPLETED WORK:\n1. **Form Validation Schemas**: \n   - Installed Zod, React Hook Form, @hookform/resolvers\n   - Created comprehensive validation schemas in lib/validations.ts covering:\n     - createHackathonSchema with title, description, deadlines (registration/submission/voting), prize amount, entry fee, max participants\n     - Cross-field validation ensuring proper deadline ordering (registration < submission < voting)\n     - Future date validation for all deadlines\n     - Numeric validation for optional fields (prize amount, entry fee, max participants)\n\n2. **HackathonForm Component**:\n   - Built complete React Hook Form with Zod resolver integration\n   - Comprehensive form fields: title, description, 3 deadline fields, optional prize/fee/max participants\n   - Real-time client-side validation with proper error display\n   - Default date calculations (1 week registration, 2 weeks submission, 3 weeks voting)\n   - Professional UI using shadcn/ui components (Card, Input, Textarea, Button, Alert, Label)\n   - Loading states during submission with disabled controls\n   - Success/error feedback with proper alert styling\n\n3. **API Integration**:\n   - Full TanStack Query mutation integration with createHackathon API function\n   - Proper error handling with user-friendly error messages\n   - Success callback integration for post-creation navigation\n   - Cancel callback for navigation flow control\n\n4. **Page Integration**:\n   - Updated /hackathons/create page to use HackathonForm component\n   - Added navigation handlers for success (redirect to created hackathon) and cancel (back to list)\n   - Converted all pages to client components with force-dynamic exports to resolve SSR issues\n   - Added client-side mounting check to WalletConnect component for SSR compatibility\n\n5. **Additional Components**:\n   - Added missing shadcn/ui components: textarea, alert, label\n   - Updated component barrel exports in features/hackathon/index.ts\n   - Proper TypeScript interfaces throughout with strict type checking\n\n🔧 TECHNICAL IMPLEMENTATION:\n- Form uses React Hook Form for performance and UX optimization\n- Zod validation provides compile-time and runtime type safety\n- TanStack Query handles API state management with loading/error states\n- All validation messages are user-friendly and contextual\n- Responsive design works on mobile and desktop\n- Follows CLAUDE.md conventions: TypeScript strict mode, shadcn/ui only, proper error handling\n\n🚀 FORM FEATURES:\n- Required fields: title, description, all three deadlines\n- Optional fields: prize amount, entry fee, max participants\n- Smart date defaults with 1-week intervals\n- Real-time validation feedback\n- Cross-field validation (deadline ordering)\n- Professional loading states and success/error alerts\n- Clean cancel/success navigation flow\n\nThe hackathon creation form is now fully functional and ready for integration with the backend API. Users can create hackathons with comprehensive validation and proper error handling.\n</info added on 2025-08-17T01:09:34.658Z>",
+            "status": "in-progress",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Participant Registration and Submission Tracking",
+            "description": "Implement participant registration flow with submission URL management and entry fee handling",
+            "dependencies": [
+              "6.1"
+            ],
+            "details": "Build participant registration system allowing users to join hackathons with wallet connection. Create submission management interface for participants to submit and update project URLs before deadline. Implement entry fee collection through smart contract integration when required. Add participant dashboard showing registered hackathons, submission status, and deadlines. Include validation to prevent submissions after deadline and ensure proper URL format validation.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Hackathon Listing with Filtering and Search",
+            "description": "Create comprehensive hackathon listing page with status filtering and search functionality",
+            "dependencies": [
+              "6.1"
+            ],
+            "details": "Build hackathon listing page displaying all hackathons with card-based layout. Implement filtering by status (created, active, voting, completed) and search functionality by title and description. Add sorting options by creation date, deadline, and prize amount. Include pagination for large datasets and responsive design for mobile devices. Display key information like prize pool, participant count, and time remaining for each hackathon.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "File Upload and Image Optimization",
+            "description": "Implement file upload system for hackathon images and participant avatars with Next.js optimization",
+            "dependencies": [
+              "6.2"
+            ],
+            "details": "Set up file upload system supporting hackathon cover images and participant avatars. Implement Next.js Image component with optimization for different screen sizes and formats. Add file validation for supported formats (JPEG, PNG, WebP) and size limits. Create image storage solution with proper file naming and organization. Include image compression and automatic format conversion for optimal performance. Add fallback images for hackathons and users without uploaded images.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Status Management and Timeline Enforcement",
+            "description": "Implement automated status transitions and timeline enforcement for hackathon lifecycle",
+            "dependencies": [
+              "6.2",
+              "6.3"
+            ],
+            "details": "Create automated system for hackathon status transitions based on timeline (created → active → voting → completed). Implement background jobs or scheduled tasks to check and update statuses automatically. Add timeline enforcement preventing submissions after deadline and voting before hackathon ends. Create status indicators throughout the UI showing current phase and time remaining. Include manual status override functionality for administrators and proper logging of all status changes.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
       },
       {
         "id": 7,
@@ -407,7 +462,7 @@
     ],
     "metadata": {
       "created": "2025-08-15T08:54:10.658Z",
-      "updated": "2025-08-17T00:43:41.401Z",
+      "updated": "2025-08-17T00:53:06.482Z",
       "description": "Tasks for master context"
     }
   }

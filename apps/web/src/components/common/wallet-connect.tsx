@@ -4,14 +4,29 @@ import { useAccount, useConnect, useDisconnect, useChainId } from "wagmi";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getNetworkName, isSupportedChain } from "@/lib/web3";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function WalletConnect() {
+  const [mounted, setMounted] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { address, isConnected } = useAccount();
   const { connect, connectors, isPending } = useConnect();
   const { disconnect } = useDisconnect();
   const chainId = useChainId();
-  const [isOpen, setIsOpen] = useState(false);
+
+  // Don't render anything until client-side hydration is complete
+  if (!mounted) {
+    return (
+      <Button variant="outline" disabled>
+        Connect Wallet
+      </Button>
+    );
+  }
 
   const formatAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;

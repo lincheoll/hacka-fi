@@ -1,22 +1,31 @@
-import { Metadata } from "next";
-import { Header } from "@/components/layout/header";
+'use client';
+export const dynamic = 'force-dynamic';
 
-export const metadata: Metadata = {
-  title: "Create Hackathon | Hacka-Fi",
-  description: "Create a new blockchain hackathon",
-};
+import { useRouter } from 'next/navigation';
+import { Header } from "@/components/layout/header";
+import { HackathonForm } from "@/components/features/hackathon";
 
 export default function CreateHackathonPage() {
+  const router = useRouter();
+
+  const handleSuccess = (hackathon: { id: string }) => {
+    // Redirect to the newly created hackathon page
+    router.push(`/hackathons/${hackathon.id}`);
+  };
+
+  const handleCancel = () => {
+    // Go back to hackathons list
+    router.push('/hackathons');
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">
-          Create Hackathon
-        </h1>
-        <p className="text-gray-600">
-          Hackathon creation form will be displayed here.
-        </p>
+        <HackathonForm 
+          onSuccess={handleSuccess}
+          onCancel={handleCancel}
+        />
       </div>
     </div>
   );
