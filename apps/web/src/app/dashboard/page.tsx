@@ -15,34 +15,11 @@ import { fetchUserParticipations, fetchUserHackathons } from '@/lib/api-function
 import type { Participant, Hackathon } from '@/types/global';
 
 export default function DashboardPage() {
-  const { address: walletAddress, isConnected } = useAccount();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  // Fetch user participations
-  const { 
-    data: participations, 
-    isLoading: isLoadingParticipations, 
-    error: participationsError 
-  } = useQuery({
-    queryKey: ['user-participations', walletAddress],
-    queryFn: () => walletAddress ? fetchUserParticipations(walletAddress) : [],
-    enabled: !!walletAddress && isConnected && mounted,
-  });
-
-  // Fetch user created hackathons
-  const { 
-    data: createdHackathons, 
-    isLoading: isLoadingHackathons, 
-    error: hackathonsError 
-  } = useQuery({
-    queryKey: ['user-hackathons', walletAddress],
-    queryFn: () => walletAddress ? fetchUserHackathons(walletAddress) : [],
-    enabled: !!walletAddress && isConnected && mounted,
-  });
 
   if (!mounted) {
     return (
@@ -60,6 +37,34 @@ export default function DashboardPage() {
       </div>
     );
   }
+
+  return <DashboardContent />;
+}
+
+function DashboardContent() {
+  const { address: walletAddress, isConnected } = useAccount();
+
+  // Fetch user participations
+  const { 
+    data: participations, 
+    isLoading: isLoadingParticipations, 
+    error: participationsError 
+  } = useQuery({
+    queryKey: ['user-participations', walletAddress],
+    queryFn: () => walletAddress ? fetchUserParticipations(walletAddress) : [],
+    enabled: !!walletAddress && isConnected,
+  });
+
+  // Fetch user created hackathons
+  const { 
+    data: createdHackathons, 
+    isLoading: isLoadingHackathons, 
+    error: hackathonsError 
+  } = useQuery({
+    queryKey: ['user-hackathons', walletAddress],
+    queryFn: () => walletAddress ? fetchUserHackathons(walletAddress) : [],
+    enabled: !!walletAddress && isConnected,
+  });
 
   if (!isConnected) {
     return (

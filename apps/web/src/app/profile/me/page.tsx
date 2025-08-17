@@ -8,7 +8,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function MyProfilePage() {
   const [mounted, setMounted] = useState(false);
-  const { address, isConnected } = useAccount();
 
   useEffect(() => {
     setMounted(true);
@@ -27,6 +26,12 @@ export default function MyProfilePage() {
       </div>
     );
   }
+
+  return <MyProfileContent />;
+}
+
+function MyProfileContent() {
+  const { address, isConnected } = useAccount();
 
   return (
     <div className="min-h-screen bg-gray-50">
