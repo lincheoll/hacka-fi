@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { wagmiConfig } from "@/lib/web3";
@@ -23,6 +23,17 @@ const queryClient = new QueryClient({
 });
 
 export function Web3Provider({ children }: Web3ProviderProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Render children without Web3 providers during SSR
+  if (!mounted) {
+    return <>{children}</>;
+  }
+
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>

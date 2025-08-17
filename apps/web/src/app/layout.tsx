@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Web3Provider } from "@/components/providers/web3-provider";
+import { QueryProvider } from "@/components/providers/query-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,7 +31,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-sans antialiased`}>
-        <Web3Provider>{children}</Web3Provider>
+        <QueryProvider>
+          <Web3Provider>{children}</Web3Provider>
+        </QueryProvider>
       </body>
     </html>
   );

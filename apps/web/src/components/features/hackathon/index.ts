@@ -1,1 +1,1 @@
-// Hackathon feature components will be exported here
+export { HackathonCard } from './hackathon-card';
