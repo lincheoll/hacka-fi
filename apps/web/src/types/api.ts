@@ -97,11 +97,67 @@ export interface ImageUploadRequest extends FileUploadRequest {
   quality?: number;
 }
 
+// Judge Management API types
+export interface AddJudgeRequest {
+  judgeAddress: string;
+  note?: string;
+}
+
+export interface RemoveJudgeRequest {
+  judgeAddress: string;
+}
+
+export interface Judge {
+  id: number;
+  hackathonId: string;
+  judgeAddress: string;
+  addedBy: string;
+  addedAt: string;
+  judge?: {
+    walletAddress: string;
+    username?: string;
+    bio?: string;
+    avatarUrl?: string;
+  };
+}
+
+export interface JudgeListResponse {
+  judges: Judge[];
+  count: number;
+}
+
 // Voting API types
 export interface CastVoteRequest {
-  participantAddress: string;
+  participantId: number;
   score: number;
   comment?: string;
+}
+
+export interface Vote {
+  id: number;
+  hackathonId: string;
+  judgeAddress: string;
+  participantId: number;
+  score: number;
+  comment?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ParticipantVoteSummary {
+  participantId: number;
+  walletAddress: string;
+  submissionUrl?: string;
+  totalVotes: number;
+  averageScore: number;
+  votes: Vote[];
+}
+
+export interface VotingResultsResponse {
+  hackathonId: string;
+  participants: ParticipantVoteSummary[];
+  totalJudges: number;
+  totalParticipants: number;
 }
 
 // Error types

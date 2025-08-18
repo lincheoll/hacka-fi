@@ -65,9 +65,9 @@ export class JudgeResponseDto {
   })
   judge?: {
     walletAddress: string;
-    username?: string;
-    bio?: string;
-    avatarUrl?: string;
+    username?: string | null;
+    bio?: string | null;
+    avatarUrl?: string | null;
   };
 }
 

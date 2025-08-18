@@ -23,6 +23,7 @@ interface ActionButtonsProps {
   isRegistered?: boolean;
   hasSubmitted?: boolean;
   hasVoted?: boolean;
+  isJudge?: boolean;
   onRegister?: () => Promise<void>;
   onSubmit?: () => Promise<void>;
   onVote?: () => Promise<void>;
@@ -35,6 +36,7 @@ export function ActionButtons({
   isRegistered = false,
   hasSubmitted = false,
   hasVoted = false,
+  isJudge = false,
   onRegister,
   onSubmit,
   onVote,
@@ -189,8 +191,8 @@ export function ActionButtons({
         </div>
       )}
 
-      {/* Voting Section */}
-      {actions.canVote.allowed && (
+      {/* Voting Section - Only for Judges */}
+      {isJudge && actions.canVote.allowed && (
         <div className="space-y-2">
           <ActionButton
             action="vote"
@@ -198,12 +200,12 @@ export function ActionButtons({
             icon={Vote}
             variant={hasVoted ? "outline" : "default"}
           >
-            {hasVoted ? 'Update Votes' : 'Vote on Projects'}
+            {hasVoted ? 'Update Votes' : 'Judge Projects'}
           </ActionButton>
           
           {hasVoted && (
             <div className="text-sm text-green-600">
-              ✓ You have voted on this hackathon
+              ✓ You have cast votes on this hackathon
             </div>
           )}
           
@@ -218,12 +220,22 @@ export function ActionButtons({
         </div>
       )}
 
-      {/* Voting Blocked */}
-      {!actions.canVote.allowed && actions.statusInfo.status !== 'COMPLETED' && (
+      {/* Judge Access Notice */}
+      {isJudge && !actions.canVote.allowed && actions.statusInfo.status === 'VOTING_OPEN' && (
+        <Alert className="border-blue-500 bg-blue-50">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            You are a judge for this hackathon. Voting will be available when the voting period starts.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Voting Blocked for Non-Judges */}
+      {!isJudge && actions.canVote.allowed && actions.statusInfo.status === 'VOTING_OPEN' && (
         <Alert className="border-gray-500 bg-gray-50">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {actions.getBlockedActionMessage('vote')}
+            Voting is currently open. Only approved judges can vote on hackathon submissions.
           </AlertDescription>
         </Alert>
       )}
@@ -237,7 +249,11 @@ export function ActionButtons({
             </AlertDescription>
           </Alert>
           
-          <Button variant="outline" className="w-full">
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={() => window.location.href = `/hackathons/${hackathon.id}/results`}
+          >
             <ExternalLink className="h-4 w-4 mr-2" />
             View Results
           </Button>

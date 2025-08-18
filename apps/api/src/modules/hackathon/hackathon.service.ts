@@ -649,7 +649,7 @@ export class HackathonService {
         where: { id: existingVote.id },
         data: {
           score: castVoteDto.score,
-          comment: castVoteDto.comment,
+          comment: castVoteDto.comment || null,
         },
       });
 
@@ -675,7 +675,7 @@ export class HackathonService {
           judgeAddress,
           participantId: castVoteDto.participantId,
           score: castVoteDto.score,
-          comment: castVoteDto.comment,
+          comment: castVoteDto.comment || null,
         },
       });
 

@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { use, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
+import { useVotingStatus } from '@/hooks/use-voting-status';
 import { Header } from "@/components/layout/header";
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,6 +16,7 @@ import { HackathonStatusBadge } from '@/components/features/hackathon/hackathon-
 import { HackathonCountdown } from '@/components/features/hackathon/hackathon-countdown';
 import { StatusManagement } from '@/components/features/hackathon/status-management';
 import { ActionButtons } from '@/components/features/hackathon/action-buttons';
+import { JudgeManagement } from '@/components/features/hackathon/judge-management';
 import { 
   fetchHackathon, 
   fetchParticipantStatus, 
@@ -68,6 +70,9 @@ export default function HackathonDetailPage({
     queryFn: () => fetchHackathonParticipants(id),
     enabled: !!id,
   });
+
+  // Get voting status for current user
+  const { isJudge, hasVoted, hasCompletedVoting } = useVotingStatus(id);
 
   if (!mounted) {
     return (
@@ -141,9 +146,8 @@ export default function HackathonDetailPage({
   };
 
   const handleVote = async () => {
-    console.log('Vote on projects');
-    // TODO: Implement voting API call
-    // This would redirect to voting page or open voting modal
+    // Redirect to voting page
+    window.location.href = `/hackathons/${id}/voting`;
   };
 
   const handleStatusUpdate = async (newStatus: any) => {
@@ -311,7 +315,8 @@ export default function HackathonDetailPage({
               userAddress={walletAddress}
               isRegistered={!!participantStatus}
               hasSubmitted={!!participantStatus?.submissionUrl}
-              hasVoted={false} // TODO: Check voting status
+              hasVoted={hasVoted}
+              isJudge={isJudge}
               onRegister={handleRegister}
               onSubmit={handleSubmit}
               onVote={handleVote}
@@ -325,6 +330,12 @@ export default function HackathonDetailPage({
                 onStatusUpdate={handleStatusUpdate}
               />
             )}
+
+            {/* Judge Management (for organizers) */}
+            <JudgeManagement
+              hackathon={hackathon}
+              isOrganizer={isOrganizer}
+            />
 
             {/* Timeline Details */}
             <Card>
