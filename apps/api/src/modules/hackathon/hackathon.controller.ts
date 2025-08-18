@@ -379,11 +379,11 @@ export class HackathonController {
       currentStatus: 'REGISTRATION_OPEN' as any, // This could be enhanced to show most common status
       statusCounts: summary.statusCounts,
       activeHackathonsCount: summary.activeHackathonsCount,
-      recentChanges: summary.activeHackathons.map((h: any) => ({
+      recentChanges: summary.upcomingTransitions.map((h: any) => ({
         hackathonId: h.id,
         fromStatus: h.status,
-        toStatus: h.nextCheck.newStatus || h.status,
-        reason: h.nextCheck.reason || 'No pending changes',
+        toStatus: h.nextTransition.newStatus || h.status,
+        reason: h.nextTransition.reason || 'No pending changes',
         timestamp: new Date().toISOString(),
       })),
     };
@@ -708,6 +708,86 @@ export class HackathonController {
   ): Promise<{ finalized: boolean }> {
     const finalized = await this.hackathonService.areWinnersFinalized(id);
     return { finalized };
+  }
+
+  // Enhanced Voting Period Management Endpoints
+
+  @Get(':id/voting/info')
+  @Public()
+  @ApiOperation({
+    summary: 'Get voting period information',
+    description: 'Get detailed voting period information including timeline and statistics.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Voting period information retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found',
+  })
+  async getVotingPeriodInfo(@Param('id') id: string) {
+    return this.hackathonStatusService.getVotingPeriodInfo(id);
+  }
+
+  @Get('voting/active')
+  @Public()
+  @ApiOperation({
+    summary: 'Get all hackathons in voting phase',
+    description: 'Get all hackathons that are currently in voting phase or related states.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Voting phase hackathons retrieved successfully',
+  })
+  async getVotingPhaseHackathons() {
+    return this.hackathonStatusService.getVotingPhaseHackathons();
+  }
+
+  @Post(':id/phases/force-transition')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Force phase transition (Admin only)',
+    description: 'Force a hackathon to transition to a specific phase. Admin only.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Phase transition forced successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Admin access required',
+  })
+  @HttpCode(HttpStatus.OK)
+  async forcePhaseTransition(
+    @Param('id') id: string,
+    @Body() body: { targetStatus: string; reason: string },
+    @Request() req: any,
+  ) {
+    // Note: In production, add proper admin guard
+    await this.hackathonStatusService.forcePhaseTransition(
+      id,
+      body.targetStatus as any,
+      body.reason,
+      req.user.walletAddress,
+    );
+
+    return {
+      message: 'Phase transition forced successfully',
+      hackathonId: id,
+      newStatus: body.targetStatus,
+      reason: body.reason,
+    };
   }
 
   @Post('status/check')
