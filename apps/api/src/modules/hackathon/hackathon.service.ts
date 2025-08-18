@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { RankingService } from './ranking.service';
+import { WinnerDeterminationService, WinnerDeterminationResult } from './winner-determination.service';
 import { ConfigService } from '@nestjs/config';
 import { HackathonStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/database/prisma.service';
@@ -35,6 +36,7 @@ export class HackathonService {
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
     private readonly rankingService: RankingService,
+    private readonly winnerDeterminationService: WinnerDeterminationService,
   ) {}
 
   async createHackathon(
@@ -796,6 +798,97 @@ export class HackathonService {
     };
   }
 
+  // Winner Determination Methods
+
+  async calculateWinners(hackathonId: string): Promise<WinnerDeterminationResult> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    // Only allow winner calculation for completed hackathons
+    if (hackathon.status !== HackathonStatus.COMPLETED) {
+      throw new BadRequestException('Winners can only be calculated for completed hackathons');
+    }
+
+    return await this.winnerDeterminationService.calculateWinners(hackathonId);
+  }
+
+  async finalizeWinners(hackathonId: string, organizerAddress: string): Promise<WinnerDeterminationResult> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    // Only organizer can finalize winners
+    if (hackathon.organizerAddress !== organizerAddress) {
+      throw new ForbiddenException('Only the hackathon organizer can finalize winners');
+    }
+
+    // Only allow winner finalization for completed hackathons
+    if (hackathon.status !== HackathonStatus.COMPLETED) {
+      throw new BadRequestException('Winners can only be finalized for completed hackathons');
+    }
+
+    // Check if winners are already finalized
+    const alreadyFinalized = await this.winnerDeterminationService.areWinnersFinalized(hackathonId);
+    if (alreadyFinalized) {
+      throw new ConflictException('Winners have already been finalized for this hackathon');
+    }
+
+    const result = await this.winnerDeterminationService.finalizeWinners(hackathonId);
+
+    this.logger.log(`Winners finalized for hackathon ${hackathonId} by ${organizerAddress}`);
+    
+    return result;
+  }
+
+  async getWinners(hackathonId: string): Promise<WinnerDeterminationResult | null> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    return await this.winnerDeterminationService.getWinners(hackathonId);
+  }
+
+  async getTop3Winners(hackathonId: string): Promise<{
+    firstPlace?: string;
+    secondPlace?: string;
+    thirdPlace?: string;
+  }> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    return await this.winnerDeterminationService.getTop3Winners(hackathonId);
+  }
+
+  async areWinnersFinalized(hackathonId: string): Promise<boolean> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    return await this.winnerDeterminationService.areWinnersFinalized(hackathonId);
+  }
+
   /**
    * Get database provider from environment variables
    */
@@ -831,11 +924,11 @@ export class HackathonService {
       id: hackathon.id,
       title: hackathon.title,
       description: hackathon.description,
-      deadline: hackathon.deadline.toISOString(),
+      deadline: hackathon.submissionDeadline.toISOString(), // Fix: use submissionDeadline
       status: hackathon.status,
-      lotteryPercentage: hackathon.lotteryPercentage,
+      lotteryPercentage: 0, // Fix: Set default value or remove from schema
       contractAddress: hackathon.contractAddress,
-      creatorAddress: hackathon.creatorAddress,
+      creatorAddress: hackathon.organizerAddress, // Fix: use organizerAddress
       participantCount: hackathon._count?.participants || 0,
       createdAt: hackathon.createdAt.toISOString(),
       updatedAt: hackathon.updatedAt.toISOString(),

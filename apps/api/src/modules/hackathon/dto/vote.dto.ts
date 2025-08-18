@@ -64,7 +64,7 @@ export class VoteResponseDto {
     description: 'Judge comment',
     example: 'Great implementation with innovative features',
   })
-  comment?: string | null;
+  comment?: string | null | undefined;
 
   @ApiProperty({
     description: 'When the vote was cast',
@@ -96,7 +96,7 @@ export class ParticipantVoteSummaryDto {
     description: 'Submission URL',
     example: 'https://github.com/user/project',
   })
-  submissionUrl?: string | null;
+  submissionUrl?: string | null | undefined;
 
   @ApiProperty({
     description: 'Total number of votes received',
@@ -155,7 +155,7 @@ export class ParticipantVoteSummaryDto {
     description: 'Individual votes',
     type: [VoteResponseDto],
   })
-  votes!: VoteResponseDto[];
+  votes!: any[];
 }
 
 export class RankingMetricsDto {

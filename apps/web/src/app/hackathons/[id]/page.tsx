@@ -17,6 +17,7 @@ import { HackathonCountdown } from '@/components/features/hackathon/hackathon-co
 import { StatusManagement } from '@/components/features/hackathon/status-management';
 import { ActionButtons } from '@/components/features/hackathon/action-buttons';
 import { JudgeManagement } from '@/components/features/hackathon/judge-management';
+import { WinnerManagement } from '@/components/features/hackathon/winner-management';
 import { 
   fetchHackathon, 
   fetchParticipantStatus, 
@@ -150,7 +151,7 @@ export default function HackathonDetailPage({
     window.location.href = `/hackathons/${id}/voting`;
   };
 
-  const handleStatusUpdate = async (newStatus: any) => {
+  const handleStatusUpdate = async (newStatus: string) => {
     if (!walletAddress) {
       alert('Please connect your wallet');
       return;
@@ -336,6 +337,15 @@ export default function HackathonDetailPage({
               hackathon={hackathon}
               isOrganizer={isOrganizer}
             />
+
+            {/* Winner Management - Show for completed hackathons */}
+            {(hackathon.status === 'COMPLETED' || hackathon.status === 'VOTING_CLOSED') && (
+              <WinnerManagement
+                hackathonId={hackathon.id}
+                isOrganizer={isOrganizer}
+                hackathonStatus={hackathon.status}
+              />
+            )}
 
             {/* Timeline Details */}
             <Card>

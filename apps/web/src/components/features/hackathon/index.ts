@@ -7,3 +7,4 @@ export { HackathonStatusBadge } from './hackathon-status-badge';
 export { HackathonCountdown } from './hackathon-countdown';
 export { StatusManagement } from './status-management';
 export { ActionButtons } from './action-buttons';
+export { WinnerManagement } from './winner-management';

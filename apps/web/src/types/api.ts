@@ -184,6 +184,41 @@ export interface VotingResultsResponse {
   rankingMetrics?: RankingMetrics;
 }
 
+// Winner Determination API types
+export interface WinnerResult {
+  participantId: number;
+  walletAddress: string;
+  rank: number;
+  averageScore: number;
+  weightedScore: number;
+  prizeAmount?: string;
+  prizePosition?: number;
+}
+
+export interface PrizeDistribution {
+  position: number;
+  percentage: number;
+  amount: string;
+  winner?: WinnerResult;
+}
+
+export interface WinnerDeterminationResponse {
+  winners: WinnerResult[];
+  totalPrizePool: string;
+  prizeDistribution: PrizeDistribution[];
+  rankingMetrics: RankingMetrics;
+}
+
+export interface WinnerStatusResponse {
+  finalized: boolean;
+}
+
+export interface Top3WinnersResponse {
+  firstPlace?: string;
+  secondPlace?: string;
+  thirdPlace?: string;
+}
+
 // Error types
 export interface ApiError {
   message: string;

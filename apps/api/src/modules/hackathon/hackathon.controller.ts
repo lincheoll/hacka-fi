@@ -555,6 +555,143 @@ export class HackathonController {
     return this.hackathonService.getVotingResults(id);
   }
 
+  // Winner Determination Endpoints
+
+  @Get(':id/winners/calculate')
+  @Public()
+  @ApiOperation({
+    summary: 'Calculate winners',
+    description: 'Calculate winners for a completed hackathon based on voting results.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Winners calculated successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Hackathon not completed yet',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found',
+  })
+  async calculateWinners(@Param('id') id: string) {
+    return this.hackathonService.calculateWinners(id);
+  }
+
+  @Post(':id/winners/finalize')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Finalize winners',
+    description: 'Finalize winners for a hackathon and update database records. Only organizer can finalize.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Winners finalized successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Hackathon not completed or winners already finalized',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Only organizer can finalize winners',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Winners already finalized',
+  })
+  async finalizeWinners(
+    @Param('id') id: string,
+    @Request() req: any,
+  ) {
+    return this.hackathonService.finalizeWinners(id, req.user.walletAddress);
+  }
+
+  @Get(':id/winners')
+  @Public()
+  @ApiOperation({
+    summary: 'Get winners',
+    description: 'Get finalized winners for a hackathon.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Winners retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found',
+  })
+  async getWinners(@Param('id') id: string) {
+    return this.hackathonService.getWinners(id);
+  }
+
+  @Get(':id/winners/top3')
+  @Public()
+  @ApiOperation({
+    summary: 'Get top 3 winners',
+    description: 'Get top 3 winners for smart contract integration.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Top 3 winners retrieved successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found',
+  })
+  async getTop3Winners(@Param('id') id: string) {
+    return this.hackathonService.getTop3Winners(id);
+  }
+
+  @Get(':id/winners/status')
+  @Public()
+  @ApiOperation({
+    summary: 'Check if winners are finalized',
+    description: 'Check if winners have been finalized for a hackathon.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Winner status checked successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found',
+  })
+  async areWinnersFinalized(@Param('id') id: string): Promise<{ finalized: boolean }> {
+    const finalized = await this.hackathonService.areWinnersFinalized(id);
+    return { finalized };
+  }
+
   @Post('status/check')
   @ApiBearerAuth()
   @ApiOperation({

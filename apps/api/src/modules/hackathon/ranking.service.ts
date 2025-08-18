@@ -20,7 +20,7 @@ export interface ParticipantData {
 export interface RankingResult {
   participantId: number;
   walletAddress: string;
-  submissionUrl?: string | null;
+  submissionUrl?: string | null | undefined;
   totalVotes: number;
   averageScore: number;
   weightedScore: number;
@@ -109,6 +109,7 @@ export class RankingService {
         totalVotes: voteCount,
         averageScore: simpleAverage,
         weightedScore,
+        normalizedScore: weightedScore, // Initialize with weightedScore
         consensusScore,
         scoreVariance,
         votes: participant.votes,
