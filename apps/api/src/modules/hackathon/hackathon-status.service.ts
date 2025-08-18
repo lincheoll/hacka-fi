@@ -59,7 +59,7 @@ export class HackathonStatusService {
         const now = new Date();
         const submissionDeadline = new Date(hackathon.submissionDeadline);
         const votingDeadline = new Date(hackathon.votingDeadline);
-        
+
         // Start voting immediately after submission deadline passes
         // but only if voting deadline hasn't passed yet
         return now > submissionDeadline && now < votingDeadline;
@@ -80,7 +80,7 @@ export class HackathonStatusService {
       condition: (hackathon) => {
         const now = new Date();
         const votingDeadline = new Date(hackathon.votingDeadline);
-        
+
         // Auto-complete 1 hour after voting closes to allow for final processing
         return now > new Date(votingDeadline.getTime() + 60 * 60 * 1000);
       },
@@ -131,7 +131,7 @@ export class HackathonStatusService {
         });
 
         const results = await Promise.allSettled(batchPromises);
-        
+
         // Count successful updates
         results.forEach((result) => {
           if (result.status === 'fulfilled' && result.value?.updated) {
@@ -230,7 +230,7 @@ export class HackathonStatusService {
   ): Promise<void> {
     const startTime = Date.now();
     let hackathon: any;
-    
+
     try {
       // Get current hackathon first (outside transaction for faster operation)
       hackathon = await this.prisma.hackathon.findUnique({
@@ -570,7 +570,9 @@ export class HackathonStatusService {
 
     switch (hackathon.status) {
       case HackathonStatus.REGISTRATION_OPEN:
-        return new Date(hackathon.registrationDeadline).getTime() - now.getTime();
+        return (
+          new Date(hackathon.registrationDeadline).getTime() - now.getTime()
+        );
       case HackathonStatus.SUBMISSION_OPEN:
         return new Date(hackathon.submissionDeadline).getTime() - now.getTime();
       case HackathonStatus.VOTING_OPEN:

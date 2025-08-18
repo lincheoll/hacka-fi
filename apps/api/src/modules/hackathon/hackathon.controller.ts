@@ -716,7 +716,8 @@ export class HackathonController {
   @Public()
   @ApiOperation({
     summary: 'Get voting period information',
-    description: 'Get detailed voting period information including timeline and statistics.',
+    description:
+      'Get detailed voting period information including timeline and statistics.',
   })
   @ApiParam({
     name: 'id',
@@ -739,7 +740,8 @@ export class HackathonController {
   @Public()
   @ApiOperation({
     summary: 'Get all hackathons in voting phase',
-    description: 'Get all hackathons that are currently in voting phase or related states.',
+    description:
+      'Get all hackathons that are currently in voting phase or related states.',
   })
   @ApiResponse({
     status: 200,
@@ -753,7 +755,8 @@ export class HackathonController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Force phase transition (Admin only)',
-    description: 'Force a hackathon to transition to a specific phase. Admin only.',
+    description:
+      'Force a hackathon to transition to a specific phase. Admin only.',
   })
   @ApiParam({
     name: 'id',
