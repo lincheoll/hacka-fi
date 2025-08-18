@@ -295,7 +295,7 @@
         "dependencies": [
           5
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -364,7 +364,95 @@
           6
         ],
         "status": "pending",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Judge Whitelist Management Integration",
+            "description": "Implement smart contract integration for judge whitelist management allowing hackathon creators to add/remove judges",
+            "dependencies": [],
+            "details": "Create smart contract functions for judge whitelist operations, implement backend API endpoints for judge management, build frontend interface for creators to add/remove judges with wallet address validation, and add event listeners for judge whitelist changes on-chain",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Voting Interface for Score Submission",
+            "description": "Build judge voting interface allowing score submission (1-10 scale) with optional comments for each participant",
+            "dependencies": [
+              "7.1"
+            ],
+            "details": "Create voting dashboard for judges showing assigned hackathons and participants, implement score input forms with 1-10 scale validation, add optional comment fields for feedback, build submission review interface displaying participant details and submissions, and implement vote submission with confirmation flow",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Vote Aggregation and Ranking Algorithms",
+            "description": "Implement vote aggregation logic calculating average scores and determining participant rankings",
+            "dependencies": [
+              "7.2"
+            ],
+            "details": "Build score aggregation algorithms calculating weighted averages across all judge votes, implement ranking system determining 1st, 2nd, 3rd place winners, create tie-breaking logic for equal scores, and add real-time score calculation updates during voting period",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Results Calculation and Winner Determination",
+            "description": "Build results calculation system determining final winners and prize distributions based on aggregated votes",
+            "dependencies": [
+              "7.3"
+            ],
+            "details": "Implement winner determination logic based on final rankings, calculate prize distribution amounts (60/25/15% split), create results data structure with winners and prize amounts, and add results validation ensuring proper winner selection and distribution calculations",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Voting Period Management with State Transitions",
+            "description": "Implement voting period management with automatic transitions between registration, voting, and completed phases",
+            "dependencies": [
+              "7.1"
+            ],
+            "details": "Create voting period state management system, implement automatic phase transitions based on deadlines, add voting period validation preventing votes outside allowed timeframes, build status tracking for hackathon phases, and create admin controls for manual phase management",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Vote Validation and Duplicate Prevention",
+            "description": "Implement comprehensive vote validation ensuring judges can only vote once per participant within voting period",
+            "dependencies": [
+              "7.2",
+              "7.5"
+            ],
+            "details": "Build vote validation system preventing duplicate votes from same judge for same participant, implement voting period enforcement blocking votes outside allowed timeframes, add judge authorization validation ensuring only whitelisted judges can vote, and create vote integrity checks with error handling",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 7,
+            "title": "Judge Dashboard for Voting Status",
+            "description": "Create comprehensive judge dashboard showing assigned hackathons, voting progress, and submission details",
+            "dependencies": [
+              "7.5"
+            ],
+            "details": "Build judge dashboard interface displaying assigned hackathons with voting status, implement progress tracking showing completed vs pending votes, create submission preview with participant details and files, add voting history and statistics, and implement notifications for upcoming voting deadlines",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 8,
+            "title": "Results Display with Prize Distribution",
+            "description": "Build results display interface showing final rankings, scores, and prize distribution details",
+            "dependencies": [
+              "7.4"
+            ],
+            "details": "Create results page displaying final rankings with participant names and scores, implement prize distribution visualization showing winner amounts, add score breakdown with individual judge votes and comments, build results export functionality, and implement results announcement with winner notifications",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
       },
       {
         "id": 8,
@@ -462,7 +550,7 @@
     ],
     "metadata": {
       "created": "2025-08-15T08:54:10.658Z",
-      "updated": "2025-08-17T11:34:05.681Z",
+      "updated": "2025-08-18T08:28:05.049Z",
       "description": "Tasks for master context"
     }
   }

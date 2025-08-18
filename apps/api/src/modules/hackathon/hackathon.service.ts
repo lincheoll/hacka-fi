@@ -16,6 +16,13 @@ import {
   ParticipateHackathonDto,
   HackathonResponseDto,
   ParticipantResponseDto,
+  AddJudgeDto,
+  RemoveJudgeDto,
+  JudgeResponseDto,
+  JudgeListResponseDto,
+  CastVoteDto,
+  VoteResponseDto,
+  HackathonVotingResultsDto,
 } from './dto';
 
 @Injectable()
@@ -386,6 +393,369 @@ export class HackathonService {
       });
       this.logger.log(`Created user profile for ${walletAddress}`);
     }
+  }
+
+  // Judge Management Methods
+
+  async addJudge(
+    hackathonId: string,
+    addJudgeDto: AddJudgeDto,
+    addedBy: string,
+  ): Promise<JudgeResponseDto> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    // Only organizer can add judges
+    if (hackathon.organizerAddress !== addedBy) {
+      throw new ForbiddenException('Only the hackathon organizer can add judges');
+    }
+
+    // Cannot add judges during voting or after completion
+    if (
+      hackathon.status === HackathonStatus.VOTING_OPEN ||
+      hackathon.status === HackathonStatus.VOTING_CLOSED ||
+      hackathon.status === HackathonStatus.COMPLETED
+    ) {
+      throw new BadRequestException('Cannot add judges during or after voting');
+    }
+
+    // Ensure judge profile exists
+    await this.ensureUserProfileExists(addJudgeDto.judgeAddress);
+
+    // Check if judge already exists
+    const existingJudge = await this.prisma.hackathonJudge.findUnique({
+      where: {
+        hackathonId_judgeAddress: {
+          hackathonId,
+          judgeAddress: addJudgeDto.judgeAddress,
+        },
+      },
+    });
+
+    if (existingJudge) {
+      throw new ConflictException('Judge already added to this hackathon');
+    }
+
+    // Organizer cannot be a judge of their own hackathon
+    if (hackathon.organizerAddress === addJudgeDto.judgeAddress) {
+      throw new BadRequestException('Organizer cannot be a judge of their own hackathon');
+    }
+
+    const judge = await this.prisma.hackathonJudge.create({
+      data: {
+        hackathonId,
+        judgeAddress: addJudgeDto.judgeAddress,
+        addedBy,
+      },
+      include: {
+        judge: {
+          select: {
+            walletAddress: true,
+            username: true,
+            bio: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+
+    this.logger.log(
+      `Judge ${addJudgeDto.judgeAddress} added to hackathon ${hackathonId} by ${addedBy}`,
+    );
+
+    return {
+      id: judge.id,
+      hackathonId: judge.hackathonId,
+      judgeAddress: judge.judgeAddress,
+      addedBy: judge.addedBy,
+      addedAt: judge.addedAt,
+      judge: judge.judge,
+    };
+  }
+
+  async removeJudge(
+    hackathonId: string,
+    removeJudgeDto: RemoveJudgeDto,
+    removedBy: string,
+  ): Promise<void> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    // Only organizer can remove judges
+    if (hackathon.organizerAddress !== removedBy) {
+      throw new ForbiddenException('Only the hackathon organizer can remove judges');
+    }
+
+    // Cannot remove judges during voting
+    if (hackathon.status === HackathonStatus.VOTING_OPEN) {
+      throw new BadRequestException('Cannot remove judges during voting');
+    }
+
+    const judge = await this.prisma.hackathonJudge.findUnique({
+      where: {
+        hackathonId_judgeAddress: {
+          hackathonId,
+          judgeAddress: removeJudgeDto.judgeAddress,
+        },
+      },
+    });
+
+    if (!judge) {
+      throw new NotFoundException('Judge not found in this hackathon');
+    }
+
+    // If voting has completed, check if judge has already voted
+    if (
+      hackathon.status === HackathonStatus.VOTING_CLOSED ||
+      hackathon.status === HackathonStatus.COMPLETED
+    ) {
+      const existingVotes = await this.prisma.vote.findMany({
+        where: {
+          hackathonId,
+          judgeAddress: removeJudgeDto.judgeAddress,
+        },
+      });
+
+      if (existingVotes.length > 0) {
+        throw new BadRequestException(
+          'Cannot remove judge who has already cast votes',
+        );
+      }
+    }
+
+    await this.prisma.hackathonJudge.delete({
+      where: {
+        hackathonId_judgeAddress: {
+          hackathonId,
+          judgeAddress: removeJudgeDto.judgeAddress,
+        },
+      },
+    });
+
+    this.logger.log(
+      `Judge ${removeJudgeDto.judgeAddress} removed from hackathon ${hackathonId} by ${removedBy}`,
+    );
+  }
+
+  async getJudges(hackathonId: string): Promise<JudgeListResponseDto> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    const judges = await this.prisma.hackathonJudge.findMany({
+      where: { hackathonId },
+      include: {
+        judge: {
+          select: {
+            walletAddress: true,
+            username: true,
+            bio: true,
+            avatarUrl: true,
+          },
+        },
+      },
+      orderBy: { addedAt: 'asc' },
+    });
+
+    return {
+      judges: judges.map((judge) => ({
+        id: judge.id,
+        hackathonId: judge.hackathonId,
+        judgeAddress: judge.judgeAddress,
+        addedBy: judge.addedBy,
+        addedAt: judge.addedAt,
+        judge: judge.judge,
+      })),
+      count: judges.length,
+    };
+  }
+
+  // Voting Methods
+
+  async castVote(
+    hackathonId: string,
+    castVoteDto: CastVoteDto,
+    judgeAddress: string,
+  ): Promise<VoteResponseDto> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    // Check if hackathon is in voting phase
+    if (hackathon.status !== HackathonStatus.VOTING_OPEN) {
+      throw new BadRequestException('Hackathon is not in voting phase');
+    }
+
+    // Check if voting deadline has passed
+    if (new Date() > hackathon.votingDeadline) {
+      throw new BadRequestException('Voting deadline has passed');
+    }
+
+    // Check if user is a judge
+    const judge = await this.prisma.hackathonJudge.findUnique({
+      where: {
+        hackathonId_judgeAddress: {
+          hackathonId,
+          judgeAddress,
+        },
+      },
+    });
+
+    if (!judge) {
+      throw new ForbiddenException('Only authorized judges can vote');
+    }
+
+    // Check if participant exists
+    const participant = await this.prisma.participant.findUnique({
+      where: { id: castVoteDto.participantId },
+    });
+
+    if (!participant || participant.hackathonId !== hackathonId) {
+      throw new NotFoundException('Participant not found in this hackathon');
+    }
+
+    // Check if judge has already voted for this participant
+    const existingVote = await this.prisma.vote.findUnique({
+      where: {
+        hackathonId_judgeAddress_participantId: {
+          hackathonId,
+          judgeAddress,
+          participantId: castVoteDto.participantId,
+        },
+      },
+    });
+
+    if (existingVote) {
+      // Update existing vote
+      const updatedVote = await this.prisma.vote.update({
+        where: { id: existingVote.id },
+        data: {
+          score: castVoteDto.score,
+          comment: castVoteDto.comment,
+        },
+      });
+
+      this.logger.log(
+        `Vote updated by judge ${judgeAddress} for participant ${castVoteDto.participantId}`,
+      );
+
+      return {
+        id: updatedVote.id,
+        hackathonId: updatedVote.hackathonId,
+        judgeAddress: updatedVote.judgeAddress,
+        participantId: updatedVote.participantId,
+        score: updatedVote.score,
+        comment: updatedVote.comment,
+        createdAt: updatedVote.createdAt,
+        updatedAt: updatedVote.updatedAt,
+      };
+    } else {
+      // Create new vote
+      const vote = await this.prisma.vote.create({
+        data: {
+          hackathonId,
+          judgeAddress,
+          participantId: castVoteDto.participantId,
+          score: castVoteDto.score,
+          comment: castVoteDto.comment,
+        },
+      });
+
+      this.logger.log(
+        `Vote cast by judge ${judgeAddress} for participant ${castVoteDto.participantId}`,
+      );
+
+      return {
+        id: vote.id,
+        hackathonId: vote.hackathonId,
+        judgeAddress: vote.judgeAddress,
+        participantId: vote.participantId,
+        score: vote.score,
+        comment: vote.comment,
+        createdAt: vote.createdAt,
+        updatedAt: vote.updatedAt,
+      };
+    }
+  }
+
+  async getVotingResults(hackathonId: string): Promise<HackathonVotingResultsDto> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    const participants = await this.prisma.participant.findMany({
+      where: { hackathonId },
+      include: {
+        votes: {
+          include: {
+            judge: {
+              select: {
+                walletAddress: true,
+                username: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const judges = await this.prisma.hackathonJudge.count({
+      where: { hackathonId },
+    });
+
+    const results = participants.map((participant) => ({
+      participantId: participant.id,
+      walletAddress: participant.walletAddress,
+      submissionUrl: participant.submissionUrl,
+      totalVotes: participant.votes.length,
+      averageScore:
+        participant.votes.length > 0
+          ? participant.votes.reduce((sum, vote) => sum + vote.score, 0) /
+            participant.votes.length
+          : 0,
+      votes: participant.votes.map((vote) => ({
+        id: vote.id,
+        hackathonId: vote.hackathonId,
+        judgeAddress: vote.judgeAddress,
+        participantId: vote.participantId,
+        score: vote.score,
+        comment: vote.comment,
+        createdAt: vote.createdAt,
+        updatedAt: vote.updatedAt,
+      })),
+    }));
+
+    // Sort by average score (descending)
+    results.sort((a, b) => b.averageScore - a.averageScore);
+
+    return {
+      hackathonId,
+      participants: results,
+      totalJudges: judges,
+      totalParticipants: participants.length,
+    };
   }
 
   /**

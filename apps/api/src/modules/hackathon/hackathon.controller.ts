@@ -33,6 +33,13 @@ import {
   ParticipantResponseDto,
   UpdateStatusDto,
   StatusSummaryResponseDto,
+  AddJudgeDto,
+  RemoveJudgeDto,
+  JudgeResponseDto,
+  JudgeListResponseDto,
+  CastVoteDto,
+  VoteResponseDto,
+  HackathonVotingResultsDto,
 } from './dto';
 import { HackathonStatusService } from './hackathon-status.service';
 
@@ -382,6 +389,170 @@ export class HackathonController {
         timestamp: new Date().toISOString(),
       })),
     };
+  }
+
+  // Judge Management Endpoints
+
+  @Post(':id/judges')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Add a judge to hackathon',
+    description: 'Add a judge to the hackathon whitelist. Only the organizer can add judges.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Judge added successfully',
+    type: JudgeResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot add judges during or after voting',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Only organizer can add judges',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'Judge already added or organizer cannot be judge',
+  })
+  async addJudge(
+    @Param('id') id: string,
+    @Body() addJudgeDto: AddJudgeDto,
+    @Request() req: any,
+  ): Promise<JudgeResponseDto> {
+    return this.hackathonService.addJudge(id, addJudgeDto, req.user.walletAddress);
+  }
+
+  @Delete(':id/judges')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiOperation({
+    summary: 'Remove a judge from hackathon',
+    description: 'Remove a judge from the hackathon whitelist. Only the organizer can remove judges.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 204,
+    description: 'Judge removed successfully',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Cannot remove judges during voting or judge has already voted',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Only organizer can remove judges',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon or judge not found',
+  })
+  async removeJudge(
+    @Param('id') id: string,
+    @Body() removeJudgeDto: RemoveJudgeDto,
+    @Request() req: any,
+  ): Promise<void> {
+    return this.hackathonService.removeJudge(id, removeJudgeDto, req.user.walletAddress);
+  }
+
+  @Get(':id/judges')
+  @Public()
+  @ApiOperation({
+    summary: 'Get hackathon judges',
+    description: 'Get list of all judges for a hackathon.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Judges retrieved successfully',
+    type: JudgeListResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found',
+  })
+  async getJudges(@Param('id') id: string): Promise<JudgeListResponseDto> {
+    return this.hackathonService.getJudges(id);
+  }
+
+  // Voting Endpoints
+
+  @Post(':id/vote')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Cast or update vote',
+    description: 'Cast a vote for a participant. Only authorized judges can vote. Existing votes can be updated.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Vote cast or updated successfully',
+    type: VoteResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Hackathon not in voting phase or deadline passed',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Only authorized judges can vote',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon or participant not found',
+  })
+  async castVote(
+    @Param('id') id: string,
+    @Body() castVoteDto: CastVoteDto,
+    @Request() req: any,
+  ): Promise<VoteResponseDto> {
+    return this.hackathonService.castVote(id, castVoteDto, req.user.walletAddress);
+  }
+
+  @Get(':id/results')
+  @Public()
+  @ApiOperation({
+    summary: 'Get voting results',
+    description: 'Get voting results for a hackathon, including scores and rankings.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Voting results retrieved successfully',
+    type: HackathonVotingResultsDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found',
+  })
+  async getVotingResults(@Param('id') id: string): Promise<HackathonVotingResultsDto> {
+    return this.hackathonService.getVotingResults(id);
   }
 
   @Post('status/check')

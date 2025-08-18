@@ -4,3 +4,5 @@ export * from './hackathon-response.dto';
 export * from './participate-hackathon.dto';
 export * from './query-hackathon.dto';
 export * from './update-status.dto';
+export * from './judge.dto';
+export * from './vote.dto';

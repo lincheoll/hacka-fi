@@ -20,6 +20,8 @@ model UserProfile {
   votes            Vote[]
   achievements     UserAchievement[]
   auditLogs        AuditLog[]
+  judgeRoles       HackathonJudge[] @relation("JudgeRole")
+  addedJudges      HackathonJudge[] @relation("JudgeAdder")
 
   @@map("user_profiles")
 }
@@ -47,6 +49,7 @@ model Hackathon {
   results        Result[]
   achievements   UserAchievement[]
   auditLogs      AuditLog[]
+  judges         HackathonJudge[]
 
   @@map("hackathons")
 }
@@ -76,6 +79,7 @@ model Vote {
   judgeAddress  String   @map("judge_address")
   participantId Int      @map("participant_id")
   score         Int
+  comment       String?  // Optional comment from judge
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
@@ -85,6 +89,21 @@ model Vote {
 
   @@unique([hackathonId, judgeAddress, participantId])
   @@map("votes")
+}
+
+model HackathonJudge {
+  id           Int      @id @default(autoincrement())
+  hackathonId  String   @map("hackathon_id")
+  judgeAddress String   @map("judge_address")
+  addedBy      String   @map("added_by")
+  addedAt      DateTime @default(now()) @map("added_at")
+
+  hackathon Hackathon   @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  judge     UserProfile @relation("JudgeRole", fields: [judgeAddress], references: [walletAddress])
+  addedByUser UserProfile @relation("JudgeAdder", fields: [addedBy], references: [walletAddress])
+
+  @@unique([hackathonId, judgeAddress])
+  @@map("hackathon_judges")
 }
 
 model Result {
