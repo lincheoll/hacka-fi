@@ -127,8 +127,19 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     );
   }
 
-  // Sort participants by average score (descending)
-  const sortedParticipants = [...results.participants].sort((a, b) => b.averageScore - a.averageScore);
+  // Sort participants by ranking data (if available) or average score
+  const sortedParticipants = [...results.participants].sort((a, b) => {
+    // If ranking data is available, use rank
+    if (a.rank !== undefined && b.rank !== undefined) {
+      return a.rank - b.rank;
+    }
+    // If weighted scores are available, prefer them
+    if (a.weightedScore !== undefined && b.weightedScore !== undefined) {
+      return b.weightedScore - a.weightedScore;
+    }
+    // Fallback to average score
+    return b.averageScore - a.averageScore;
+  });
 
   // Get top 3 winners
   const winners = sortedParticipants.slice(0, 3);
@@ -253,12 +264,23 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                       {participant.walletAddress.slice(0, 6)}...{participant.walletAddress.slice(-4)}
                     </div>
                     {getRankBadge(index + 1)}
-                    <div className="mt-2 flex items-center justify-center gap-1">
-                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                      <span className="font-bold">{participant.averageScore.toFixed(1)}/10</span>
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {participant.totalVotes} votes
+                    <div className="mt-2 space-y-1">
+                      <div className="flex items-center justify-center gap-1">
+                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                        <span className="font-bold">
+                          {participant.weightedScore !== undefined 
+                            ? participant.weightedScore.toFixed(1) 
+                            : participant.averageScore.toFixed(1)}/10
+                        </span>
+                      </div>
+                      {participant.weightedScore !== undefined && (
+                        <div className="text-xs text-gray-500">
+                          Raw: {participant.averageScore.toFixed(1)} | Weighted Score
+                        </div>
+                      )}
+                      <div className="text-sm text-gray-600">
+                        {participant.totalVotes} votes
+                      </div>
                     </div>
                     {participant.submissionUrl && (
                       <a
@@ -321,13 +343,57 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                     <div className="text-right">
                       <div className="flex items-center gap-2 mb-1">
                         <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-bold text-lg">{participant.averageScore.toFixed(1)}/10</span>
+                        <span className="font-bold text-lg">
+                          {participant.weightedScore !== undefined 
+                            ? participant.weightedScore.toFixed(1) 
+                            : participant.averageScore.toFixed(1)}/10
+                        </span>
                       </div>
+                      {participant.rankTier && (
+                        <Badge 
+                          variant={participant.rankTier === 'winner' ? 'default' : 'outline'}
+                          className={`text-xs mb-1 ${
+                            participant.rankTier === 'winner' ? 'bg-yellow-500 text-white' :
+                            participant.rankTier === 'runner-up' ? 'bg-gray-400 text-white' : ''
+                          }`}
+                        >
+                          {participant.rankTier === 'winner' ? '🏆 Winner' :
+                           participant.rankTier === 'runner-up' ? '🥈 Runner-up' : 'Participant'}
+                        </Badge>
+                      )}
                       <div className="text-sm text-gray-600">
                         {participant.totalVotes} votes
+                        {participant.rank && (
+                          <div className="text-xs">Rank #{participant.rank}</div>
+                        )}
                       </div>
                     </div>
                   </div>
+
+                  {/* Advanced Score Breakdown */}
+                  {participant.scoreBreakdown && (
+                    <div className="border-t pt-3 mb-3">
+                      <div className="text-sm font-medium mb-2">Score Breakdown:</div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                        <div className="bg-blue-50 p-2 rounded text-center">
+                          <div className="font-medium">{participant.scoreBreakdown.simple.toFixed(1)}</div>
+                          <div className="text-gray-600">Simple Avg</div>
+                        </div>
+                        <div className="bg-green-50 p-2 rounded text-center">
+                          <div className="font-medium">{participant.scoreBreakdown.weighted.toFixed(1)}</div>
+                          <div className="text-gray-600">Weighted</div>
+                        </div>
+                        <div className="bg-purple-50 p-2 rounded text-center">
+                          <div className="font-medium">{participant.scoreBreakdown.normalized.toFixed(1)}</div>
+                          <div className="text-gray-600">Normalized</div>
+                        </div>
+                        <div className="bg-orange-50 p-2 rounded text-center">
+                          <div className="font-medium">{participant.scoreBreakdown.consensus.toFixed(1)}</div>
+                          <div className="text-gray-600">Consensus</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Individual Votes */}
                   {participant.votes.length > 0 && (
@@ -359,13 +425,78 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           </CardContent>
         </Card>
 
+        {/* Ranking Metrics */}
+        {results.rankingMetrics && (
+          <Card className="mt-8">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="h-5 w-5" />
+                Ranking Statistics
+              </CardTitle>
+              <CardDescription>
+                Statistical analysis of the voting results
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-blue-50 p-4 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-blue-600">
+                    {results.rankingMetrics.averageParticipation.toFixed(1)}
+                  </div>
+                  <div className="text-sm text-gray-600">Avg Votes/Participant</div>
+                </div>
+                
+                <div className="bg-green-50 p-4 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-green-600">
+                    {results.rankingMetrics.scoreDistribution.mean.toFixed(1)}
+                  </div>
+                  <div className="text-sm text-gray-600">Mean Score</div>
+                </div>
+                
+                <div className="bg-purple-50 p-4 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-purple-600">
+                    {results.rankingMetrics.scoreDistribution.median.toFixed(1)}
+                  </div>
+                  <div className="text-sm text-gray-600">Median Score</div>
+                </div>
+                
+                <div className="bg-orange-50 p-4 rounded-lg text-center">
+                  <div className="text-2xl font-bold text-orange-600">
+                    {results.rankingMetrics.scoreDistribution.standardDeviation.toFixed(1)}
+                  </div>
+                  <div className="text-sm text-gray-600">Std Deviation</div>
+                </div>
+              </div>
+              
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="text-sm font-medium mb-1">Score Range</div>
+                  <div className="text-lg font-bold">
+                    {results.rankingMetrics.scoreDistribution.min.toFixed(1)} - {results.rankingMetrics.scoreDistribution.max.toFixed(1)}
+                  </div>
+                  <div className="text-xs text-gray-600">Minimum to Maximum Score</div>
+                </div>
+                
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <div className="text-sm font-medium mb-1">Vote Coverage</div>
+                  <div className="text-lg font-bold">
+                    {((results.rankingMetrics.averageParticipation / results.rankingMetrics.totalJudges) * 100).toFixed(1)}%
+                  </div>
+                  <div className="text-xs text-gray-600">Average Participation Rate</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Instructions */}
         <div className="mt-8">
           <Alert className="border-blue-500 bg-blue-50">
             <BarChart3 className="h-4 w-4" />
             <AlertDescription className="text-blue-700">
-              <strong>How scores are calculated:</strong> Each judge votes on a 1-10 scale. 
-              The final score is the average of all judge votes. Participants are ranked by their average score.
+              <strong>Advanced Ranking System:</strong> Scores use weighted algorithms considering voting participation, 
+              consensus among judges, and normalized scoring to ensure fair rankings. 
+              The final rank is determined by weighted scores with tie-breaking logic.
             </AlertDescription>
           </Alert>
         </div>

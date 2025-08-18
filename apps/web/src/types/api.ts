@@ -150,7 +150,30 @@ export interface ParticipantVoteSummary {
   submissionUrl?: string;
   totalVotes: number;
   averageScore: number;
+  weightedScore?: number;
+  normalizedScore?: number;
+  rank?: number;
+  rankTier?: 'winner' | 'runner-up' | 'participant';
+  scoreBreakdown?: {
+    simple: number;
+    weighted: number;
+    normalized: number;
+    consensus: number;
+  };
   votes: Vote[];
+}
+
+export interface RankingMetrics {
+  totalParticipants: number;
+  totalJudges: number;
+  averageParticipation: number;
+  scoreDistribution: {
+    min: number;
+    max: number;
+    mean: number;
+    median: number;
+    standardDeviation: number;
+  };
 }
 
 export interface VotingResultsResponse {
@@ -158,6 +181,7 @@ export interface VotingResultsResponse {
   participants: ParticipantVoteSummary[];
   totalJudges: number;
   totalParticipants: number;
+  rankingMetrics?: RankingMetrics;
 }
 
 // Error types

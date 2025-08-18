@@ -6,6 +6,7 @@ import {
   ConflictException,
   Logger,
 } from '@nestjs/common';
+import { RankingService } from './ranking.service';
 import { ConfigService } from '@nestjs/config';
 import { HackathonStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/database/prisma.service';
@@ -23,6 +24,7 @@ import {
   CastVoteDto,
   VoteResponseDto,
   HackathonVotingResultsDto,
+  RankingMetricsDto,
 } from './dto';
 
 @Injectable()
@@ -32,6 +34,7 @@ export class HackathonService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly rankingService: RankingService,
   ) {}
 
   async createHackathon(
@@ -721,23 +724,17 @@ export class HackathonService {
       },
     });
 
-    const judges = await this.prisma.hackathonJudge.count({
+    const totalJudges = await this.prisma.hackathonJudge.count({
       where: { hackathonId },
     });
 
-    const results = participants.map((participant) => ({
-      participantId: participant.id,
+    // Transform data for ranking service
+    const participantData = participants.map((participant) => ({
+      id: participant.id,
       walletAddress: participant.walletAddress,
       submissionUrl: participant.submissionUrl,
-      totalVotes: participant.votes.length,
-      averageScore:
-        participant.votes.length > 0
-          ? participant.votes.reduce((sum, vote) => sum + vote.score, 0) /
-            participant.votes.length
-          : 0,
       votes: participant.votes.map((vote) => ({
         id: vote.id,
-        hackathonId: vote.hackathonId,
         judgeAddress: vote.judgeAddress,
         participantId: vote.participantId,
         score: vote.score,
@@ -747,14 +744,55 @@ export class HackathonService {
       })),
     }));
 
-    // Sort by average score (descending)
-    results.sort((a, b) => b.averageScore - a.averageScore);
+    // Use advanced ranking algorithm
+    const { rankings, metrics } = this.rankingService.calculateRankings(
+      participantData,
+      totalJudges,
+      {
+        useWeightedScoring: true,
+        useNormalizedScoring: true,
+        penalizeIncompleteVoting: true,
+        minimumVotesThreshold: Math.max(1, Math.ceil(totalJudges * 0.3)), // At least 30% of judges
+      }
+    );
+
+    // Transform rankings back to expected format
+    const results = rankings.map((ranking) => ({
+      participantId: ranking.participantId,
+      walletAddress: ranking.walletAddress,
+      submissionUrl: ranking.submissionUrl,
+      totalVotes: ranking.totalVotes,
+      averageScore: ranking.averageScore,
+      weightedScore: ranking.weightedScore,
+      normalizedScore: ranking.normalizedScore,
+      rank: ranking.rank,
+      rankTier: ranking.rankTier,
+      scoreBreakdown: ranking.scoreBreakdown,
+      votes: ranking.votes.map((vote) => ({
+        id: vote.id,
+        hackathonId: hackathonId,
+        judgeAddress: vote.judgeAddress,
+        participantId: vote.participantId,
+        score: vote.score,
+        comment: vote.comment,
+        createdAt: vote.createdAt,
+        updatedAt: vote.updatedAt,
+      })),
+    }));
+
+    this.logger.log(`Generated advanced rankings for hackathon ${hackathonId}: ${rankings.length} participants ranked`);
 
     return {
       hackathonId,
       participants: results,
-      totalJudges: judges,
+      totalJudges,
       totalParticipants: participants.length,
+      rankingMetrics: {
+        totalParticipants: metrics.totalParticipants,
+        totalJudges: metrics.totalJudges,
+        averageParticipation: metrics.averageParticipation,
+        scoreDistribution: metrics.scoreDistribution,
+      },
     };
   }
 

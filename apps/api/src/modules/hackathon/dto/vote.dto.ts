@@ -110,11 +110,90 @@ export class ParticipantVoteSummaryDto {
   })
   averageScore!: number;
 
+  @ApiPropertyOptional({
+    description: 'Weighted score considering voting participation',
+    example: 7.2,
+  })
+  weightedScore?: number;
+
+  @ApiPropertyOptional({
+    description: 'Normalized score (0-10 scale)',
+    example: 8.3,
+  })
+  normalizedScore?: number;
+
+  @ApiPropertyOptional({
+    description: 'Participant rank',
+    example: 1,
+  })
+  rank?: number;
+
+  @ApiPropertyOptional({
+    description: 'Rank tier',
+    example: 'winner',
+    enum: ['winner', 'runner-up', 'participant'],
+  })
+  rankTier?: 'winner' | 'runner-up' | 'participant';
+
+  @ApiPropertyOptional({
+    description: 'Detailed score breakdown',
+    example: {
+      simple: 7.5,
+      weighted: 7.2,
+      normalized: 8.3,
+      consensus: 7.8,
+    },
+  })
+  scoreBreakdown?: {
+    simple: number;
+    weighted: number;
+    normalized: number;
+    consensus: number;
+  };
+
   @ApiProperty({
     description: 'Individual votes',
     type: [VoteResponseDto],
   })
   votes!: VoteResponseDto[];
+}
+
+export class RankingMetricsDto {
+  @ApiProperty({
+    description: 'Total number of participants',
+    example: 10,
+  })
+  totalParticipants!: number;
+
+  @ApiProperty({
+    description: 'Total number of judges',
+    example: 5,
+  })
+  totalJudges!: number;
+
+  @ApiProperty({
+    description: 'Average votes per participant',
+    example: 4.2,
+  })
+  averageParticipation!: number;
+
+  @ApiProperty({
+    description: 'Score distribution statistics',
+    example: {
+      min: 3.5,
+      max: 9.2,
+      mean: 6.8,
+      median: 7.1,
+      standardDeviation: 1.4,
+    },
+  })
+  scoreDistribution!: {
+    min: number;
+    max: number;
+    mean: number;
+    median: number;
+    standardDeviation: number;
+  };
 }
 
 export class HackathonVotingResultsDto {
@@ -141,4 +220,10 @@ export class HackathonVotingResultsDto {
     example: 10,
   })
   totalParticipants!: number;
+
+  @ApiPropertyOptional({
+    description: 'Advanced ranking metrics',
+    type: RankingMetricsDto,
+  })
+  rankingMetrics?: RankingMetricsDto;
 }
