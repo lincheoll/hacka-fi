@@ -7,7 +7,7 @@ export class UpdateHackathonDto extends PartialType(CreateHackathonDto) {
   @ApiPropertyOptional({
     description: 'Current status of the hackathon',
     enum: HackathonStatus,
-    example: HackathonStatus.ACTIVE,
+    example: HackathonStatus.REGISTRATION_OPEN,
   })
   @IsOptional()
   @IsEnum(HackathonStatus)

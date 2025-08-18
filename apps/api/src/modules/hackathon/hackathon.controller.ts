@@ -31,13 +31,19 @@ import {
   ParticipateHackathonDto,
   HackathonResponseDto,
   ParticipantResponseDto,
+  UpdateStatusDto,
+  StatusSummaryResponseDto,
 } from './dto';
+import { HackathonStatusService } from './hackathon-status.service';
 
 @ApiTags('Hackathons')
 @Controller('hackathons')
 @UseGuards(JwtAuthGuard)
 export class HackathonController {
-  constructor(private readonly hackathonService: HackathonService) {}
+  constructor(
+    private readonly hackathonService: HackathonService,
+    private readonly hackathonStatusService: HackathonStatusService,
+  ) {}
 
   @Post()
   @ApiBearerAuth()
@@ -161,7 +167,7 @@ export class HackathonController {
     description: 'Hackathon not found',
   })
   async findOne(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Query('includeParticipants') includeParticipants?: string,
   ): Promise<HackathonResponseDto> {
     const includeParticipantsFlag = includeParticipants === 'true';
@@ -203,7 +209,7 @@ export class HackathonController {
     description: 'Hackathon not found',
   })
   async update(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() updateHackathonDto: UpdateHackathonDto,
     @Request() req: any,
   ): Promise<HackathonResponseDto> {
@@ -249,7 +255,7 @@ export class HackathonController {
     description: 'Hackathon not found',
   })
   async remove(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Request() req: any,
   ): Promise<void> {
     return this.hackathonService.deleteHackathon(id, req.user.walletAddress);
@@ -292,7 +298,7 @@ export class HackathonController {
       'Conflict - already participating or creator cannot participate',
   })
   async participate(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id') id: string,
     @Body() participateDto: ParticipateHackathonDto,
     @Request() req: any,
   ): Promise<ParticipantResponseDto> {
@@ -301,5 +307,117 @@ export class HackathonController {
       req.user.walletAddress,
       participateDto,
     );
+  }
+
+  // Status Management Endpoints
+
+  @Patch(':id/status')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update hackathon status manually',
+    description: 'Manually update the status of a hackathon. Only organizers can update their hackathon status.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Status updated successfully',
+    type: HackathonResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Only organizer can update status',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid status transition',
+  })
+  async updateStatus(
+    @Param('id') id: string,
+    @Body() updateStatusDto: UpdateStatusDto,
+    @Request() req: any,
+  ): Promise<{ message: string; hackathon: HackathonResponseDto }> {
+    await this.hackathonStatusService.manualStatusUpdate(
+      id,
+      updateStatusDto.status,
+      updateStatusDto.reason,
+      req.user.walletAddress,
+      false, // not admin
+    );
+
+    const updatedHackathon = await this.hackathonService.findOne(id, false);
+    
+    return {
+      message: 'Status updated successfully',
+      hackathon: updatedHackathon,
+    };
+  }
+
+  @Get('status/summary')
+  @Public()
+  @ApiOperation({
+    summary: 'Get hackathon status summary',
+    description: 'Get an overview of hackathon statuses and recent changes.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Status summary retrieved successfully',
+    type: StatusSummaryResponseDto,
+  })
+  async getStatusSummary(): Promise<StatusSummaryResponseDto> {
+    const summary = await this.hackathonStatusService.getStatusSummary();
+    
+    return {
+      currentStatus: 'REGISTRATION_OPEN' as any, // This could be enhanced to show most common status
+      statusCounts: summary.statusCounts,
+      activeHackathonsCount: summary.activeHackathonsCount,
+      recentChanges: summary.activeHackathons.map((h: any) => ({
+        hackathonId: h.id,
+        fromStatus: h.status,
+        toStatus: h.nextCheck.newStatus || h.status,
+        reason: h.nextCheck.reason || 'No pending changes',
+        timestamp: new Date().toISOString(),
+      })),
+    };
+  }
+
+  @Post('status/check')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Trigger manual status check',
+    description: 'Manually trigger status check for all hackathons. Admin only.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Status check completed',
+  })
+  @HttpCode(HttpStatus.OK)
+  async triggerStatusCheck(@Request() req: any): Promise<{ 
+    message: string; 
+    updatedCount: number;
+    processedCount: number;
+  }> {
+    // Note: In real implementation, you'd want admin guard here
+    // For now, allow any authenticated user
+    
+    // Get all active hackathons and check their status
+    const activeHackathons = await this.hackathonStatusService.findActiveHackathons();
+    let updatedCount = 0;
+    
+    for (const hackathon of activeHackathons) {
+      const result = await this.hackathonStatusService.checkAndUpdateSingleHackathon(hackathon);
+      if (result.updated) {
+        updatedCount++;
+      }
+    }
+    
+    return {
+      message: 'Status check completed successfully',
+      updatedCount,
+      processedCount: activeHackathons.length,
+    };
   }
 }

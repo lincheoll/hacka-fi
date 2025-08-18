@@ -73,7 +73,7 @@ export class HackathonResponseDto {
   @ApiProperty({
     description: 'Current status',
     enum: HackathonStatus,
-    example: HackathonStatus.ACTIVE,
+    example: HackathonStatus.SUBMISSION_OPEN,
   })
   status!: HackathonStatus;
 

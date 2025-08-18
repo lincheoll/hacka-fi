@@ -7,7 +7,7 @@ export class QueryHackathonDto {
   @ApiPropertyOptional({
     description: 'Filter by hackathon status',
     enum: HackathonStatus,
-    example: HackathonStatus.ACTIVE,
+    example: HackathonStatus.SUBMISSION_OPEN,
   })
   @IsOptional()
   @IsEnum(HackathonStatus)

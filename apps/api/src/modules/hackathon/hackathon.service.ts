@@ -46,10 +46,11 @@ export class HackathonService {
       data: {
         title: createHackathonDto.title,
         description: createHackathonDto.description,
-        deadline,
-        lotteryPercentage: createHackathonDto.lotteryPercentage,
-        creatorAddress,
-        status: HackathonStatus.UPCOMING,
+        registrationDeadline: deadline,
+        submissionDeadline: deadline, // For now, use same deadline for backwards compatibility
+        votingDeadline: new Date(deadline.getTime() + 7 * 24 * 60 * 60 * 1000), // Add 7 days
+        organizerAddress: creatorAddress,
+        status: HackathonStatus.DRAFT,
       },
       include: {
         _count: {
@@ -85,7 +86,7 @@ export class HackathonService {
     }
 
     if (queryDto.creator) {
-      where.creatorAddress = queryDto.creator;
+      where.organizerAddress = queryDto.creator;
     }
 
     if (queryDto.search) {
@@ -129,7 +130,7 @@ export class HackathonService {
   }
 
   async findOne(
-    id: number,
+    id: string,
     includeParticipants = false,
   ): Promise<HackathonResponseDto> {
     const hackathon = await this.prisma.hackathon.findUnique({
@@ -163,7 +164,7 @@ export class HackathonService {
   }
 
   async updateHackathon(
-    id: number,
+    id: string,
     updateHackathonDto: UpdateHackathonDto,
     updaterAddress: string,
   ): Promise<HackathonResponseDto> {
@@ -176,7 +177,7 @@ export class HackathonService {
     }
 
     // Only creator can update
-    if (existingHackathon.creatorAddress !== updaterAddress) {
+    if (existingHackathon.organizerAddress !== updaterAddress) {
       throw new ForbiddenException(
         'Only the creator can update this hackathon',
       );
@@ -207,10 +208,8 @@ export class HackathonService {
     if (updateHackathonDto.description)
       updateData.description = updateHackathonDto.description;
     if (updateHackathonDto.deadline)
-      updateData.deadline = new Date(updateHackathonDto.deadline);
-    if (updateHackathonDto.lotteryPercentage !== undefined) {
-      updateData.lotteryPercentage = updateHackathonDto.lotteryPercentage;
-    }
+      updateData.submissionDeadline = new Date(updateHackathonDto.deadline);
+    // Note: lotteryPercentage removed from new schema
     if (updateHackathonDto.status)
       updateData.status = updateHackathonDto.status;
     if (updateHackathonDto.contractAddress) {
@@ -231,7 +230,7 @@ export class HackathonService {
     return this.mapToResponseDto(updatedHackathon);
   }
 
-  async deleteHackathon(id: number, deleterAddress: string): Promise<void> {
+  async deleteHackathon(id: string, deleterAddress: string): Promise<void> {
     const hackathon = await this.prisma.hackathon.findUnique({
       where: { id },
     });
@@ -241,32 +240,33 @@ export class HackathonService {
     }
 
     // Only creator can delete
-    if (hackathon.creatorAddress !== deleterAddress) {
+    if (hackathon.organizerAddress !== deleterAddress) {
       throw new ForbiddenException(
         'Only the creator can delete this hackathon',
       );
     }
 
-    // Cannot delete if status is ACTIVE or VOTING
+    // Cannot delete if hackathon is in active states
     if (
-      hackathon.status === HackathonStatus.ACTIVE ||
-      hackathon.status === HackathonStatus.VOTING
+      hackathon.status === HackathonStatus.SUBMISSION_OPEN ||
+      hackathon.status === HackathonStatus.VOTING_OPEN ||
+      hackathon.status === HackathonStatus.REGISTRATION_OPEN
     ) {
       throw new BadRequestException(
-        'Cannot delete hackathon that is active or in voting phase',
+        'Cannot delete hackathon that is active or in progress',
       );
     }
 
-    await this.prisma.hackathon.update({
+    // Simply delete the hackathon (no CANCELLED status in new schema)
+    await this.prisma.hackathon.delete({
       where: { id },
-      data: { status: HackathonStatus.CANCELLED },
     });
 
     this.logger.log(`Soft deleted hackathon ${id} by ${deleterAddress}`);
   }
 
   async participateInHackathon(
-    hackathonId: number,
+    hackathonId: string,
     participantAddress: string,
     participateDto: ParticipateHackathonDto,
   ): Promise<ParticipantResponseDto> {
@@ -280,19 +280,18 @@ export class HackathonService {
 
     // Check if hackathon is accepting participants
     if (
-      hackathon.status !== HackathonStatus.UPCOMING &&
-      hackathon.status !== HackathonStatus.ACTIVE
+      hackathon.status !== HackathonStatus.REGISTRATION_OPEN
     ) {
       throw new BadRequestException('Hackathon is not accepting participants');
     }
 
     // Check deadline
-    if (new Date() > hackathon.deadline) {
+    if (new Date() > hackathon.submissionDeadline) {
       throw new BadRequestException('Hackathon deadline has passed');
     }
 
     // Creator cannot participate in their own hackathon
-    if (hackathon.creatorAddress === participantAddress) {
+    if (hackathon.organizerAddress === participantAddress) {
       throw new BadRequestException(
         'Creator cannot participate in their own hackathon',
       );
@@ -344,20 +343,29 @@ export class HackathonService {
     newStatus: HackathonStatus,
   ): void {
     const validTransitions: Record<HackathonStatus, HackathonStatus[]> = {
-      [HackathonStatus.UPCOMING]: [
-        HackathonStatus.ACTIVE,
-        HackathonStatus.CANCELLED,
+      [HackathonStatus.DRAFT]: [
+        HackathonStatus.REGISTRATION_OPEN,
       ],
-      [HackathonStatus.ACTIVE]: [
-        HackathonStatus.VOTING,
-        HackathonStatus.CANCELLED,
+      [HackathonStatus.REGISTRATION_OPEN]: [
+        HackathonStatus.REGISTRATION_CLOSED,
+        HackathonStatus.SUBMISSION_OPEN,
       ],
-      [HackathonStatus.VOTING]: [
+      [HackathonStatus.REGISTRATION_CLOSED]: [
+        HackathonStatus.SUBMISSION_OPEN,
+      ],
+      [HackathonStatus.SUBMISSION_OPEN]: [
+        HackathonStatus.SUBMISSION_CLOSED,
+      ],
+      [HackathonStatus.SUBMISSION_CLOSED]: [
+        HackathonStatus.VOTING_OPEN,
+      ],
+      [HackathonStatus.VOTING_OPEN]: [
+        HackathonStatus.VOTING_CLOSED,
+      ],
+      [HackathonStatus.VOTING_CLOSED]: [
         HackathonStatus.COMPLETED,
-        HackathonStatus.CANCELLED,
       ],
       [HackathonStatus.COMPLETED]: [],
-      [HackathonStatus.CANCELLED]: [],
     };
 
     if (!validTransitions[currentStatus].includes(newStatus)) {

@@ -19,34 +19,41 @@ model UserProfile {
   participations    Participant[]
   votes            Vote[]
   achievements     UserAchievement[]
+  auditLogs        AuditLog[]
 
   @@map("user_profiles")
 }
 
 model Hackathon {
-  id                  Int      @id @default(autoincrement())
-  title              String
-  description        String
-  deadline           DateTime
-  status             HackathonStatus @default(UPCOMING)
-  lotteryPercentage  Int      @default(0) @map("lottery_percentage")
-  contractAddress    String?  @map("contract_address")
-  creatorAddress     String   @map("creator_address")
-  createdAt          DateTime @default(now()) @map("created_at")
-  updatedAt          DateTime @updatedAt @map("updated_at")
+  id                    String   @id @default(cuid())
+  title                String
+  description          String
+  organizerAddress     String   @map("organizer_address")
+  registrationDeadline DateTime @map("registration_deadline")
+  submissionDeadline   DateTime @map("submission_deadline")
+  votingDeadline       DateTime @map("voting_deadline")
+  status               HackathonStatus @default(DRAFT)
+  prizeAmount          String?  @map("prize_amount") // Using String for BigInt compatibility
+  entryFee             String?  @map("entry_fee") // Using String for BigInt compatibility
+  maxParticipants      Int?     @map("max_participants")
+  coverImageUrl        String?  @map("cover_image_url")
+  contractAddress      String?  @map("contract_address")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
 
-  creator      UserProfile   @relation("HackathonCreator", fields: [creatorAddress], references: [walletAddress])
-  participants Participant[]
-  votes        Vote[]
-  results      Result[]
-  achievements UserAchievement[]
+  organizer      UserProfile     @relation("HackathonCreator", fields: [organizerAddress], references: [walletAddress])
+  participants   Participant[]
+  votes          Vote[]
+  results        Result[]
+  achievements   UserAchievement[]
+  auditLogs      AuditLog[]
 
   @@map("hackathons")
 }
 
 model Participant {
   id             Int      @id @default(autoincrement())
-  hackathonId    Int      @map("hackathon_id")
+  hackathonId    String   @map("hackathon_id")
   walletAddress  String   @map("wallet_address")
   submissionUrl  String?  @map("submission_url")
   entryFee       String?  @map("entry_fee") // Using String for BigInt compatibility
@@ -65,7 +72,7 @@ model Participant {
 
 model Vote {
   id            Int      @id @default(autoincrement())
-  hackathonId   Int      @map("hackathon_id")
+  hackathonId   String   @map("hackathon_id")
   judgeAddress  String   @map("judge_address")
   participantId Int      @map("participant_id")
   score         Int
@@ -82,7 +89,7 @@ model Vote {
 
 model Result {
   id                  Int      @id @default(autoincrement())
-  hackathonId         Int      @unique @map("hackathon_id")
+  hackathonId         String   @unique @map("hackathon_id")
   winners             String   // JSON string of winner data
   totalPrizePool      String   @map("total_prize_pool") // Using String for BigInt compatibility
   distributionTxHash  String?  @map("distribution_tx_hash")
@@ -98,7 +105,7 @@ model UserAchievement {
   id           Int                 @id @default(autoincrement())
   userAddress  String              @map("user_address")
   achievementType AchievementType  @map("achievement_type")
-  hackathonId  Int?                @map("hackathon_id")
+  hackathonId  String?             @map("hackathon_id")
   rank         Int?
   prizeAmount  String?             @map("prize_amount") // Using String for BigInt compatibility
   earnedAt     DateTime            @default(now()) @map("earned_at")
@@ -109,12 +116,47 @@ model UserAchievement {
   @@map("user_achievements")
 }
 
+model AuditLog {
+  id            String         @id @default(cuid())
+  hackathonId   String         @map("hackathon_id")
+  action        AuditAction
+  fromStatus    HackathonStatus? @map("from_status")
+  toStatus      HackathonStatus  @map("to_status")
+  reason        String
+  triggeredBy   TriggerType    @map("triggered_by")
+  userAddress   String?        @map("user_address")
+  metadata      String?        // JSON string for additional data
+  ipAddress     String?        @map("ip_address")
+  userAgent     String?        @map("user_agent")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  user      UserProfile? @relation(fields: [userAddress], references: [walletAddress])
+
+  @@map("audit_logs")
+}
+
+enum AuditAction {
+  STATUS_CHANGE
+  MANUAL_OVERRIDE
+  AUTOMATIC_TRANSITION
+}
+
+enum TriggerType {
+  SYSTEM
+  ORGANIZER
+  ADMIN
+}
+
 enum HackathonStatus {
-  UPCOMING
-  ACTIVE
-  VOTING
+  DRAFT
+  REGISTRATION_OPEN
+  REGISTRATION_CLOSED
+  SUBMISSION_OPEN
+  SUBMISSION_CLOSED
+  VOTING_OPEN
+  VOTING_CLOSED
   COMPLETED
-  CANCELLED
 }
 
 enum AchievementType {

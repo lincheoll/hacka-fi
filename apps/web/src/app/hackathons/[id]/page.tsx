@@ -15,9 +15,13 @@ import { HackathonStatusBadge } from '@/components/features/hackathon/hackathon-
 import { HackathonCountdown } from '@/components/features/hackathon/hackathon-countdown';
 import { StatusManagement } from '@/components/features/hackathon/status-management';
 import { ActionButtons } from '@/components/features/hackathon/action-buttons';
-import { useStatusMonitor } from '@/hooks/use-status-monitor';
-import { AuditLogger } from '@/lib/audit-logger';
-import { fetchHackathon, fetchParticipantStatus, fetchHackathonParticipants } from '@/lib/api-functions';
+import { 
+  fetchHackathon, 
+  fetchParticipantStatus, 
+  fetchHackathonParticipants,
+  participateInHackathon,
+  updateHackathonStatus,
+} from '@/lib/api-functions';
 
 interface HackathonDetailPageProps {
   params: Promise<{ id: string }>;
@@ -113,56 +117,61 @@ export default function HackathonDetailPage({
   // Check if current user is the organizer
   const isOrganizer = walletAddress?.toLowerCase() === hackathon.organizerAddress.toLowerCase();
 
-  // Mock functions for action handlers (to be implemented with actual API calls)
+  // Real API action handlers
   const handleRegister = async () => {
-    console.log('Register for hackathon');
-    // TODO: Implement registration API call
+    if (!walletAddress) {
+      alert('Please connect your wallet');
+      return;
+    }
+    
+    try {
+      await participateInHackathon(hackathon.id);
+      // Refetch participant status after successful registration
+      window.location.reload(); // Simple reload for now
+    } catch (error) {
+      console.error('Registration failed:', error);
+      alert('Registration failed. Please try again.');
+    }
   };
 
   const handleSubmit = async () => {
     console.log('Submit project');
     // TODO: Implement submission API call
+    // This would typically open a modal for submission URL input
   };
 
   const handleVote = async () => {
     console.log('Vote on projects');
     // TODO: Implement voting API call
+    // This would redirect to voting page or open voting modal
   };
 
   const handleStatusUpdate = async (newStatus: any) => {
-    console.log('Update status to:', newStatus);
-    // TODO: Implement status update API call
-    
-    // Log the manual status change
-    if (hackathon && walletAddress) {
-      await AuditLogger.logManualOverride(
+    if (!walletAddress) {
+      alert('Please connect your wallet');
+      return;
+    }
+
+    try {
+      const result = await updateHackathonStatus(
         hackathon.id,
-        hackathon.status,
         newStatus,
         'Manual status change by organizer',
-        walletAddress
+        { updatedBy: walletAddress }
       );
+      
+      console.log('Status updated successfully:', result);
+      
+      // Refetch hackathon data to get updated status
+      window.location.reload(); // Simple reload for now
+    } catch (error) {
+      console.error('Status update failed:', error);
+      alert('Status update failed. Please try again.');
     }
   };
 
-  // Set up status monitoring
-  // TODO: This is temporary client-side monitoring
-  // Real status updates should come from NestJS backend cron job
-  useStatusMonitor(hackathon, {
-    enabled: true,
-    interval: 300000, // Check every 5 minutes (reduced from 1 minute)
-    onStatusChange: async (hackathon, newStatus, reason) => {
-      console.log('Automatic status change detected:', { newStatus, reason });
-      
-      // Log automatic transition
-      await AuditLogger.logAutomaticTransition(
-        hackathon.id,
-        hackathon.status,
-        newStatus as any,
-        reason
-      );
-    },
-  });
+  // Status monitoring is now handled by NestJS backend cron job
+  // No client-side monitoring needed - status changes happen automatically on server
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
