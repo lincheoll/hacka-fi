@@ -20,7 +20,6 @@ import {
   Trash2,
   Users,
   AlertCircle,
-  Check,
   UserCheck,
   Calendar,
 } from "lucide-react";
@@ -95,8 +94,12 @@ export function JudgeManagement({
         judgeAddress: newJudgeAddress.trim(),
         note: newJudgeNote.trim() || undefined,
       });
-    } catch (error: any) {
-      alert(error?.message || "Failed to add judge. Please try again.");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to add judge. Please try again.";
+      alert(message);
     }
   };
 
@@ -107,8 +110,12 @@ export function JudgeManagement({
 
     try {
       await removeJudgeMutation.mutateAsync({ judgeAddress });
-    } catch (error: any) {
-      alert(error?.message || "Failed to remove judge. Please try again.");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to remove judge. Please try again.";
+      alert(message);
     }
   };
 

@@ -11,7 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, RefreshCw, Activity } from "lucide-react";
+import { RefreshCw, Activity } from "lucide-react";
 import {
   getStatusSummary,
   triggerStatusCheck,

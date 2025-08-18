@@ -21,7 +21,6 @@ import {
   fetchUserParticipations,
   fetchUserHackathons,
 } from "@/lib/api-functions";
-import type { Participant, Hackathon } from "@/types/global";
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);

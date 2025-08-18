@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAccount } from "wagmi";
 import { fetchJudges, fetchVotingResults } from "@/lib/api-functions";
+import type { Vote } from "@/types/api";
 
 export function useVotingStatus(hackathonId: string) {
   const { address: walletAddress, isConnected } = useAccount();
@@ -38,7 +39,7 @@ export function useVotingStatus(hackathonId: string) {
         }
         return acc;
       },
-      {} as Record<number, any>,
+      {} as Record<number, Vote>,
     ) || {};
 
   // Calculate voting progress

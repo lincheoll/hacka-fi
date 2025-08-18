@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { type Hackathon, HackathonStatus } from "@/types/global";
+import { HackathonStatus } from "@/types/global";
 import { getStatusInfo } from "@/lib/hackathon-status";
 import { cn } from "@/lib/utils";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -56,7 +56,7 @@ export function WinnerManagement({
   const isCompleted = hackathonStatus === "COMPLETED";
 
   // Load existing winners on component mount
-  const loadWinners = async () => {
+  const loadWinners = useCallback(async () => {
     if (!isCompleted) return;
 
     setIsLoading(true);
@@ -75,7 +75,7 @@ export function WinnerManagement({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isCompleted, hackathonId]);
 
   // Calculate winners without finalizing
   const handleCalculateWinners = async () => {
@@ -180,7 +180,7 @@ export function WinnerManagement({
   // Load winners when component mounts
   React.useEffect(() => {
     loadWinners();
-  }, [hackathonId, isCompleted]);
+  }, [hackathonId, isCompleted, loadWinners]);
 
   if (!isCompleted) {
     return (

@@ -76,7 +76,7 @@ export default function HackathonDetailPage({
   });
 
   // Get voting status for current user
-  const { isJudge, hasVoted, hasCompletedVoting } = useVotingStatus(id);
+  const { isJudge, hasVoted } = useVotingStatus(id);
 
   if (!mounted) {
     return (

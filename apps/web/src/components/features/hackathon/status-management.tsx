@@ -2,18 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Settings, Play, Pause, SkipForward, CheckCircle } from "lucide-react";
+import { Settings, Play, SkipForward, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,

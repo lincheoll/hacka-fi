@@ -33,7 +33,8 @@ import {
   castVote,
 } from "@/lib/api-functions";
 import { HackathonStatusBadge } from "@/components/features/hackathon/hackathon-status-badge";
-import type { CastVoteRequest } from "@/types/api";
+import type { CastVoteRequest, Vote } from "@/types/api";
+import type { Participant } from "@/types/global";
 
 interface VotingPageProps {
   params: Promise<{ id: string }>;
@@ -76,7 +77,7 @@ export default function VotingPage({ params }: VotingPageProps) {
   });
 
   // Fetch voting results to check current votes
-  const { data: votingResults, isLoading: isLoadingResults } = useQuery({
+  const { data: votingResults } = useQuery({
     queryKey: ["voting-results", id],
     queryFn: () => fetchVotingResults(id),
     enabled: !!id && mounted,
@@ -236,7 +237,7 @@ export default function VotingPage({ params }: VotingPageProps) {
         }
         return acc;
       },
-      {} as Record<number, any>,
+      {} as Record<number, Vote>,
     ) || {};
 
   const handleVoteSubmit = async (
@@ -348,7 +349,7 @@ export default function VotingPage({ params }: VotingPageProps) {
                 <VotingCard
                   key={participant.id}
                   participant={participant}
-                  currentVote={myVotes[participant.id]}
+                  currentVote={myVotes[participant.id as unknown as number]}
                   onVoteSubmit={handleVoteSubmit}
                   isSubmitting={voteMutation.isPending}
                 />
@@ -382,8 +383,8 @@ export default function VotingPage({ params }: VotingPageProps) {
 
 // Voting Card Component
 interface VotingCardProps {
-  participant: any;
-  currentVote?: any;
+  participant: Participant;
+  currentVote?: Vote;
   onVoteSubmit: (
     participantId: number,
     score: number,
@@ -411,9 +412,13 @@ function VotingCard({
     }
 
     try {
-      await onVoteSubmit(participant.id, selectedScore, comment);
+      await onVoteSubmit(
+        participant.id as unknown as number,
+        selectedScore,
+        comment,
+      );
       // Show success feedback
-    } catch (error) {
+    } catch {
       alert("Failed to submit vote. Please try again.");
     }
   };

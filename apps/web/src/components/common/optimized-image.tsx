@@ -141,7 +141,7 @@ export function OptimizedImage({
 
   return (
     <>
-      <Image {...imageProps} />
+      <Image {...imageProps} alt={alt || ""} />
       {isLoading && (
         <div
           className={cn(

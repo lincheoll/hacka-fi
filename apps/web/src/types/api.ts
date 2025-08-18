@@ -220,9 +220,107 @@ export interface Top3WinnersResponse {
   thirdPlace?: string;
 }
 
+// Audit Log API types
+export interface AuditLog {
+  id: string;
+  hackathonId: string;
+  action: string;
+  fromStatus?: string;
+  toStatus?: string;
+  reason?: string;
+  triggeredBy: string;
+  userAddress?: string;
+  metadata?: Record<string, unknown>;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
+}
+
+export interface AuditLogsResponse {
+  logs: AuditLog[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface AuditSummaryResponse {
+  totalChanges: number;
+  automaticChanges: number;
+  manualChanges: number;
+  lastChange?: AuditLog;
+  timeline: Array<{
+    status: string;
+    timestamp: string;
+    triggeredBy: string;
+    reason: string;
+  }>;
+}
+
+export interface AuditStatisticsResponse {
+  totalLogs: number;
+  logsByAction: Record<string, number>;
+  logsByTrigger: Record<string, number>;
+  recentActivity: AuditLog[];
+}
+
+export interface HackathonStatusSummaryResponse {
+  currentStatus: string;
+  statusCounts: Record<string, number>;
+  activeHackathonsCount: number;
+  recentChanges: Array<{
+    hackathonId: string;
+    fromStatus: string;
+    toStatus: string;
+    reason: string;
+    timestamp: string;
+  }>;
+}
+
 // Error types
 export interface ApiError {
   message: string;
   statusCode: number;
   error?: string;
+}
+
+// Enhanced Voting Period Management API Functions
+export interface VotingPeriodInfo {
+  hackathonId: string;
+  currentStatus: string;
+  votingPeriod: {
+    startTime: string;
+    endTime: string;
+    duration: number;
+    isActive: boolean;
+    hasStarted: boolean;
+    hasEnded: boolean;
+    timeRemaining: number;
+    timeUntilStart: number;
+  };
+  statistics: {
+    totalParticipants: number;
+    totalJudges: number;
+    totalVotes: number;
+    votingParticipation: number;
+  };
+  nextTransition: {
+    newStatus: string | null;
+    reason: string | null;
+  };
+}
+
+export interface VotingPhaseHackathon {
+  id: string;
+  title: string;
+  status: string;
+  submissionDeadline: string;
+  votingDeadline: string;
+  timeUntilVotingEnds: number;
+  votingParticipation: number;
+  _count: {
+    participants: number;
+    judges: number;
+    votes: number;
+  };
 }

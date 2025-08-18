@@ -22,7 +22,6 @@ import {
   Award,
   Star,
   MessageSquare,
-  Users,
   BarChart3,
   ExternalLink,
 } from "lucide-react";
