@@ -1,10 +1,10 @@
-'use client';
-export const dynamic = 'force-dynamic';
+"use client";
+export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from 'react';
-import { useAccount } from 'wagmi';
+import { useState, useEffect } from "react";
+import { useAccount } from "wagmi";
 import { Header } from "@/components/layout/header";
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function MyProfilePage() {
   const [mounted, setMounted] = useState(false);
@@ -40,9 +40,7 @@ function MyProfileContent() {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">My Profile</h1>
         {isConnected ? (
           <div>
-            <p className="text-gray-600 mb-4">
-              Connected wallet: {address}
-            </p>
+            <p className="text-gray-600 mb-4">Connected wallet: {address}</p>
             <p className="text-gray-600">
               Your profile details will be displayed here.
             </p>

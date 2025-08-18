@@ -38,7 +38,7 @@ export class WinnerDeterminationService {
    */
   async calculateWinners(
     hackathonId: string,
-    prizeDistribution?: { position: number; percentage: number }[]
+    prizeDistribution?: { position: number; percentage: number }[],
   ): Promise<WinnerDeterminationResult> {
     this.logger.log(`Calculating winners for hackathon ${hackathonId}`);
 
@@ -97,7 +97,7 @@ export class WinnerDeterminationService {
         useNormalizedScoring: true,
         penalizeIncompleteVoting: true,
         minimumVotesThreshold: Math.max(1, Math.ceil(totalJudges * 0.3)),
-      }
+      },
     );
 
     // Default prize distribution using basis points (60%, 25%, 15%)
@@ -109,11 +109,14 @@ export class WinnerDeterminationService {
     ];
 
     const distribution = prizeDistribution || defaultDistribution;
-    const totalPrizePool = hackathon.prizeAmount ? BigInt(hackathon.prizeAmount) : 0n;
+    const totalPrizePool = hackathon.prizeAmount
+      ? BigInt(hackathon.prizeAmount)
+      : 0n;
 
     // Calculate prize amounts for each position
     const prizeDistributionWithAmounts = distribution.map((dist) => {
-      const amount = (totalPrizePool * BigInt(Math.floor(dist.percentage * 10000))) / 10000n;
+      const amount =
+        (totalPrizePool * BigInt(Math.floor(dist.percentage * 10000))) / 10000n;
       return {
         ...dist,
         amount: amount.toString(),
@@ -140,7 +143,9 @@ export class WinnerDeterminationService {
       return prize;
     });
 
-    this.logger.log(`Determined ${winners.length} winners for hackathon ${hackathonId}`);
+    this.logger.log(
+      `Determined ${winners.length} winners for hackathon ${hackathonId}`,
+    );
 
     return {
       winners,
@@ -153,7 +158,9 @@ export class WinnerDeterminationService {
   /**
    * Finalize winners by updating participant records in database
    */
-  async finalizeWinners(hackathonId: string): Promise<WinnerDeterminationResult> {
+  async finalizeWinners(
+    hackathonId: string,
+  ): Promise<WinnerDeterminationResult> {
     this.logger.log(`Finalizing winners for hackathon ${hackathonId}`);
 
     // Calculate winners first
@@ -181,7 +188,9 @@ export class WinnerDeterminationService {
         });
       }
 
-      this.logger.log(`Updated database records for ${result.winners.length} winners`);
+      this.logger.log(
+        `Updated database records for ${result.winners.length} winners`,
+      );
     });
 
     return result;
@@ -190,7 +199,9 @@ export class WinnerDeterminationService {
   /**
    * Get winner information for a completed hackathon
    */
-  async getWinners(hackathonId: string): Promise<WinnerDeterminationResult | null> {
+  async getWinners(
+    hackathonId: string,
+  ): Promise<WinnerDeterminationResult | null> {
     this.logger.log(`Getting winners for hackathon ${hackathonId}`);
 
     const hackathon = await this.prisma.hackathon.findUnique({
@@ -273,7 +284,11 @@ export class WinnerDeterminationService {
       orderBy: { rank: 'asc' },
     });
 
-    const result: { firstPlace?: string; secondPlace?: string; thirdPlace?: string } = {};
+    const result: {
+      firstPlace?: string;
+      secondPlace?: string;
+      thirdPlace?: string;
+    } = {};
 
     winners.forEach((winner) => {
       if (winner.rank === 1) result.firstPlace = winner.walletAddress;

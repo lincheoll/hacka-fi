@@ -1,16 +1,14 @@
-'use client';
-export const dynamic = 'force-dynamic';
+"use client";
+export const dynamic = "force-dynamic";
 
-import { use, useState, useEffect } from 'react';
+import { use, useState, useEffect } from "react";
 import { Header } from "@/components/layout/header";
 
 interface UserProfilePageProps {
   params: Promise<{ address: string }>;
 }
 
-export default function UserProfilePage({
-  params,
-}: UserProfilePageProps) {
+export default function UserProfilePage({ params }: UserProfilePageProps) {
   const { address } = use(params);
   const [mounted, setMounted] = useState(false);
 

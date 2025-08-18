@@ -23,16 +23,17 @@ import { UploadService } from './upload.service';
             destination: (req, file, cb) => {
               const type = req.body.type || 'general';
               const typePath = join(uploadPath, type);
-              
+
               if (!existsSync(typePath)) {
                 mkdirSync(typePath, { recursive: true });
               }
-              
+
               cb(null, typePath);
             },
             filename: (req, file, cb) => {
               // Generate unique filename with original extension
-              const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+              const uniqueSuffix =
+                Date.now() + '-' + Math.round(Math.random() * 1e9);
               const ext = extname(file.originalname);
               const filename = `${file.fieldname}-${uniqueSuffix}${ext}`;
               cb(null, filename);
@@ -42,14 +43,14 @@ import { UploadService } from './upload.service';
             // Basic file type validation
             const allowedMimes = [
               'image/jpeg',
-              'image/png', 
+              'image/png',
               'image/webp',
               'image/gif',
               'application/pdf',
               'text/plain',
               'application/json',
             ];
-            
+
             if (allowedMimes.includes(file.mimetype)) {
               cb(null, true);
             } else {

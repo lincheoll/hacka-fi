@@ -1,8 +1,12 @@
-'use client';
+"use client";
 
-import { useMemo } from 'react';
-import { type Hackathon } from '@/types/global';
-import { isActionAllowed, getStatusInfo, getTimeRemaining } from '@/lib/hackathon-status';
+import { useMemo } from "react";
+import { type Hackathon } from "@/types/global";
+import {
+  isActionAllowed,
+  getStatusInfo,
+  getTimeRemaining,
+} from "@/lib/hackathon-status";
 
 export interface ActionState {
   allowed: boolean;
@@ -27,12 +31,14 @@ export function useHackathonActions(hackathon: Hackathon): HackathonActions {
     const statusInfo = getStatusInfo(hackathon.status);
     const timeData = getTimeRemaining(hackathon);
 
-    const canRegister = isActionAllowed(hackathon, 'register');
-    const canSubmit = isActionAllowed(hackathon, 'submit');
-    const canVote = isActionAllowed(hackathon, 'vote');
+    const canRegister = isActionAllowed(hackathon, "register");
+    const canSubmit = isActionAllowed(hackathon, "submit");
+    const canVote = isActionAllowed(hackathon, "vote");
 
     // Add time information to action states
-    const enrichActionState = (actionState: ReturnType<typeof isActionAllowed>): ActionState => ({
+    const enrichActionState = (
+      actionState: ReturnType<typeof isActionAllowed>,
+    ): ActionState => ({
       ...actionState,
       timeRemaining: timeData.timeRemaining || undefined,
       deadline: timeData.deadline || undefined,
@@ -60,9 +66,13 @@ export function useDeadlineEnforcement(hackathon: Hackathon) {
   }, [actions.timeData.isPastDeadline]);
 
   // Helper function to get appropriate error message for blocked actions
-  const getBlockedActionMessage = (action: 'register' | 'submit' | 'vote'): string => {
-    const actionState = actions[`can${action.charAt(0).toUpperCase() + action.slice(1)}` as keyof HackathonActions] as ActionState;
-    
+  const getBlockedActionMessage = (
+    action: "register" | "submit" | "vote",
+  ): string => {
+    const actionState = actions[
+      `can${action.charAt(0).toUpperCase() + action.slice(1)}` as keyof HackathonActions
+    ] as ActionState;
+
     if (actionState.reason) {
       return actionState.reason;
     }

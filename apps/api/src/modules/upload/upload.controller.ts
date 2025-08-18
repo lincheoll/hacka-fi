@@ -29,11 +29,11 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Public } from '../auth/decorators/public.decorator';
 import { UploadService } from './upload.service';
-import { 
-  FileUploadDto, 
-  ImageUploadDto, 
-  FileResponseDto, 
-  MultipleFileResponseDto 
+import {
+  FileUploadDto,
+  ImageUploadDto,
+  FileResponseDto,
+  MultipleFileResponseDto,
 } from './dto/upload.dto';
 
 @ApiTags('File Upload')
@@ -139,8 +139,11 @@ export class UploadController {
       throw new BadRequestException('No files uploaded');
     }
 
-    const results = this.uploadService.processUploadedFiles(files, uploadDto.type);
-    
+    const results = this.uploadService.processUploadedFiles(
+      files,
+      uploadDto.type,
+    );
+
     return {
       files: results,
       count: results.length,
@@ -223,7 +226,11 @@ export class UploadController {
     if (uploadDto.quality) options.quality = Number(uploadDto.quality);
     if (uploadDto.format) options.format = uploadDto.format;
 
-    const result = await this.uploadService.processImage(file, options, uploadDto.type);
+    const result = await this.uploadService.processImage(
+      file,
+      options,
+      uploadDto.type,
+    );
     return result;
   }
 
@@ -257,7 +264,7 @@ export class UploadController {
     @Param('filename') filename: string,
   ): Promise<FileResponseDto> {
     const fileInfo = this.uploadService.getFileInfo(filename, type);
-    
+
     if (!fileInfo) {
       throw new NotFoundException(`File not found: ${filename}`);
     }

@@ -55,8 +55,8 @@ export class AuditLoggerService {
         id: auditLog.id,
         hackathonId: entry.hackathonId,
         action: entry.action,
-        statusChange: entry.fromStatus 
-          ? `${entry.fromStatus} → ${entry.toStatus}` 
+        statusChange: entry.fromStatus
+          ? `${entry.fromStatus} → ${entry.toStatus}`
           : entry.toStatus,
         triggeredBy: entry.triggeredBy,
         userAddress: entry.userAddress,
@@ -220,13 +220,14 @@ export class AuditLoggerService {
    * Get audit trail for a specific hackathon
    */
   async getHackathonAuditTrail(hackathonId: string): Promise<any[]> {
-    const { logs } = await this.getLogs({ 
+    const { logs } = await this.getLogs({
       hackathonId,
       limit: 100, // Get all entries for the hackathon
     });
-    
-    return logs.sort((a, b) => 
-      new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+
+    return logs.sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
     );
   }
 
@@ -247,15 +248,15 @@ export class AuditLoggerService {
   }> {
     try {
       const logs = await this.getHackathonAuditTrail(hackathonId);
-      
+
       const automaticChanges = logs.filter(
-        (log) => log.triggeredBy === TriggerType.SYSTEM
+        (log) => log.triggeredBy === TriggerType.SYSTEM,
       ).length;
-      
+
       const manualChanges = logs.filter(
-        (log) => log.triggeredBy !== TriggerType.SYSTEM
+        (log) => log.triggeredBy !== TriggerType.SYSTEM,
       ).length;
-      
+
       const timeline = logs.map((log) => ({
         status: log.toStatus,
         timestamp: log.createdAt,
@@ -291,30 +292,26 @@ export class AuditLoggerService {
     recentActivity: any[];
   }> {
     try {
-      const [
-        totalLogs,
-        logsByAction,
-        logsByTrigger,
-        recentActivity,
-      ] = await Promise.all([
-        this.prisma.auditLog.count(),
-        this.prisma.auditLog.groupBy({
-          by: ['action'],
-          _count: { action: true },
-        }),
-        this.prisma.auditLog.groupBy({
-          by: ['triggeredBy'],
-          _count: { triggeredBy: true },
-        }),
-        this.prisma.auditLog.findMany({
-          take: 10,
-          orderBy: { createdAt: 'desc' },
-          include: {
-            hackathon: { select: { title: true } },
-            user: { select: { username: true } },
-          },
-        }),
-      ]);
+      const [totalLogs, logsByAction, logsByTrigger, recentActivity] =
+        await Promise.all([
+          this.prisma.auditLog.count(),
+          this.prisma.auditLog.groupBy({
+            by: ['action'],
+            _count: { action: true },
+          }),
+          this.prisma.auditLog.groupBy({
+            by: ['triggeredBy'],
+            _count: { triggeredBy: true },
+          }),
+          this.prisma.auditLog.findMany({
+            take: 10,
+            orderBy: { createdAt: 'desc' },
+            include: {
+              hackathon: { select: { title: true } },
+              user: { select: { username: true } },
+            },
+          }),
+        ]);
 
       return {
         totalLogs,
@@ -323,14 +320,14 @@ export class AuditLoggerService {
             acc[item.action] = item._count.action;
             return acc;
           },
-          {} as Record<string, number>
+          {} as Record<string, number>,
         ),
         logsByTrigger: logsByTrigger.reduce(
           (acc, item) => {
             acc[item.triggeredBy] = item._count.triggeredBy;
             return acc;
           },
-          {} as Record<string, number>
+          {} as Record<string, number>,
         ),
         recentActivity,
       };
@@ -361,8 +358,10 @@ export class AuditLoggerService {
         },
       });
 
-      this.logger.log(`Cleaned up ${result.count} audit logs older than ${olderThanDays} days`);
-      
+      this.logger.log(
+        `Cleaned up ${result.count} audit logs older than ${olderThanDays} days`,
+      );
+
       return result.count;
     } catch (error) {
       this.logger.error('Failed to cleanup old audit logs:', error);

@@ -1,29 +1,41 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { useAccount, useSignMessage } from 'wagmi';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { participantRegistrationSchema, type ParticipantRegistrationFormData } from '@/lib/validations';
-import { registerParticipant, fetchParticipantStatus } from '@/lib/api-functions';
-import type { Hackathon, Participant } from '@/types/global';
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useAccount, useSignMessage } from "wagmi";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  participantRegistrationSchema,
+  type ParticipantRegistrationFormData,
+} from "@/lib/validations";
+import {
+  registerParticipant,
+  fetchParticipantStatus,
+} from "@/lib/api-functions";
+import type { Hackathon, Participant } from "@/types/global";
 
 interface ParticipantRegistrationProps {
   hackathon: Hackathon;
   onRegistrationSuccess?: (participant: Participant) => void;
 }
 
-export function ParticipantRegistration({ 
-  hackathon, 
-  onRegistrationSuccess 
+export function ParticipantRegistration({
+  hackathon,
+  onRegistrationSuccess,
 }: ParticipantRegistrationProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
-  
+
   const { address: walletAddress, isConnected } = useAccount();
   const { signMessageAsync } = useSignMessage();
 
@@ -37,44 +49,52 @@ export function ParticipantRegistration({
   });
 
   // Check if user is already registered
-  const { data: participantStatus, isLoading: isCheckingStatus, refetch: refetchStatus } = useQuery({
-    queryKey: ['participant-status', hackathon.id, walletAddress],
-    queryFn: () => walletAddress ? fetchParticipantStatus(hackathon.id, walletAddress) : null,
+  const {
+    data: participantStatus,
+    isLoading: isCheckingStatus,
+    refetch: refetchStatus,
+  } = useQuery({
+    queryKey: ["participant-status", hackathon.id, walletAddress],
+    queryFn: () =>
+      walletAddress
+        ? fetchParticipantStatus(hackathon.id, walletAddress)
+        : null,
     enabled: !!walletAddress && isConnected,
   });
 
   // Set form values when wallet connects
   useEffect(() => {
     if (walletAddress) {
-      setValue('hackathonId', hackathon.id);
-      setValue('walletAddress', walletAddress);
+      setValue("hackathonId", hackathon.id);
+      setValue("walletAddress", walletAddress);
     }
   }, [walletAddress, hackathon.id, setValue]);
 
   const registrationMutation = useMutation({
     mutationFn: registerParticipant,
     onSuccess: (participant) => {
-      setSubmitSuccess('Successfully registered for hackathon!');
+      setSubmitSuccess("Successfully registered for hackathon!");
       setSubmitError(null);
       reset();
       refetchStatus();
       onRegistrationSuccess?.(participant);
     },
     onError: (error: Error) => {
-      setSubmitError(error.message || 'Failed to register for hackathon');
+      setSubmitError(error.message || "Failed to register for hackathon");
       setSubmitSuccess(null);
     },
   });
 
   const handleRegistration = async (data: ParticipantRegistrationFormData) => {
     if (!walletAddress || !isConnected) {
-      setSubmitError('Please connect your wallet first');
+      setSubmitError("Please connect your wallet first");
       return;
     }
 
     try {
       // Check if entry fee is required
-      const entryFeeRequired = hackathon.entryFee && parseFloat(hackathon.entryFee) > 0;
+      const entryFeeRequired =
+        hackathon.entryFee && parseFloat(hackathon.entryFee) > 0;
       let entryFeeSignature: string | undefined;
 
       if (entryFeeRequired) {
@@ -88,7 +108,9 @@ export function ParticipantRegistration({
         entryFeeSignature,
       });
     } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Registration failed');
+      setSubmitError(
+        error instanceof Error ? error.message : "Registration failed",
+      );
     }
   };
 
@@ -141,12 +163,13 @@ export function ParticipantRegistration({
         <CardContent>
           <Alert>
             <AlertDescription>
-              ✅ You are registered for this hackathon! 
+              ✅ You are registered for this hackathon!
               {participantStatus.submissionUrl ? (
                 <span className="block mt-1">
-                  Submission: <a 
-                    href={participantStatus.submissionUrl} 
-                    target="_blank" 
+                  Submission:{" "}
+                  <a
+                    href={participantStatus.submissionUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-blue-600 hover:underline"
                   >
@@ -155,7 +178,8 @@ export function ParticipantRegistration({
                 </span>
               ) : (
                 <span className="block mt-1 text-gray-600">
-                  No submission yet - you can submit your project before the deadline.
+                  No submission yet - you can submit your project before the
+                  deadline.
                 </span>
               )}
             </AlertDescription>
@@ -182,8 +206,8 @@ export function ParticipantRegistration({
         <CardContent>
           <Alert>
             <AlertDescription>
-              Registration closed on {registrationDeadline.toLocaleDateString()}. 
-              You can no longer register for this hackathon.
+              Registration closed on {registrationDeadline.toLocaleDateString()}
+              . You can no longer register for this hackathon.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -208,7 +232,8 @@ export function ParticipantRegistration({
                 <strong>Entry Fee Required:</strong> {hackathon.entryFee} KAIA
                 <br />
                 <span className="text-sm text-gray-600">
-                  You will be prompted to sign a message to verify entry fee payment.
+                  You will be prompted to sign a message to verify entry fee
+                  payment.
                 </span>
               </AlertDescription>
             </Alert>
@@ -220,10 +245,14 @@ export function ParticipantRegistration({
               <strong>Wallet Address:</strong> {walletAddress}
             </div>
             <div className="text-sm">
-              <strong>Registration Deadline:</strong> {registrationDeadline.toLocaleDateString()} at {registrationDeadline.toLocaleTimeString()}
+              <strong>Registration Deadline:</strong>{" "}
+              {registrationDeadline.toLocaleDateString()} at{" "}
+              {registrationDeadline.toLocaleTimeString()}
             </div>
             <div className="text-sm">
-              <strong>Submission Deadline:</strong> {new Date(hackathon.submissionDeadline).toLocaleDateString()} at {new Date(hackathon.submissionDeadline).toLocaleTimeString()}
+              <strong>Submission Deadline:</strong>{" "}
+              {new Date(hackathon.submissionDeadline).toLocaleDateString()} at{" "}
+              {new Date(hackathon.submissionDeadline).toLocaleTimeString()}
             </div>
           </div>
 
@@ -245,8 +274,8 @@ export function ParticipantRegistration({
           )}
 
           {/* Submit Button */}
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={isSubmitting || registrationMutation.isPending}
             className="w-full"
           >
@@ -256,7 +285,7 @@ export function ParticipantRegistration({
                 Registering...
               </>
             ) : (
-              'Register for Hackathon'
+              "Register for Hackathon"
             )}
           </Button>
         </form>

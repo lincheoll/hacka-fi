@@ -1,45 +1,54 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Textarea } from '@/components/ui/textarea';
-import { 
-  Plus, 
-  Trash2, 
-  Users, 
-  AlertCircle, 
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Plus,
+  Trash2,
+  Users,
+  AlertCircle,
   Check,
   UserCheck,
-  Calendar
-} from 'lucide-react';
-import { fetchJudges, addJudge, removeJudge } from '@/lib/api-functions';
-import type { Hackathon } from '@/types/global';
-import type { AddJudgeRequest, RemoveJudgeRequest } from '@/types/api';
+  Calendar,
+} from "lucide-react";
+import { fetchJudges, addJudge, removeJudge } from "@/lib/api-functions";
+import type { Hackathon } from "@/types/global";
+import type { AddJudgeRequest, RemoveJudgeRequest } from "@/types/api";
 
 interface JudgeManagementProps {
   hackathon: Hackathon;
   isOrganizer: boolean;
 }
 
-export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps) {
+export function JudgeManagement({
+  hackathon,
+  isOrganizer,
+}: JudgeManagementProps) {
   const queryClient = useQueryClient();
-  const [newJudgeAddress, setNewJudgeAddress] = useState('');
-  const [newJudgeNote, setNewJudgeNote] = useState('');
+  const [newJudgeAddress, setNewJudgeAddress] = useState("");
+  const [newJudgeNote, setNewJudgeNote] = useState("");
   const [isAddingJudge, setIsAddingJudge] = useState(false);
 
   // Fetch judges
-  const { 
+  const {
     data: judgeData,
     isLoading: isLoadingJudges,
-    error: judgesError 
+    error: judgesError,
   } = useQuery({
-    queryKey: ['judges', hackathon.id],
+    queryKey: ["judges", hackathon.id],
     queryFn: () => fetchJudges(hackathon.id),
     enabled: !!hackathon.id,
   });
@@ -48,13 +57,13 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
   const addJudgeMutation = useMutation({
     mutationFn: (data: AddJudgeRequest) => addJudge(hackathon.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['judges', hackathon.id] });
-      setNewJudgeAddress('');
-      setNewJudgeNote('');
+      queryClient.invalidateQueries({ queryKey: ["judges", hackathon.id] });
+      setNewJudgeAddress("");
+      setNewJudgeNote("");
       setIsAddingJudge(false);
     },
     onError: (error) => {
-      console.error('Failed to add judge:', error);
+      console.error("Failed to add judge:", error);
     },
   });
 
@@ -62,22 +71,22 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
   const removeJudgeMutation = useMutation({
     mutationFn: (data: RemoveJudgeRequest) => removeJudge(hackathon.id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['judges', hackathon.id] });
+      queryClient.invalidateQueries({ queryKey: ["judges", hackathon.id] });
     },
     onError: (error) => {
-      console.error('Failed to remove judge:', error);
+      console.error("Failed to remove judge:", error);
     },
   });
 
   const handleAddJudge = async () => {
     if (!newJudgeAddress.trim()) {
-      alert('Please enter a judge wallet address');
+      alert("Please enter a judge wallet address");
       return;
     }
 
     // Basic wallet address validation
     if (!/^0x[a-fA-F0-9]{40}$/.test(newJudgeAddress.trim())) {
-      alert('Please enter a valid wallet address');
+      alert("Please enter a valid wallet address");
       return;
     }
 
@@ -87,27 +96,28 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
         note: newJudgeNote.trim() || undefined,
       });
     } catch (error: any) {
-      alert(error?.message || 'Failed to add judge. Please try again.');
+      alert(error?.message || "Failed to add judge. Please try again.");
     }
   };
 
   const handleRemoveJudge = async (judgeAddress: string) => {
-    if (!confirm('Are you sure you want to remove this judge?')) {
+    if (!confirm("Are you sure you want to remove this judge?")) {
       return;
     }
 
     try {
       await removeJudgeMutation.mutateAsync({ judgeAddress });
     } catch (error: any) {
-      alert(error?.message || 'Failed to remove judge. Please try again.');
+      alert(error?.message || "Failed to remove judge. Please try again.");
     }
   };
 
   // Check if judges can be modified
-  const canModifyJudges = isOrganizer && 
-    hackathon.status !== 'VOTING_OPEN' && 
-    hackathon.status !== 'VOTING_CLOSED' && 
-    hackathon.status !== 'COMPLETED';
+  const canModifyJudges =
+    isOrganizer &&
+    hackathon.status !== "VOTING_OPEN" &&
+    hackathon.status !== "VOTING_CLOSED" &&
+    hackathon.status !== "COMPLETED";
 
   if (!isOrganizer) {
     return (
@@ -117,30 +127,38 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
             <Users className="h-5 w-5" />
             Judges
           </CardTitle>
-          <CardDescription>
-            Approved judges for this hackathon
-          </CardDescription>
+          <CardDescription>Approved judges for this hackathon</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoadingJudges ? (
             <div className="space-y-2">
               {[...Array(2)].map((_, i) => (
-                <div key={i} className="animate-pulse h-16 bg-gray-200 rounded"></div>
+                <div
+                  key={i}
+                  className="animate-pulse h-16 bg-gray-200 rounded"
+                ></div>
               ))}
             </div>
           ) : judgeData && judgeData.judges.length > 0 ? (
             <div className="space-y-3">
               {judgeData.judges.map((judge) => (
-                <div key={judge.id} className="flex items-center justify-between p-3 border rounded-lg">
+                <div
+                  key={judge.id}
+                  className="flex items-center justify-between p-3 border rounded-lg"
+                >
                   <div>
                     <div className="font-medium text-sm">
-                      {judge.judgeAddress.slice(0, 6)}...{judge.judgeAddress.slice(-4)}
+                      {judge.judgeAddress.slice(0, 6)}...
+                      {judge.judgeAddress.slice(-4)}
                     </div>
                     <div className="text-xs text-gray-500">
                       Added: {new Date(judge.addedAt).toLocaleDateString()}
                     </div>
                   </div>
-                  <Badge variant="outline" className="text-blue-600 border-blue-600">
+                  <Badge
+                    variant="outline"
+                    className="text-blue-600 border-blue-600"
+                  >
                     <UserCheck className="h-3 w-3 mr-1" />
                     Judge
                   </Badge>
@@ -148,7 +166,9 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
               ))}
             </div>
           ) : (
-            <p className="text-gray-500 text-center py-4">No judges assigned yet</p>
+            <p className="text-gray-500 text-center py-4">
+              No judges assigned yet
+            </p>
           )}
         </CardContent>
       </Card>
@@ -166,16 +186,19 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
           Manage judges who can vote on hackathon submissions
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {/* Status Info */}
         {!canModifyJudges && (
           <Alert className="border-yellow-500 bg-yellow-50">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-yellow-700">
-              {hackathon.status === 'VOTING_OPEN' && 'Judges cannot be modified during voting.'}
-              {hackathon.status === 'VOTING_CLOSED' && 'Judges cannot be modified after voting has closed.'}
-              {hackathon.status === 'COMPLETED' && 'This hackathon has been completed.'}
+              {hackathon.status === "VOTING_OPEN" &&
+                "Judges cannot be modified during voting."}
+              {hackathon.status === "VOTING_CLOSED" &&
+                "Judges cannot be modified after voting has closed."}
+              {hackathon.status === "COMPLETED" &&
+                "This hackathon has been completed."}
             </AlertDescription>
           </Alert>
         )}
@@ -226,18 +249,20 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
                 <div className="flex gap-2">
                   <Button
                     onClick={handleAddJudge}
-                    disabled={addJudgeMutation.isPending || !newJudgeAddress.trim()}
+                    disabled={
+                      addJudgeMutation.isPending || !newJudgeAddress.trim()
+                    }
                     size="sm"
                   >
-                    {addJudgeMutation.isPending ? 'Adding...' : 'Add Judge'}
+                    {addJudgeMutation.isPending ? "Adding..." : "Add Judge"}
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
                       setIsAddingJudge(false);
-                      setNewJudgeAddress('');
-                      setNewJudgeNote('');
+                      setNewJudgeAddress("");
+                      setNewJudgeNote("");
                     }}
                   >
                     Cancel
@@ -254,7 +279,7 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
             <h3 className="font-medium">Current Judges</h3>
             {judgeData && (
               <Badge variant="outline">
-                {judgeData.count} {judgeData.count === 1 ? 'Judge' : 'Judges'}
+                {judgeData.count} {judgeData.count === 1 ? "Judge" : "Judges"}
               </Badge>
             )}
           </div>
@@ -262,7 +287,10 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
           {isLoadingJudges ? (
             <div className="space-y-3">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="animate-pulse h-16 bg-gray-200 rounded"></div>
+                <div
+                  key={i}
+                  className="animate-pulse h-16 bg-gray-200 rounded"
+                ></div>
               ))}
             </div>
           ) : judgesError ? (
@@ -275,10 +303,14 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
           ) : judgeData && judgeData.judges.length > 0 ? (
             <div className="space-y-3">
               {judgeData.judges.map((judge) => (
-                <div key={judge.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div
+                  key={judge.id}
+                  className="flex items-center justify-between p-4 border rounded-lg"
+                >
                   <div className="flex-1">
                     <div className="font-medium">
-                      {judge.judgeAddress.slice(0, 6)}...{judge.judgeAddress.slice(-4)}
+                      {judge.judgeAddress.slice(0, 6)}...
+                      {judge.judgeAddress.slice(-4)}
                     </div>
                     <div className="text-sm text-gray-500 flex items-center gap-2 mt-1">
                       <Calendar className="h-3 w-3" />
@@ -292,11 +324,14 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-blue-600 border-blue-600">
+                    <Badge
+                      variant="outline"
+                      className="text-blue-600 border-blue-600"
+                    >
                       <UserCheck className="h-3 w-3 mr-1" />
                       Judge
                     </Badge>
-                    
+
                     {canModifyJudges && (
                       <Button
                         variant="outline"
@@ -317,7 +352,9 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
               <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
               <p>No judges assigned yet</p>
               {canModifyJudges && (
-                <p className="text-sm mt-1">Add judges to enable voting on submissions</p>
+                <p className="text-sm mt-1">
+                  Add judges to enable voting on submissions
+                </p>
               )}
             </div>
           )}
@@ -328,9 +365,10 @@ export function JudgeManagement({ hackathon, isOrganizer }: JudgeManagementProps
           <Alert className="border-blue-500 bg-blue-50">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="text-blue-700">
-              <strong>Instructions:</strong> Add trusted wallet addresses as judges. 
-              Judges will be able to vote on participant submissions during the voting phase. 
-              You cannot modify judges once voting has started.
+              <strong>Instructions:</strong> Add trusted wallet addresses as
+              judges. Judges will be able to vote on participant submissions
+              during the voting phase. You cannot modify judges once voting has
+              started.
             </AlertDescription>
           </Alert>
         )}

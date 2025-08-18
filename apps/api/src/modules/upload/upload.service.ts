@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { join, extname } from 'path';
 import { existsSync, unlinkSync, statSync } from 'fs';
@@ -28,19 +33,27 @@ export class UploadService {
   private readonly uploadPath: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.baseUrl = this.configService.get<string>('API_BASE_URL', 'http://localhost:3004');
+    this.baseUrl = this.configService.get<string>(
+      'API_BASE_URL',
+      'http://localhost:3004',
+    );
     this.uploadPath = join(process.cwd(), 'uploads');
   }
 
   /**
    * Process uploaded file and return metadata
    */
-  processUploadedFile(file: Express.Multer.File, type: string = 'general'): FileUploadResult {
+  processUploadedFile(
+    file: Express.Multer.File,
+    type: string = 'general',
+  ): FileUploadResult {
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }
 
-    const relativePath = file.path.replace(this.uploadPath, '').replace(/\\/g, '/');
+    const relativePath = file.path
+      .replace(this.uploadPath, '')
+      .replace(/\\/g, '/');
     const url = `${this.baseUrl}/uploads${relativePath}`;
 
     this.logger.log(`File uploaded: ${file.filename} (${file.size} bytes)`);
@@ -59,21 +72,24 @@ export class UploadService {
   /**
    * Process multiple uploaded files
    */
-  processUploadedFiles(files: Express.Multer.File[], type: string = 'general'): FileUploadResult[] {
+  processUploadedFiles(
+    files: Express.Multer.File[],
+    type: string = 'general',
+  ): FileUploadResult[] {
     if (!files || files.length === 0) {
       throw new BadRequestException('No files uploaded');
     }
 
-    return files.map(file => this.processUploadedFile(file, type));
+    return files.map((file) => this.processUploadedFile(file, type));
   }
 
   /**
    * Process and optimize image
    */
   async processImage(
-    file: Express.Multer.File, 
+    file: Express.Multer.File,
     options: ImageProcessingOptions = {},
-    type: string = 'images'
+    type: string = 'images',
   ): Promise<FileUploadResult> {
     if (!file) {
       throw new BadRequestException('No image file uploaded');
@@ -85,10 +101,13 @@ export class UploadService {
 
     try {
       const { width, height, quality = 80, format = 'jpeg' } = options;
-      
+
       // Create optimized filename
       const ext = format === 'jpeg' ? '.jpg' : `.${format}`;
-      const optimizedFilename = file.filename.replace(extname(file.filename), ext);
+      const optimizedFilename = file.filename.replace(
+        extname(file.filename),
+        ext,
+      );
       const optimizedPath = join(file.destination, optimizedFilename);
 
       // Process image with Sharp
@@ -127,10 +146,14 @@ export class UploadService {
 
       // Get optimized file stats
       const stats = statSync(optimizedPath);
-      const relativePath = optimizedPath.replace(this.uploadPath, '').replace(/\\/g, '/');
+      const relativePath = optimizedPath
+        .replace(this.uploadPath, '')
+        .replace(/\\/g, '/');
       const url = `${this.baseUrl}/uploads${relativePath}`;
 
-      this.logger.log(`Image processed: ${optimizedFilename} (${stats.size} bytes)`);
+      this.logger.log(
+        `Image processed: ${optimizedFilename} (${stats.size} bytes)`,
+      );
 
       return {
         filename: optimizedFilename,
@@ -143,7 +166,7 @@ export class UploadService {
       };
     } catch (error) {
       this.logger.error('Image processing failed:', error);
-      
+
       // Fallback to original file if processing fails
       return this.processUploadedFile(file, type);
     }
@@ -154,7 +177,7 @@ export class UploadService {
    */
   async deleteFile(filename: string, type: string = 'general'): Promise<void> {
     const filePath = join(this.uploadPath, type, filename);
-    
+
     if (!existsSync(filePath)) {
       throw new NotFoundException(`File not found: ${filename}`);
     }
@@ -171,16 +194,21 @@ export class UploadService {
   /**
    * Get file info
    */
-  getFileInfo(filename: string, type: string = 'general'): FileUploadResult | null {
+  getFileInfo(
+    filename: string,
+    type: string = 'general',
+  ): FileUploadResult | null {
     const filePath = join(this.uploadPath, type, filename);
-    
+
     if (!existsSync(filePath)) {
       return null;
     }
 
     try {
       const stats = statSync(filePath);
-      const relativePath = filePath.replace(this.uploadPath, '').replace(/\\/g, '/');
+      const relativePath = filePath
+        .replace(this.uploadPath, '')
+        .replace(/\\/g, '/');
       const url = `${this.baseUrl}/uploads${relativePath}`;
 
       return {
@@ -213,7 +241,7 @@ export class UploadService {
       '.txt': 'text/plain',
       '.json': 'application/json',
     };
-    
+
     return mimeTypes[ext] || 'application/octet-stream';
   }
 

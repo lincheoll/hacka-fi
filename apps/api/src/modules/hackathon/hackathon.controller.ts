@@ -261,10 +261,7 @@ export class HackathonController {
     status: 404,
     description: 'Hackathon not found',
   })
-  async remove(
-    @Param('id') id: string,
-    @Request() req: any,
-  ): Promise<void> {
+  async remove(@Param('id') id: string, @Request() req: any): Promise<void> {
     return this.hackathonService.deleteHackathon(id, req.user.walletAddress);
   }
 
@@ -322,7 +319,8 @@ export class HackathonController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Update hackathon status manually',
-    description: 'Manually update the status of a hackathon. Only organizers can update their hackathon status.',
+    description:
+      'Manually update the status of a hackathon. Only organizers can update their hackathon status.',
   })
   @ApiParam({
     name: 'id',
@@ -356,7 +354,7 @@ export class HackathonController {
     );
 
     const updatedHackathon = await this.hackathonService.findOne(id, false);
-    
+
     return {
       message: 'Status updated successfully',
       hackathon: updatedHackathon,
@@ -376,7 +374,7 @@ export class HackathonController {
   })
   async getStatusSummary(): Promise<StatusSummaryResponseDto> {
     const summary = await this.hackathonStatusService.getStatusSummary();
-    
+
     return {
       currentStatus: 'REGISTRATION_OPEN' as any, // This could be enhanced to show most common status
       statusCounts: summary.statusCounts,
@@ -397,7 +395,8 @@ export class HackathonController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Add a judge to hackathon',
-    description: 'Add a judge to the hackathon whitelist. Only the organizer can add judges.',
+    description:
+      'Add a judge to the hackathon whitelist. Only the organizer can add judges.',
   })
   @ApiParam({
     name: 'id',
@@ -430,7 +429,11 @@ export class HackathonController {
     @Body() addJudgeDto: AddJudgeDto,
     @Request() req: any,
   ): Promise<JudgeResponseDto> {
-    return this.hackathonService.addJudge(id, addJudgeDto, req.user.walletAddress);
+    return this.hackathonService.addJudge(
+      id,
+      addJudgeDto,
+      req.user.walletAddress,
+    );
   }
 
   @Delete(':id/judges')
@@ -438,7 +441,8 @@ export class HackathonController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiOperation({
     summary: 'Remove a judge from hackathon',
-    description: 'Remove a judge from the hackathon whitelist. Only the organizer can remove judges.',
+    description:
+      'Remove a judge from the hackathon whitelist. Only the organizer can remove judges.',
   })
   @ApiParam({
     name: 'id',
@@ -451,7 +455,8 @@ export class HackathonController {
   })
   @ApiResponse({
     status: 400,
-    description: 'Cannot remove judges during voting or judge has already voted',
+    description:
+      'Cannot remove judges during voting or judge has already voted',
   })
   @ApiResponse({
     status: 403,
@@ -466,7 +471,11 @@ export class HackathonController {
     @Body() removeJudgeDto: RemoveJudgeDto,
     @Request() req: any,
   ): Promise<void> {
-    return this.hackathonService.removeJudge(id, removeJudgeDto, req.user.walletAddress);
+    return this.hackathonService.removeJudge(
+      id,
+      removeJudgeDto,
+      req.user.walletAddress,
+    );
   }
 
   @Get(':id/judges')
@@ -499,7 +508,8 @@ export class HackathonController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Cast or update vote',
-    description: 'Cast a vote for a participant. Only authorized judges can vote. Existing votes can be updated.',
+    description:
+      'Cast a vote for a participant. Only authorized judges can vote. Existing votes can be updated.',
   })
   @ApiParam({
     name: 'id',
@@ -528,14 +538,19 @@ export class HackathonController {
     @Body() castVoteDto: CastVoteDto,
     @Request() req: any,
   ): Promise<VoteResponseDto> {
-    return this.hackathonService.castVote(id, castVoteDto, req.user.walletAddress);
+    return this.hackathonService.castVote(
+      id,
+      castVoteDto,
+      req.user.walletAddress,
+    );
   }
 
   @Get(':id/results')
   @Public()
   @ApiOperation({
     summary: 'Get voting results',
-    description: 'Get voting results for a hackathon, including scores and rankings.',
+    description:
+      'Get voting results for a hackathon, including scores and rankings.',
   })
   @ApiParam({
     name: 'id',
@@ -551,7 +566,9 @@ export class HackathonController {
     status: 404,
     description: 'Hackathon not found',
   })
-  async getVotingResults(@Param('id') id: string): Promise<HackathonVotingResultsDto> {
+  async getVotingResults(
+    @Param('id') id: string,
+  ): Promise<HackathonVotingResultsDto> {
     return this.hackathonService.getVotingResults(id);
   }
 
@@ -561,7 +578,8 @@ export class HackathonController {
   @Public()
   @ApiOperation({
     summary: 'Calculate winners',
-    description: 'Calculate winners for a completed hackathon based on voting results.',
+    description:
+      'Calculate winners for a completed hackathon based on voting results.',
   })
   @ApiParam({
     name: 'id',
@@ -588,7 +606,8 @@ export class HackathonController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Finalize winners',
-    description: 'Finalize winners for a hackathon and update database records. Only organizer can finalize.',
+    description:
+      'Finalize winners for a hackathon and update database records. Only organizer can finalize.',
   })
   @ApiParam({
     name: 'id',
@@ -615,10 +634,7 @@ export class HackathonController {
     status: 409,
     description: 'Winners already finalized',
   })
-  async finalizeWinners(
-    @Param('id') id: string,
-    @Request() req: any,
-  ) {
+  async finalizeWinners(@Param('id') id: string, @Request() req: any) {
     return this.hackathonService.finalizeWinners(id, req.user.walletAddress);
   }
 
@@ -687,7 +703,9 @@ export class HackathonController {
     status: 404,
     description: 'Hackathon not found',
   })
-  async areWinnersFinalized(@Param('id') id: string): Promise<{ finalized: boolean }> {
+  async areWinnersFinalized(
+    @Param('id') id: string,
+  ): Promise<{ finalized: boolean }> {
     const finalized = await this.hackathonService.areWinnersFinalized(id);
     return { finalized };
   }
@@ -696,32 +714,37 @@ export class HackathonController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Trigger manual status check',
-    description: 'Manually trigger status check for all hackathons. Admin only.',
+    description:
+      'Manually trigger status check for all hackathons. Admin only.',
   })
   @ApiResponse({
     status: 200,
     description: 'Status check completed',
   })
   @HttpCode(HttpStatus.OK)
-  async triggerStatusCheck(@Request() req: any): Promise<{ 
-    message: string; 
+  async triggerStatusCheck(@Request() req: any): Promise<{
+    message: string;
     updatedCount: number;
     processedCount: number;
   }> {
     // Note: In real implementation, you'd want admin guard here
     // For now, allow any authenticated user
-    
+
     // Get all active hackathons and check their status
-    const activeHackathons = await this.hackathonStatusService.findActiveHackathons();
+    const activeHackathons =
+      await this.hackathonStatusService.findActiveHackathons();
     let updatedCount = 0;
-    
+
     for (const hackathon of activeHackathons) {
-      const result = await this.hackathonStatusService.checkAndUpdateSingleHackathon(hackathon);
+      const result =
+        await this.hackathonStatusService.checkAndUpdateSingleHackathon(
+          hackathon,
+        );
       if (result.updated) {
         updatedCount++;
       }
     }
-    
+
     return {
       message: 'Status check completed successfully',
       updatedCount,

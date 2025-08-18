@@ -9,7 +9,7 @@ import { useState, useEffect } from "react";
 export function WalletConnect() {
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  
+
   useEffect(() => {
     setMounted(true);
   }, []);
@@ -26,12 +26,12 @@ export function WalletConnect() {
   return <WalletConnectInner isOpen={isOpen} setIsOpen={setIsOpen} />;
 }
 
-function WalletConnectInner({ 
-  isOpen, 
-  setIsOpen 
-}: { 
-  isOpen: boolean; 
-  setIsOpen: (open: boolean) => void; 
+function WalletConnectInner({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
 }) {
   const { address, isConnected } = useAccount();
   const { connect, connectors, isPending } = useConnect();

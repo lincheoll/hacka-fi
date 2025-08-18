@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
+import { Header } from "@/components/layout/header";
+import { Button } from "@/components/ui/button";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -18,11 +18,9 @@ export default function CreateHackathonError({ error, reset }: ErrorProps) {
             Failed to load create hackathon page
           </h2>
           <p className="text-gray-600 mb-6 text-center max-w-md">
-            {error.message || 'Something went wrong while loading the page.'}
+            {error.message || "Something went wrong while loading the page."}
           </p>
-          <Button onClick={reset}>
-            Try again
-          </Button>
+          <Button onClick={reset}>Try again</Button>
         </div>
       </div>
     </div>

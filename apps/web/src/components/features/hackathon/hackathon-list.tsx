@@ -1,51 +1,85 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
-import { Search, Filter, SortAsc, SortDesc } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { fetchHackathons } from '@/lib/api-functions';
-import { HackathonCoverImage } from '@/components/common/optimized-image';
-import { HackathonStatusBadge } from './hackathon-status-badge';
-import { HackathonCountdown } from './hackathon-countdown';
-import type { Hackathon } from '@/types/global';
+import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { Search, Filter, SortAsc, SortDesc } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { fetchHackathons } from "@/lib/api-functions";
+import { HackathonCoverImage } from "@/components/common/optimized-image";
+import { HackathonStatusBadge } from "./hackathon-status-badge";
+import { HackathonCountdown } from "./hackathon-countdown";
+import type { Hackathon } from "@/types/global";
 
 interface HackathonListProps {
   initialHackathons?: Hackathon[];
 }
 
-type SortOption = 'newest' | 'oldest' | 'deadline_asc' | 'deadline_desc' | 'prize_desc' | 'prize_asc';
-type StatusFilter = 'all' | 'registration_open' | 'submission_open' | 'voting_open' | 'completed';
+type SortOption =
+  | "newest"
+  | "oldest"
+  | "deadline_asc"
+  | "deadline_desc"
+  | "prize_desc"
+  | "prize_asc";
+type StatusFilter =
+  | "all"
+  | "registration_open"
+  | "submission_open"
+  | "voting_open"
+  | "completed";
 
 export function HackathonList({ initialHackathons }: HackathonListProps) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
 
   // Fetch hackathons
-  const { 
-    data: hackathonsResponse, 
-    isLoading, 
-    error 
+  const {
+    data: hackathonsResponse,
+    isLoading,
+    error,
   } = useQuery({
-    queryKey: ['hackathons', { status: statusFilter !== 'all' ? statusFilter : undefined }],
-    queryFn: () => fetchHackathons({ 
-      status: statusFilter !== 'all' ? statusFilter.toUpperCase() : undefined,
-      page: 1,
-      limit: 100 // Get all for client-side filtering
-    }),
-    initialData: initialHackathons ? { 
-      data: initialHackathons, 
-      pagination: { page: 1, limit: 100, total: initialHackathons.length, totalPages: 1 }
-    } : undefined,
+    queryKey: [
+      "hackathons",
+      { status: statusFilter !== "all" ? statusFilter : undefined },
+    ],
+    queryFn: () =>
+      fetchHackathons({
+        status: statusFilter !== "all" ? statusFilter.toUpperCase() : undefined,
+        page: 1,
+        limit: 100, // Get all for client-side filtering
+      }),
+    initialData: initialHackathons
+      ? {
+          data: initialHackathons,
+          pagination: {
+            page: 1,
+            limit: 100,
+            total: initialHackathons.length,
+            totalPages: 1,
+          },
+        }
+      : undefined,
   });
 
   // Filter and sort hackathons
@@ -56,28 +90,39 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
     // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(hackathon => 
-        hackathon.title.toLowerCase().includes(query) ||
-        hackathon.description.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (hackathon) =>
+          hackathon.title.toLowerCase().includes(query) ||
+          hackathon.description.toLowerCase().includes(query),
       );
     }
 
     // Sort
     filtered.sort((a, b) => {
       switch (sortBy) {
-        case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case 'oldest':
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        case 'deadline_asc':
-          return new Date(a.submissionDeadline).getTime() - new Date(b.submissionDeadline).getTime();
-        case 'deadline_desc':
-          return new Date(b.submissionDeadline).getTime() - new Date(a.submissionDeadline).getTime();
-        case 'prize_desc':
+        case "newest":
+          return (
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+        case "oldest":
+          return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        case "deadline_asc":
+          return (
+            new Date(a.submissionDeadline).getTime() -
+            new Date(b.submissionDeadline).getTime()
+          );
+        case "deadline_desc":
+          return (
+            new Date(b.submissionDeadline).getTime() -
+            new Date(a.submissionDeadline).getTime()
+          );
+        case "prize_desc":
           const prizeA = a.prizeAmount ? parseFloat(a.prizeAmount) : 0;
           const prizeB = b.prizeAmount ? parseFloat(b.prizeAmount) : 0;
           return prizeB - prizeA;
-        case 'prize_asc':
+        case "prize_asc":
           const prizeA2 = a.prizeAmount ? parseFloat(a.prizeAmount) : 0;
           const prizeB2 = b.prizeAmount ? parseFloat(b.prizeAmount) : 0;
           return prizeA2 - prizeB2;
@@ -90,9 +135,14 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
   }, [hackathonsResponse?.data, searchQuery, sortBy]);
 
   // Pagination
-  const totalPages = Math.ceil(filteredAndSortedHackathons.length / itemsPerPage);
+  const totalPages = Math.ceil(
+    filteredAndSortedHackathons.length / itemsPerPage,
+  );
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedHackathons = filteredAndSortedHackathons.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedHackathons = filteredAndSortedHackathons.slice(
+    startIndex,
+    startIndex + itemsPerPage,
+  );
 
   // Reset to first page when filters change
   const handleFilterChange = (newFilter: StatusFilter) => {
@@ -109,7 +159,6 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
     setSortBy(newSort);
     setCurrentPage(1);
   };
-
 
   if (isLoading) {
     return (
@@ -161,7 +210,9 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
-              <SelectItem value="registration_open">Registration Open</SelectItem>
+              <SelectItem value="registration_open">
+                Registration Open
+              </SelectItem>
               <SelectItem value="submission_open">Submission Open</SelectItem>
               <SelectItem value="voting_open">Voting Open</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
@@ -171,7 +222,7 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
           {/* Sort */}
           <Select value={sortBy} onValueChange={handleSortChange}>
             <SelectTrigger className="w-48">
-              {sortBy.includes('desc') ? (
+              {sortBy.includes("desc") ? (
                 <SortDesc className="h-4 w-4 mr-2" />
               ) : (
                 <SortAsc className="h-4 w-4 mr-2" />
@@ -192,16 +243,17 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
 
       {/* Results Count */}
       <div className="text-sm text-gray-600">
-        {filteredAndSortedHackathons.length} hackathon{filteredAndSortedHackathons.length !== 1 ? 's' : ''} found
-        {searchQuery && (
-          <span> for &ldquo;{searchQuery}&rdquo;</span>
-        )}
+        {filteredAndSortedHackathons.length} hackathon
+        {filteredAndSortedHackathons.length !== 1 ? "s" : ""} found
+        {searchQuery && <span> for &ldquo;{searchQuery}&rdquo;</span>}
       </div>
 
       {/* Hackathon Grid */}
       {paginatedHackathons.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">No hackathons found matching your criteria.</p>
+          <p className="text-gray-500 mb-4">
+            No hackathons found matching your criteria.
+          </p>
           <Button asChild>
             <Link href="/hackathons/create">Create the First Hackathon</Link>
           </Button>
@@ -209,7 +261,10 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {paginatedHackathons.map((hackathon) => (
-            <Card key={hackathon.id} className="hover:shadow-lg transition-shadow duration-200 overflow-hidden">
+            <Card
+              key={hackathon.id}
+              className="hover:shadow-lg transition-shadow duration-200 overflow-hidden"
+            >
               {/* Cover Image */}
               <div className="aspect-[2/1] relative overflow-hidden">
                 <HackathonCoverImage
@@ -218,14 +273,14 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
                   className="w-full h-full"
                 />
                 <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
-                  <HackathonStatusBadge 
-                    status={hackathon.status} 
+                  <HackathonStatusBadge
+                    status={hackathon.status}
                     size="sm"
                     className="bg-white/90 backdrop-blur-sm"
                   />
                   <div className="text-white bg-black/50 px-2 py-1 rounded text-sm">
-                    <HackathonCountdown 
-                      hackathon={hackathon} 
+                    <HackathonCountdown
+                      hackathon={hackathon}
                       compact={true}
                       showIcon={false}
                       className="text-white [&>*]:text-white"
@@ -233,10 +288,10 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
                   </div>
                 </div>
               </div>
-              
+
               <CardHeader>
                 <CardTitle className="line-clamp-2">
-                  <Link 
+                  <Link
                     href={`/hackathons/${hackathon.id}`}
                     className="hover:text-blue-600 transition-colors"
                   >
@@ -264,20 +319,33 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
                     {hackathon.entryFee && (
                       <div>
                         <span className="text-gray-600">Entry:</span>
-                        <span className="font-medium ml-1">{hackathon.entryFee} KAIA</span>
+                        <span className="font-medium ml-1">
+                          {hackathon.entryFee} KAIA
+                        </span>
                       </div>
                     )}
                   </div>
 
                   {/* Deadlines */}
                   <div className="space-y-1 text-xs text-gray-600">
-                    <div>Registration: {new Date(hackathon.registrationDeadline).toLocaleDateString()}</div>
-                    <div>Submission: {new Date(hackathon.submissionDeadline).toLocaleDateString()}</div>
+                    <div>
+                      Registration:{" "}
+                      {new Date(
+                        hackathon.registrationDeadline,
+                      ).toLocaleDateString()}
+                    </div>
+                    <div>
+                      Submission:{" "}
+                      {new Date(
+                        hackathon.submissionDeadline,
+                      ).toLocaleDateString()}
+                    </div>
                   </div>
 
                   {/* Organizer */}
                   <div className="text-xs text-gray-500">
-                    by {hackathon.organizerAddress.slice(0, 6)}...{hackathon.organizerAddress.slice(-4)}
+                    by {hackathon.organizerAddress.slice(0, 6)}...
+                    {hackathon.organizerAddress.slice(-4)}
                   </div>
 
                   {/* Action Button */}
@@ -299,12 +367,12 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
           >
             Previous
           </Button>
-          
+
           {/* Page Numbers */}
           <div className="flex gap-1">
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
@@ -336,7 +404,9 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
             disabled={currentPage === totalPages}
           >
             Next

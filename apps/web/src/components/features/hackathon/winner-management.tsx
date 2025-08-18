@@ -1,17 +1,37 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
-import { Trophy, Medal, Award, DollarSign, Users, Target, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { calculateWinners, finalizeWinners, getWinners, areWinnersFinalized } from '@/lib/api-functions';
-import { useToast } from '@/hooks/use-toast';
-import { formatEther } from 'viem';
-import React from 'react';
-import type { WinnerDeterminationResponse } from '@/types/api';
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import {
+  Trophy,
+  Medal,
+  Award,
+  DollarSign,
+  Users,
+  Target,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
+import {
+  calculateWinners,
+  finalizeWinners,
+  getWinners,
+  areWinnersFinalized,
+} from "@/lib/api-functions";
+import { useToast } from "@/hooks/use-toast";
+import { formatEther } from "viem";
+import React from "react";
+import type { WinnerDeterminationResponse } from "@/types/api";
 
 interface WinnerManagementProps {
   hackathonId: string;
@@ -22,9 +42,10 @@ interface WinnerManagementProps {
 export function WinnerManagement({
   hackathonId,
   isOrganizer,
-  hackathonStatus
+  hackathonStatus,
 }: WinnerManagementProps) {
-  const [winnerResult, setWinnerResult] = useState<WinnerDeterminationResponse | null>(null);
+  const [winnerResult, setWinnerResult] =
+    useState<WinnerDeterminationResponse | null>(null);
   const [isFinalized, setIsFinalized] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
@@ -32,17 +53,17 @@ export function WinnerManagement({
   const { toast } = useToast();
 
   // Check if hackathon is completed
-  const isCompleted = hackathonStatus === 'COMPLETED';
+  const isCompleted = hackathonStatus === "COMPLETED";
 
   // Load existing winners on component mount
   const loadWinners = async () => {
     if (!isCompleted) return;
-    
+
     setIsLoading(true);
     try {
       const [winners, finalized] = await Promise.all([
         getWinners(hackathonId),
-        areWinnersFinalized(hackathonId)
+        areWinnersFinalized(hackathonId),
       ]);
 
       if (winners) {
@@ -50,7 +71,7 @@ export function WinnerManagement({
       }
       setIsFinalized(finalized.finalized);
     } catch (error) {
-      console.error('Failed to load winners:', error);
+      console.error("Failed to load winners:", error);
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +92,7 @@ export function WinnerManagement({
     try {
       const result = await calculateWinners(hackathonId);
       setWinnerResult(result);
-      
+
       toast({
         title: "Winners Calculated",
         description: "Winners have been calculated based on voting results.",
@@ -79,7 +100,8 @@ export function WinnerManagement({
     } catch (error) {
       toast({
         title: "Failed to Calculate Winners",
-        description: error instanceof Error ? error.message : "An error occurred",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       });
     } finally {
@@ -112,7 +134,7 @@ export function WinnerManagement({
       const result = await finalizeWinners(hackathonId);
       setWinnerResult(result);
       setIsFinalized(true);
-      
+
       toast({
         title: "Winners Finalized",
         description: "Winners have been permanently saved to the database.",
@@ -120,7 +142,8 @@ export function WinnerManagement({
     } catch (error) {
       toast({
         title: "Failed to Finalize Winners",
-        description: error instanceof Error ? error.message : "An error occurred",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
         variant: "destructive",
       });
     } finally {
@@ -144,13 +167,13 @@ export function WinnerManagement({
   const getRankColor = (rank: number) => {
     switch (rank) {
       case 1:
-        return 'bg-yellow-50 border-yellow-200 text-yellow-800';
+        return "bg-yellow-50 border-yellow-200 text-yellow-800";
       case 2:
-        return 'bg-gray-50 border-gray-200 text-gray-800';
+        return "bg-gray-50 border-gray-200 text-gray-800";
       case 3:
-        return 'bg-orange-50 border-orange-200 text-orange-800';
+        return "bg-orange-50 border-orange-200 text-orange-800";
       default:
-        return 'bg-blue-50 border-blue-200 text-blue-800';
+        return "bg-blue-50 border-blue-200 text-blue-800";
     }
   };
 
@@ -175,7 +198,8 @@ export function WinnerManagement({
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              The hackathon must be in COMPLETED status before winners can be calculated.
+              The hackathon must be in COMPLETED status before winners can be
+              calculated.
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -210,25 +234,21 @@ export function WinnerManagement({
               variant="outline"
               className="flex-1"
             >
-              {isCalculating ? 'Calculating...' : 'Calculate Winners'}
+              {isCalculating ? "Calculating..." : "Calculate Winners"}
             </Button>
-            
+
             {isOrganizer && winnerResult && !isFinalized && (
               <Button
                 onClick={handleFinalizeWinners}
                 disabled={isFinalizing}
                 className="flex-1"
               >
-                {isFinalizing ? 'Finalizing...' : 'Finalize Winners'}
+                {isFinalizing ? "Finalizing..." : "Finalize Winners"}
               </Button>
             )}
-            
-            <Button
-              onClick={loadWinners}
-              disabled={isLoading}
-              variant="ghost"
-            >
-              {isLoading ? 'Loading...' : 'Refresh'}
+
+            <Button onClick={loadWinners} disabled={isLoading} variant="ghost">
+              {isLoading ? "Loading..." : "Refresh"}
             </Button>
           </div>
 
@@ -236,7 +256,8 @@ export function WinnerManagement({
             <Alert className="mt-4">
               <CheckCircle2 className="h-4 w-4" />
               <AlertDescription>
-                Winners have been finalized and saved to the database. Prize distribution can now proceed.
+                Winners have been finalized and saved to the database. Prize
+                distribution can now proceed.
               </AlertDescription>
             </Alert>
           )}
@@ -263,11 +284,15 @@ export function WinnerManagement({
                   <div className="text-sm text-gray-500">Total Prize Pool</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{winnerResult.winners.length}</div>
+                  <div className="text-2xl font-bold">
+                    {winnerResult.winners.length}
+                  </div>
                   <div className="text-sm text-gray-500">Prize Winners</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold">{winnerResult.prizeDistribution.length}</div>
+                  <div className="text-2xl font-bold">
+                    {winnerResult.prizeDistribution.length}
+                  </div>
                   <div className="text-sm text-gray-500">Prize Positions</div>
                 </div>
               </div>
@@ -284,10 +309,13 @@ export function WinnerManagement({
                       {getRankIcon(prize.position)}
                       <div>
                         <div className="font-medium">
-                          {prize.position === 1 ? '1st Place' : 
-                           prize.position === 2 ? '2nd Place' :
-                           prize.position === 3 ? '3rd Place' :
-                           `${prize.position}th Place`}
+                          {prize.position === 1
+                            ? "1st Place"
+                            : prize.position === 2
+                              ? "2nd Place"
+                              : prize.position === 3
+                                ? "3rd Place"
+                                : `${prize.position}th Place`}
                         </div>
                         <div className="text-sm text-gray-500">
                           {(prize.percentage * 100).toFixed(1)}% of pool
@@ -300,7 +328,8 @@ export function WinnerManagement({
                       </div>
                       {prize.winner && (
                         <div className="text-sm text-gray-500">
-                          {prize.winner.walletAddress.slice(0, 6)}...{prize.winner.walletAddress.slice(-4)}
+                          {prize.winner.walletAddress.slice(0, 6)}...
+                          {prize.winner.walletAddress.slice(-4)}
                         </div>
                       )}
                     </div>
@@ -339,20 +368,25 @@ export function WinnerManagement({
                       </div>
                       <div className="text-right">
                         <div className="font-bold">
-                          {winner.prizeAmount ? formatEther(BigInt(winner.prizeAmount)) : '0'} ETH
+                          {winner.prizeAmount
+                            ? formatEther(BigInt(winner.prizeAmount))
+                            : "0"}{" "}
+                          ETH
                         </div>
                         <div className="text-sm opacity-75">
                           Score: {winner.weightedScore.toFixed(2)}
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="font-medium">Average Score:</span> {winner.averageScore.toFixed(2)}
+                        <span className="font-medium">Average Score:</span>{" "}
+                        {winner.averageScore.toFixed(2)}
                       </div>
                       <div>
-                        <span className="font-medium">Weighted Score:</span> {winner.weightedScore.toFixed(2)}
+                        <span className="font-medium">Weighted Score:</span>{" "}
+                        {winner.weightedScore.toFixed(2)}
                       </div>
                     </div>
                   </div>
@@ -366,7 +400,9 @@ export function WinnerManagement({
             <Card>
               <CardHeader>
                 <CardTitle>Ranking Metrics</CardTitle>
-                <CardDescription>Statistical information about the voting results</CardDescription>
+                <CardDescription>
+                  Statistical information about the voting results
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
@@ -384,13 +420,18 @@ export function WinnerManagement({
                   </div>
                   <div>
                     <div className="text-2xl font-bold">
-                      {(winnerResult.rankingMetrics.averageParticipation * 100).toFixed(1)}%
+                      {(
+                        winnerResult.rankingMetrics.averageParticipation * 100
+                      ).toFixed(1)}
+                      %
                     </div>
                     <div className="text-sm text-gray-500">Participation</div>
                   </div>
                   <div>
                     <div className="text-2xl font-bold">
-                      {winnerResult.rankingMetrics.scoreDistribution?.mean?.toFixed(1) || 'N/A'}
+                      {winnerResult.rankingMetrics.scoreDistribution?.mean?.toFixed(
+                        1,
+                      ) || "N/A"}
                     </div>
                     <div className="text-sm text-gray-500">Avg Score</div>
                   </div>

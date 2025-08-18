@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { Component, type ReactNode } from 'react';
-import { AlertCircle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Component, type ReactNode } from "react";
+import { AlertCircle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ImageErrorBoundaryState {
   hasError: boolean;
@@ -17,7 +17,10 @@ interface ImageErrorBoundaryProps {
   className?: string;
 }
 
-export class ImageErrorBoundary extends Component<ImageErrorBoundaryProps, ImageErrorBoundaryState> {
+export class ImageErrorBoundary extends Component<
+  ImageErrorBoundaryProps,
+  ImageErrorBoundaryState
+> {
   constructor(props: ImageErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false };
@@ -28,7 +31,7 @@ export class ImageErrorBoundary extends Component<ImageErrorBoundaryProps, Image
   }
 
   componentDidCatch(error: Error) {
-    console.error('Image Error Boundary caught an error:', error);
+    console.error("Image Error Boundary caught an error:", error);
     this.props.onError?.(error);
   }
 
@@ -70,7 +73,7 @@ export class ImageErrorBoundary extends Component<ImageErrorBoundaryProps, Image
 // Higher-order component wrapper for easier use
 export function withImageErrorBoundary<T extends object>(
   Component: React.ComponentType<T>,
-  fallback?: ReactNode
+  fallback?: ReactNode,
 ) {
   return function WrappedComponent(props: T) {
     return (

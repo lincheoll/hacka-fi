@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Settings, Play, Pause, SkipForward, CheckCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Settings, Play, Pause, SkipForward, CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -22,17 +22,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { type Hackathon, HackathonStatus } from '@/types/global';
-import { 
-  getStatusInfo, 
-  getPossibleNextStatuses, 
+} from "@/components/ui/dialog";
+import { type Hackathon, HackathonStatus } from "@/types/global";
+import {
+  getStatusInfo,
+  getPossibleNextStatuses,
   isValidStatusTransition,
   getNextAutomaticStatus,
-  STATUS_INFO 
-} from '@/lib/hackathon-status';
-import { HackathonStatusBadge } from './hackathon-status-badge';
-import { HackathonCountdown } from './hackathon-countdown';
+  STATUS_INFO,
+} from "@/lib/hackathon-status";
+import { HackathonStatusBadge } from "./hackathon-status-badge";
+import { HackathonCountdown } from "./hackathon-countdown";
 
 interface StatusManagementProps {
   hackathon: Hackathon;
@@ -40,13 +40,15 @@ interface StatusManagementProps {
   onStatusUpdate: (newStatus: HackathonStatus) => Promise<void>;
 }
 
-export function StatusManagement({ 
-  hackathon, 
-  isOrganizer, 
-  onStatusUpdate 
+export function StatusManagement({
+  hackathon,
+  isOrganizer,
+  onStatusUpdate,
 }: StatusManagementProps) {
   const [isUpdating, setIsUpdating] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<HackathonStatus | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<HackathonStatus | null>(
+    null,
+  );
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const router = useRouter();
 
@@ -66,7 +68,7 @@ export function StatusManagement({
       setSelectedStatus(null);
       router.refresh();
     } catch (error) {
-      console.error('Failed to update status:', error);
+      console.error("Failed to update status:", error);
     } finally {
       setIsUpdating(false);
     }
@@ -90,13 +92,13 @@ export function StatusManagement({
   const getActionLabel = (status: HackathonStatus) => {
     switch (status) {
       case HackathonStatus.REGISTRATION_OPEN:
-        return 'Open Registration';
+        return "Open Registration";
       case HackathonStatus.SUBMISSION_OPEN:
-        return 'Open Submissions';
+        return "Open Submissions";
       case HackathonStatus.VOTING_OPEN:
-        return 'Open Voting';
+        return "Open Voting";
       case HackathonStatus.COMPLETED:
-        return 'Complete Hackathon';
+        return "Complete Hackathon";
       default:
         return `Change to ${STATUS_INFO[status].label}`;
     }
@@ -116,7 +118,7 @@ export function StatusManagement({
             <span className="text-sm font-medium">Current Status:</span>
             <HackathonStatusBadge status={hackathon.status} />
           </div>
-          
+
           <div className="text-sm text-gray-600">
             {currentStatusInfo.description}
           </div>
@@ -126,11 +128,12 @@ export function StatusManagement({
           {automaticTransition.newStatus && (
             <Alert>
               <AlertDescription>
-                Status will automatically change to{' '}
+                Status will automatically change to{" "}
                 <Badge variant="outline" className="mx-1">
                   {STATUS_INFO[automaticTransition.newStatus].label}
                 </Badge>
-                {automaticTransition.reason && ` - ${automaticTransition.reason}`}
+                {automaticTransition.reason &&
+                  ` - ${automaticTransition.reason}`}
               </AlertDescription>
             </Alert>
           )}
@@ -152,7 +155,7 @@ export function StatusManagement({
           <span className="text-sm font-medium">Current Status:</span>
           <HackathonStatusBadge status={hackathon.status} />
         </div>
-        
+
         <div className="text-sm text-gray-600">
           {currentStatusInfo.description}
         </div>
@@ -162,7 +165,7 @@ export function StatusManagement({
         {automaticTransition.newStatus && (
           <Alert>
             <AlertDescription>
-              Status will automatically change to{' '}
+              Status will automatically change to{" "}
               <Badge variant="outline" className="mx-1">
                 {STATUS_INFO[automaticTransition.newStatus].label}
               </Badge>
@@ -176,7 +179,11 @@ export function StatusManagement({
             <div className="text-sm font-medium">Manual Status Changes:</div>
             <div className="grid gap-2">
               {possibleNextStatuses.map((status) => (
-                <Dialog key={status} open={showConfirmDialog && selectedStatus === status} onOpenChange={setShowConfirmDialog}>
+                <Dialog
+                  key={status}
+                  open={showConfirmDialog && selectedStatus === status}
+                  onOpenChange={setShowConfirmDialog}
+                >
                   <DialogTrigger asChild>
                     <Button
                       variant="outline"
@@ -191,11 +198,12 @@ export function StatusManagement({
                     <DialogHeader>
                       <DialogTitle>Confirm Status Change</DialogTitle>
                       <DialogDescription>
-                        Are you sure you want to change the hackathon status from{' '}
+                        Are you sure you want to change the hackathon status
+                        from{" "}
                         <Badge variant="outline" className="mx-1">
                           {currentStatusInfo.label}
                         </Badge>
-                        to{' '}
+                        to{" "}
                         <Badge variant="outline" className="mx-1">
                           {STATUS_INFO[status].label}
                         </Badge>
@@ -207,13 +215,18 @@ export function StatusManagement({
                         <strong>This will:</strong>
                         <ul className="mt-2 list-disc list-inside space-y-1">
                           {status === HackathonStatus.REGISTRATION_OPEN && (
-                            <li>Allow participants to register for the hackathon</li>
+                            <li>
+                              Allow participants to register for the hackathon
+                            </li>
                           )}
                           {status === HackathonStatus.REGISTRATION_CLOSED && (
                             <li>Stop new registrations</li>
                           )}
                           {status === HackathonStatus.SUBMISSION_OPEN && (
-                            <li>Allow registered participants to submit their projects</li>
+                            <li>
+                              Allow registered participants to submit their
+                              projects
+                            </li>
                           )}
                           {status === HackathonStatus.SUBMISSION_CLOSED && (
                             <li>Stop new submissions</li>
@@ -231,18 +244,20 @@ export function StatusManagement({
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => setShowConfirmDialog(false)}
                         disabled={isUpdating}
                       >
                         Cancel
                       </Button>
-                      <Button 
-                        onClick={() => selectedStatus && handleStatusChange(selectedStatus)}
+                      <Button
+                        onClick={() =>
+                          selectedStatus && handleStatusChange(selectedStatus)
+                        }
                         disabled={isUpdating}
                       >
-                        {isUpdating ? 'Updating...' : 'Confirm Change'}
+                        {isUpdating ? "Updating..." : "Confirm Change"}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -252,13 +267,15 @@ export function StatusManagement({
           </div>
         )}
 
-        {possibleNextStatuses.length === 0 && !automaticTransition.newStatus && (
-          <Alert>
-            <AlertDescription>
-              No manual status transitions available. The hackathon is in its final state.
-            </AlertDescription>
-          </Alert>
-        )}
+        {possibleNextStatuses.length === 0 &&
+          !automaticTransition.newStatus && (
+            <Alert>
+              <AlertDescription>
+                No manual status transitions available. The hackathon is in its
+                final state.
+              </AlertDescription>
+            </Alert>
+          )}
       </CardContent>
     </Card>
   );

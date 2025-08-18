@@ -72,14 +72,15 @@ export interface UpdateSubmissionResponse {
   message: string;
 }
 
-export interface ParticipantListResponse extends PaginatedResponse<Participant> {
+export interface ParticipantListResponse
+  extends PaginatedResponse<Participant> {
   // Additional participant list response fields can be added here
 }
 
 // File upload API types
 export interface FileUploadRequest {
   file: File;
-  type: 'hackathon-cover' | 'user-avatar' | 'project-image';
+  type: "hackathon-cover" | "user-avatar" | "project-image";
   entityId?: string; // hackathon ID or user ID
 }
 
@@ -153,7 +154,7 @@ export interface ParticipantVoteSummary {
   weightedScore?: number;
   normalizedScore?: number;
   rank?: number;
-  rankTier?: 'winner' | 'runner-up' | 'participant';
+  rankTier?: "winner" | "runner-up" | "participant";
   scoreBreakdown?: {
     simple: number;
     weighted: number;

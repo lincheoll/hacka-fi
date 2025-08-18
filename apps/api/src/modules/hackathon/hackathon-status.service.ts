@@ -29,13 +29,15 @@ export class HackathonStatusService {
     {
       from: HackathonStatus.REGISTRATION_OPEN,
       to: HackathonStatus.REGISTRATION_CLOSED,
-      condition: (hackathon) => new Date() > new Date(hackathon.registrationDeadline),
+      condition: (hackathon) =>
+        new Date() > new Date(hackathon.registrationDeadline),
       reason: 'Registration deadline passed',
     },
     {
       from: HackathonStatus.SUBMISSION_OPEN,
       to: HackathonStatus.SUBMISSION_CLOSED,
-      condition: (hackathon) => new Date() > new Date(hackathon.submissionDeadline),
+      condition: (hackathon) =>
+        new Date() > new Date(hackathon.submissionDeadline),
       reason: 'Submission deadline passed',
     },
     {
@@ -52,17 +54,17 @@ export class HackathonStatusService {
   @Cron(CronExpression.EVERY_MINUTE)
   async checkAndUpdateStatuses() {
     this.logger.log('Running automatic status update check...');
-    
+
     try {
       const activeHackathons = await this.findActiveHackathons();
-      
+
       if (activeHackathons.length === 0) {
         this.logger.log('No active hackathons found for status checking');
         return;
       }
 
       let updatedCount = 0;
-      
+
       for (const hackathon of activeHackathons) {
         const result = await this.checkAndUpdateSingleHackathon(hackathon);
         if (result.updated) {
@@ -88,14 +90,19 @@ export class HackathonStatusService {
   }> {
     try {
       const { newStatus, reason } = this.getNextAutomaticStatus(hackathon);
-      
+
       if (newStatus && reason) {
-        await this.updateHackathonStatus(hackathon.id, newStatus, reason, 'system');
-        
+        await this.updateHackathonStatus(
+          hackathon.id,
+          newStatus,
+          reason,
+          'system',
+        );
+
         this.logger.log(
           `Updated hackathon ${hackathon.id}: ${hackathon.status} → ${newStatus} (${reason})`,
         );
-        
+
         return { updated: true, newStatus, reason };
       }
 
@@ -161,7 +168,8 @@ export class HackathonStatusService {
       // Log the status change using audit service
       await this.auditLogger.logStatusChange({
         hackathonId,
-        action: triggeredBy === 'system' ? 'AUTOMATIC_TRANSITION' : 'MANUAL_OVERRIDE',
+        action:
+          triggeredBy === 'system' ? 'AUTOMATIC_TRANSITION' : 'MANUAL_OVERRIDE',
         fromStatus: hackathon.status as any,
         toStatus: newStatus as any,
         reason,
@@ -254,10 +262,10 @@ export class HackathonStatusService {
       [HackathonStatus.COMPLETED]: [], // No transitions from completed
     };
 
-    const allowedTransitions = validTransitions[hackathon.status as HackathonStatus] || [];
+    const allowedTransitions =
+      validTransitions[hackathon.status as HackathonStatus] || [];
     return allowedTransitions.includes(newStatus);
   }
-
 
   /**
    * Get hackathon status summary for debugging
@@ -271,7 +279,7 @@ export class HackathonStatusService {
     });
 
     const activeHackathons = await this.findActiveHackathons();
-    
+
     return {
       statusCounts: statusCounts.reduce(
         (acc, item) => {

@@ -7,7 +7,10 @@ import {
   Logger,
 } from '@nestjs/common';
 import { RankingService } from './ranking.service';
-import { WinnerDeterminationService, WinnerDeterminationResult } from './winner-determination.service';
+import {
+  WinnerDeterminationService,
+  WinnerDeterminationResult,
+} from './winner-determination.service';
 import { ConfigService } from '@nestjs/config';
 import { HackathonStatus, Prisma } from '@prisma/client';
 import { PrismaService } from '../../common/database/prisma.service';
@@ -291,9 +294,7 @@ export class HackathonService {
     }
 
     // Check if hackathon is accepting participants
-    if (
-      hackathon.status !== HackathonStatus.REGISTRATION_OPEN
-    ) {
+    if (hackathon.status !== HackathonStatus.REGISTRATION_OPEN) {
       throw new BadRequestException('Hackathon is not accepting participants');
     }
 
@@ -355,28 +356,16 @@ export class HackathonService {
     newStatus: HackathonStatus,
   ): void {
     const validTransitions: Record<HackathonStatus, HackathonStatus[]> = {
-      [HackathonStatus.DRAFT]: [
-        HackathonStatus.REGISTRATION_OPEN,
-      ],
+      [HackathonStatus.DRAFT]: [HackathonStatus.REGISTRATION_OPEN],
       [HackathonStatus.REGISTRATION_OPEN]: [
         HackathonStatus.REGISTRATION_CLOSED,
         HackathonStatus.SUBMISSION_OPEN,
       ],
-      [HackathonStatus.REGISTRATION_CLOSED]: [
-        HackathonStatus.SUBMISSION_OPEN,
-      ],
-      [HackathonStatus.SUBMISSION_OPEN]: [
-        HackathonStatus.SUBMISSION_CLOSED,
-      ],
-      [HackathonStatus.SUBMISSION_CLOSED]: [
-        HackathonStatus.VOTING_OPEN,
-      ],
-      [HackathonStatus.VOTING_OPEN]: [
-        HackathonStatus.VOTING_CLOSED,
-      ],
-      [HackathonStatus.VOTING_CLOSED]: [
-        HackathonStatus.COMPLETED,
-      ],
+      [HackathonStatus.REGISTRATION_CLOSED]: [HackathonStatus.SUBMISSION_OPEN],
+      [HackathonStatus.SUBMISSION_OPEN]: [HackathonStatus.SUBMISSION_CLOSED],
+      [HackathonStatus.SUBMISSION_CLOSED]: [HackathonStatus.VOTING_OPEN],
+      [HackathonStatus.VOTING_OPEN]: [HackathonStatus.VOTING_CLOSED],
+      [HackathonStatus.VOTING_CLOSED]: [HackathonStatus.COMPLETED],
       [HackathonStatus.COMPLETED]: [],
     };
 
@@ -417,7 +406,9 @@ export class HackathonService {
 
     // Only organizer can add judges
     if (hackathon.organizerAddress !== addedBy) {
-      throw new ForbiddenException('Only the hackathon organizer can add judges');
+      throw new ForbiddenException(
+        'Only the hackathon organizer can add judges',
+      );
     }
 
     // Cannot add judges during voting or after completion
@@ -448,7 +439,9 @@ export class HackathonService {
 
     // Organizer cannot be a judge of their own hackathon
     if (hackathon.organizerAddress === addJudgeDto.judgeAddress) {
-      throw new BadRequestException('Organizer cannot be a judge of their own hackathon');
+      throw new BadRequestException(
+        'Organizer cannot be a judge of their own hackathon',
+      );
     }
 
     const judge = await this.prisma.hackathonJudge.create({
@@ -498,7 +491,9 @@ export class HackathonService {
 
     // Only organizer can remove judges
     if (hackathon.organizerAddress !== removedBy) {
-      throw new ForbiddenException('Only the hackathon organizer can remove judges');
+      throw new ForbiddenException(
+        'Only the hackathon organizer can remove judges',
+      );
     }
 
     // Cannot remove judges during voting
@@ -701,7 +696,9 @@ export class HackathonService {
     }
   }
 
-  async getVotingResults(hackathonId: string): Promise<HackathonVotingResultsDto> {
+  async getVotingResults(
+    hackathonId: string,
+  ): Promise<HackathonVotingResultsDto> {
     const hackathon = await this.prisma.hackathon.findUnique({
       where: { id: hackathonId },
     });
@@ -755,7 +752,7 @@ export class HackathonService {
         useNormalizedScoring: true,
         penalizeIncompleteVoting: true,
         minimumVotesThreshold: Math.max(1, Math.ceil(totalJudges * 0.3)), // At least 30% of judges
-      }
+      },
     );
 
     // Transform rankings back to expected format
@@ -782,7 +779,9 @@ export class HackathonService {
       })),
     }));
 
-    this.logger.log(`Generated advanced rankings for hackathon ${hackathonId}: ${rankings.length} participants ranked`);
+    this.logger.log(
+      `Generated advanced rankings for hackathon ${hackathonId}: ${rankings.length} participants ranked`,
+    );
 
     return {
       hackathonId,
@@ -800,7 +799,9 @@ export class HackathonService {
 
   // Winner Determination Methods
 
-  async calculateWinners(hackathonId: string): Promise<WinnerDeterminationResult> {
+  async calculateWinners(
+    hackathonId: string,
+  ): Promise<WinnerDeterminationResult> {
     const hackathon = await this.prisma.hackathon.findUnique({
       where: { id: hackathonId },
     });
@@ -811,13 +812,18 @@ export class HackathonService {
 
     // Only allow winner calculation for completed hackathons
     if (hackathon.status !== HackathonStatus.COMPLETED) {
-      throw new BadRequestException('Winners can only be calculated for completed hackathons');
+      throw new BadRequestException(
+        'Winners can only be calculated for completed hackathons',
+      );
     }
 
     return await this.winnerDeterminationService.calculateWinners(hackathonId);
   }
 
-  async finalizeWinners(hackathonId: string, organizerAddress: string): Promise<WinnerDeterminationResult> {
+  async finalizeWinners(
+    hackathonId: string,
+    organizerAddress: string,
+  ): Promise<WinnerDeterminationResult> {
     const hackathon = await this.prisma.hackathon.findUnique({
       where: { id: hackathonId },
     });
@@ -828,28 +834,40 @@ export class HackathonService {
 
     // Only organizer can finalize winners
     if (hackathon.organizerAddress !== organizerAddress) {
-      throw new ForbiddenException('Only the hackathon organizer can finalize winners');
+      throw new ForbiddenException(
+        'Only the hackathon organizer can finalize winners',
+      );
     }
 
     // Only allow winner finalization for completed hackathons
     if (hackathon.status !== HackathonStatus.COMPLETED) {
-      throw new BadRequestException('Winners can only be finalized for completed hackathons');
+      throw new BadRequestException(
+        'Winners can only be finalized for completed hackathons',
+      );
     }
 
     // Check if winners are already finalized
-    const alreadyFinalized = await this.winnerDeterminationService.areWinnersFinalized(hackathonId);
+    const alreadyFinalized =
+      await this.winnerDeterminationService.areWinnersFinalized(hackathonId);
     if (alreadyFinalized) {
-      throw new ConflictException('Winners have already been finalized for this hackathon');
+      throw new ConflictException(
+        'Winners have already been finalized for this hackathon',
+      );
     }
 
-    const result = await this.winnerDeterminationService.finalizeWinners(hackathonId);
+    const result =
+      await this.winnerDeterminationService.finalizeWinners(hackathonId);
 
-    this.logger.log(`Winners finalized for hackathon ${hackathonId} by ${organizerAddress}`);
-    
+    this.logger.log(
+      `Winners finalized for hackathon ${hackathonId} by ${organizerAddress}`,
+    );
+
     return result;
   }
 
-  async getWinners(hackathonId: string): Promise<WinnerDeterminationResult | null> {
+  async getWinners(
+    hackathonId: string,
+  ): Promise<WinnerDeterminationResult | null> {
     const hackathon = await this.prisma.hackathon.findUnique({
       where: { id: hackathonId },
     });
@@ -886,7 +904,9 @@ export class HackathonService {
       throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
     }
 
-    return await this.winnerDeterminationService.areWinnersFinalized(hackathonId);
+    return await this.winnerDeterminationService.areWinnersFinalized(
+      hackathonId,
+    );
   }
 
   /**

@@ -1,14 +1,18 @@
-'use client';
+"use client";
 
-import { useEffect, useCallback, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { type Hackathon } from '@/types/global';
-import { getNextAutomaticStatus } from '@/lib/hackathon-status';
+import { useEffect, useCallback, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { type Hackathon } from "@/types/global";
+import { getNextAutomaticStatus } from "@/lib/hackathon-status";
 
 interface StatusMonitorOptions {
   enabled?: boolean;
   interval?: number; // in milliseconds
-  onStatusChange?: (hackathon: Hackathon, newStatus: string, reason: string) => void;
+  onStatusChange?: (
+    hackathon: Hackathon,
+    newStatus: string,
+    reason: string,
+  ) => void;
 }
 
 /**
@@ -16,7 +20,7 @@ interface StatusMonitorOptions {
  */
 export function useStatusMonitor(
   hackathon: Hackathon | undefined,
-  options: StatusMonitorOptions = {}
+  options: StatusMonitorOptions = {},
 ) {
   const {
     enabled = true,
@@ -33,7 +37,7 @@ export function useStatusMonitor(
 
     try {
       const { newStatus, reason } = getNextAutomaticStatus(hackathon);
-      
+
       if (newStatus && reason) {
         // Status needs to be updated
         console.log(`Status change detected for hackathon ${hackathon.id}:`, {
@@ -47,19 +51,19 @@ export function useStatusMonitor(
 
         // Invalidate queries to refetch fresh data
         await queryClient.invalidateQueries({
-          queryKey: ['hackathon', hackathon.id],
+          queryKey: ["hackathon", hackathon.id],
         });
 
         // Also invalidate the hackathons list
         await queryClient.invalidateQueries({
-          queryKey: ['hackathons'],
+          queryKey: ["hackathons"],
         });
 
         // Store this check to avoid duplicate updates
         lastCheckRef.current = `${hackathon.id}-${newStatus}-${Date.now()}`;
       }
     } catch (error) {
-      console.error('Status check failed:', error);
+      console.error("Status check failed:", error);
     }
   }, [hackathon, enabled, onStatusChange, queryClient]);
 
@@ -100,7 +104,7 @@ export function useStatusMonitor(
  */
 export function useMultiStatusMonitor(
   hackathons: Hackathon[],
-  options: StatusMonitorOptions = {}
+  options: StatusMonitorOptions = {},
 ) {
   const {
     enabled = true,
@@ -123,7 +127,7 @@ export function useMultiStatusMonitor(
     for (const hackathon of hackathons) {
       try {
         const { newStatus, reason } = getNextAutomaticStatus(hackathon);
-        
+
         if (newStatus && reason) {
           statusChanges.push({
             hackathon,
@@ -132,12 +136,18 @@ export function useMultiStatusMonitor(
           });
         }
       } catch (error) {
-        console.error(`Status check failed for hackathon ${hackathon.id}:`, error);
+        console.error(
+          `Status check failed for hackathon ${hackathon.id}:`,
+          error,
+        );
       }
     }
 
     if (statusChanges.length > 0) {
-      console.log(`Detected ${statusChanges.length} status changes:`, statusChanges);
+      console.log(
+        `Detected ${statusChanges.length} status changes:`,
+        statusChanges,
+      );
 
       // Notify about all changes
       for (const change of statusChanges) {
@@ -146,13 +156,13 @@ export function useMultiStatusMonitor(
 
       // Invalidate all hackathon queries
       await queryClient.invalidateQueries({
-        queryKey: ['hackathons'],
+        queryKey: ["hackathons"],
       });
 
       // Invalidate individual hackathon queries
       for (const change of statusChanges) {
         await queryClient.invalidateQueries({
-          queryKey: ['hackathon', change.hackathon.id],
+          queryKey: ["hackathon", change.hackathon.id],
         });
       }
     }

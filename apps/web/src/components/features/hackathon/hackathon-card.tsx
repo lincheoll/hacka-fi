@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, Trophy, Clock } from 'lucide-react';
-import { formatDistanceToNow, isBefore } from 'date-fns';
-import type { Hackathon } from '@/types/global';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Calendar, Users, Trophy, Clock } from "lucide-react";
+import { formatDistanceToNow, isBefore } from "date-fns";
+import type { Hackathon } from "@/types/global";
 
 interface HackathonCardProps {
   hackathon: Hackathon;
@@ -32,13 +32,13 @@ export function HackathonCard({
   // Determine hackathon phase
   const getPhase = () => {
     if (isBefore(now, registrationDeadline)) {
-      return 'registration';
+      return "registration";
     } else if (isBefore(now, submissionDeadline)) {
-      return 'development';
+      return "development";
     } else if (isBefore(now, votingDeadline)) {
-      return 'voting';
+      return "voting";
     } else {
-      return 'completed';
+      return "completed";
     }
   };
 
@@ -46,34 +46,34 @@ export function HackathonCard({
 
   const getPhaseColor = (phase: string) => {
     switch (phase) {
-      case 'registration':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-      case 'development':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-      case 'voting':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-      case 'completed':
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+      case "registration":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "development":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      case "voting":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "completed":
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200';
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
     }
   };
 
   const getDeadlineText = () => {
     switch (phase) {
-      case 'registration':
+      case "registration":
         return `Registration ends ${formatDistanceToNow(registrationDeadline, { addSuffix: true })}`;
-      case 'development':
+      case "development":
         return `Submission due ${formatDistanceToNow(submissionDeadline, { addSuffix: true })}`;
-      case 'voting':
+      case "voting":
         return `Voting ends ${formatDistanceToNow(votingDeadline, { addSuffix: true })}`;
       default:
-        return 'Completed';
+        return "Completed";
     }
   };
 
-  const canParticipate = phase === 'registration' && !isParticipating;
-  const canVote = phase === 'voting' && showVoting;
+  const canParticipate = phase === "registration" && !isParticipating;
+  const canVote = phase === "voting" && showVoting;
 
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
@@ -89,13 +89,11 @@ export function HackathonCard({
           </div>
           <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
             <Trophy className="w-4 h-4" />
-            <span className="font-semibold">
-              Prize Pool
-            </span>
+            <span className="font-semibold">Prize Pool</span>
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <p className="text-muted-foreground line-clamp-3">
           {hackathon.description}
@@ -108,7 +106,10 @@ export function HackathonCard({
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-muted-foreground" />
-            <span>Created by {hackathon.organizerAddress?.slice(0, 6)}...{hackathon.organizerAddress?.slice(-4)}</span>
+            <span>
+              Created by {hackathon.organizerAddress?.slice(0, 6)}...
+              {hackathon.organizerAddress?.slice(-4)}
+            </span>
           </div>
         </div>
 
@@ -125,7 +126,7 @@ export function HackathonCard({
           >
             View Details
           </Button>
-          
+
           {canParticipate && (
             <Button
               onClick={() => onParticipate?.(hackathon)}
@@ -134,8 +135,8 @@ export function HackathonCard({
               Participate
             </Button>
           )}
-          
-          {isParticipating && phase === 'development' && (
+
+          {isParticipating && phase === "development" && (
             <Button
               variant="secondary"
               onClick={() => onViewDetails?.(hackathon)}
@@ -144,12 +145,9 @@ export function HackathonCard({
               Update Submission
             </Button>
           )}
-          
+
           {canVote && (
-            <Button
-              onClick={() => onVote?.(hackathon)}
-              className="flex-1"
-            >
+            <Button onClick={() => onVote?.(hackathon)} className="flex-1">
               Vote
             </Button>
           )}

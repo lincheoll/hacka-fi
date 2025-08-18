@@ -9,7 +9,17 @@ import { AuditModule } from '../audit/audit.module';
 @Module({
   imports: [AuditModule],
   controllers: [HackathonController],
-  providers: [HackathonService, HackathonStatusService, RankingService, WinnerDeterminationService],
-  exports: [HackathonService, HackathonStatusService, RankingService, WinnerDeterminationService],
+  providers: [
+    HackathonService,
+    HackathonStatusService,
+    RankingService,
+    WinnerDeterminationService,
+  ],
+  exports: [
+    HackathonService,
+    HackathonStatusService,
+    RankingService,
+    WinnerDeterminationService,
+  ],
 })
 export class HackathonModule {}

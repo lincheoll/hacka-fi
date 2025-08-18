@@ -45,7 +45,8 @@ async function main() {
   const hackathons = [
     {
       title: 'DeFi Innovation Challenge 2024',
-      description: 'Build innovative DeFi solutions on Kaia network. Focus on lending, borrowing, yield farming, and novel financial instruments.',
+      description:
+        'Build innovative DeFi solutions on Kaia network. Focus on lending, borrowing, yield farming, and novel financial instruments.',
       organizerAddress: '0x1234567890123456789012345678901234567890',
       registrationDeadline: new Date('2024-12-15T23:59:59Z'),
       submissionDeadline: new Date('2024-12-30T23:59:59Z'),
@@ -58,7 +59,8 @@ async function main() {
     },
     {
       title: 'NFT Marketplace Revolution',
-      description: 'Create the next generation NFT marketplace with advanced features like fractional ownership, lending, and cross-chain compatibility.',
+      description:
+        'Create the next generation NFT marketplace with advanced features like fractional ownership, lending, and cross-chain compatibility.',
       organizerAddress: '0x2345678901234567890123456789012345678901',
       registrationDeadline: new Date('2024-11-30T23:59:59Z'),
       submissionDeadline: new Date('2024-12-20T23:59:59Z'),
@@ -70,7 +72,8 @@ async function main() {
     },
     {
       title: 'AI x Blockchain Integration',
-      description: 'Explore the intersection of AI and blockchain technology. Build applications that leverage both AI and decentralized systems.',
+      description:
+        'Explore the intersection of AI and blockchain technology. Build applications that leverage both AI and decentralized systems.',
       organizerAddress: '0x3456789012345678901234567890123456789012',
       registrationDeadline: new Date('2024-10-15T23:59:59Z'),
       submissionDeadline: new Date('2024-11-15T23:59:59Z'),

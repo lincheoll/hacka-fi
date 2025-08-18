@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, IsNumber, IsEnum, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsEnum,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class FileUploadDto {
   @ApiProperty({
@@ -94,7 +101,8 @@ export class FileResponseDto {
 
   @ApiProperty({
     description: 'Public URL to access the file',
-    example: 'http://localhost:3004/uploads/hackathon-covers/file-1234567890-123456789.jpg',
+    example:
+      'http://localhost:3004/uploads/hackathon-covers/file-1234567890-123456789.jpg',
   })
   url!: string;
 

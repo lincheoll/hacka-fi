@@ -1,18 +1,27 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { submissionUpdateSchema, type SubmissionUpdateFormData } from '@/lib/validations';
-import { updateSubmission } from '@/lib/api-functions';
-import type { Participant, Hackathon } from '@/types/global';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  submissionUpdateSchema,
+  type SubmissionUpdateFormData,
+} from "@/lib/validations";
+import { updateSubmission } from "@/lib/api-functions";
+import type { Participant, Hackathon } from "@/types/global";
 
 interface SubmissionTrackerProps {
   participant: Participant;
@@ -20,15 +29,15 @@ interface SubmissionTrackerProps {
   onSubmissionUpdate?: (participant: Participant) => void;
 }
 
-export function SubmissionTracker({ 
-  participant, 
-  hackathon, 
-  onSubmissionUpdate 
+export function SubmissionTracker({
+  participant,
+  hackathon,
+  onSubmissionUpdate,
 }: SubmissionTrackerProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
-  const [projectDescription, setProjectDescription] = useState('');
-  
+  const [projectDescription, setProjectDescription] = useState("");
+
   const queryClient = useQueryClient();
 
   const {
@@ -38,29 +47,32 @@ export function SubmissionTracker({
   } = useForm<SubmissionUpdateFormData>({
     resolver: zodResolver(submissionUpdateSchema),
     defaultValues: {
-      submissionUrl: participant.submissionUrl || '',
+      submissionUrl: participant.submissionUrl || "",
     },
   });
 
   const submissionMutation = useMutation({
-    mutationFn: (data: { submissionUrl: string; projectDescription?: string }) => 
+    mutationFn: (data: {
+      submissionUrl: string;
+      projectDescription?: string;
+    }) =>
       updateSubmission(participant.id, {
         submissionUrl: data.submissionUrl,
         projectDescription: data.projectDescription,
       }),
     onSuccess: (updatedParticipant) => {
-      setSubmitSuccess('Submission updated successfully!');
+      setSubmitSuccess("Submission updated successfully!");
       setSubmitError(null);
-      
+
       // Update the query cache
-      queryClient.invalidateQueries({ 
-        queryKey: ['participant-status', hackathon.id, participant.userAddress] 
+      queryClient.invalidateQueries({
+        queryKey: ["participant-status", hackathon.id, participant.userAddress],
       });
-      
+
       onSubmissionUpdate?.(updatedParticipant);
     },
     onError: (error: Error) => {
-      setSubmitError(error.message || 'Failed to update submission');
+      setSubmitError(error.message || "Failed to update submission");
       setSubmitSuccess(null);
     },
   });
@@ -82,22 +94,25 @@ export function SubmissionTracker({
       <CardHeader>
         <CardTitle>Project Submission</CardTitle>
         <CardDescription>
-          {isSubmissionOpen 
+          {isSubmissionOpen
             ? `Submit your project before ${submissionDeadline.toLocaleDateString()} at ${submissionDeadline.toLocaleTimeString()}`
-            : 'Submission deadline has passed'
-          }
+            : "Submission deadline has passed"}
         </CardDescription>
       </CardHeader>
       <CardContent>
         {!isSubmissionOpen && (
           <Alert className="mb-4">
             <AlertDescription>
-              ⏰ Submission deadline has passed. You can no longer update your submission.
+              ⏰ Submission deadline has passed. You can no longer update your
+              submission.
             </AlertDescription>
           </Alert>
         )}
 
-        <form onSubmit={handleSubmit(handleSubmissionUpdate)} className="space-y-4">
+        <form
+          onSubmit={handleSubmit(handleSubmissionUpdate)}
+          className="space-y-4"
+        >
           {/* Submission URL */}
           <div className="space-y-2">
             <Label htmlFor="submissionUrl">
@@ -107,11 +122,17 @@ export function SubmissionTracker({
               id="submissionUrl"
               type="url"
               placeholder="https://github.com/username/project or https://your-demo.vercel.app"
-              disabled={!isSubmissionOpen || isSubmitting || submissionMutation.isPending}
-              {...register('submissionUrl')}
+              disabled={
+                !isSubmissionOpen ||
+                isSubmitting ||
+                submissionMutation.isPending
+              }
+              {...register("submissionUrl")}
             />
             {errors.submissionUrl && (
-              <p className="text-sm text-red-600">{errors.submissionUrl.message}</p>
+              <p className="text-sm text-red-600">
+                {errors.submissionUrl.message}
+              </p>
             )}
             <p className="text-sm text-gray-600">
               Submit your GitHub repository, live demo, or project showcase URL
@@ -128,7 +149,11 @@ export function SubmissionTracker({
               placeholder="Brief description of your project, technologies used, and key features..."
               value={projectDescription}
               onChange={(e) => setProjectDescription(e.target.value)}
-              disabled={!isSubmissionOpen || isSubmitting || submissionMutation.isPending}
+              disabled={
+                !isSubmissionOpen ||
+                isSubmitting ||
+                submissionMutation.isPending
+              }
               rows={4}
               maxLength={500}
             />
@@ -141,7 +166,7 @@ export function SubmissionTracker({
           {participant.submissionUrl && (
             <div className="p-3 bg-gray-50 rounded-lg">
               <h4 className="font-medium text-sm mb-2">Current Submission:</h4>
-              <a 
+              <a
                 href={participant.submissionUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -150,7 +175,8 @@ export function SubmissionTracker({
                 {participant.submissionUrl}
               </a>
               <p className="text-xs text-gray-500 mt-1">
-                Submitted on: {new Date(participant.registeredAt).toLocaleDateString()}
+                Submitted on:{" "}
+                {new Date(participant.registeredAt).toLocaleDateString()}
               </p>
             </div>
           )}
@@ -173,9 +199,11 @@ export function SubmissionTracker({
           )}
 
           {/* Submit Button */}
-          <Button 
-            type="submit" 
-            disabled={!isSubmissionOpen || isSubmitting || submissionMutation.isPending}
+          <Button
+            type="submit"
+            disabled={
+              !isSubmissionOpen || isSubmitting || submissionMutation.isPending
+            }
             className="w-full"
           >
             {isSubmitting || submissionMutation.isPending ? (
@@ -184,9 +212,9 @@ export function SubmissionTracker({
                 Updating Submission...
               </>
             ) : participant.submissionUrl ? (
-              'Update Submission'
+              "Update Submission"
             ) : (
-              'Submit Project'
+              "Submit Project"
             )}
           </Button>
 
@@ -197,7 +225,9 @@ export function SubmissionTracker({
               <li>• Submit your GitHub repository or live demo URL</li>
               <li>• Make sure your project is publicly accessible</li>
               <li>• Include a README with setup instructions</li>
-              <li>• Accepted platforms: GitHub, GitLab, Vercel, Netlify, and more</li>
+              <li>
+                • Accepted platforms: GitHub, GitLab, Vercel, Netlify, and more
+              </li>
               <li>• You can update your submission until the deadline</li>
             </ul>
           </div>

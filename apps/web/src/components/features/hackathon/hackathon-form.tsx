@@ -1,20 +1,23 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
-import { createHackathonSchema, type CreateHackathonFormData } from '@/lib/validations';
-import { createHackathon, uploadImage } from '@/lib/api-functions';
-import { ImageUpload } from '@/components/common/image-upload';
-import type { Hackathon } from '@/types/global';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  createHackathonSchema,
+  type CreateHackathonFormData,
+} from "@/lib/validations";
+import { createHackathon, uploadImage } from "@/lib/api-functions";
+import { ImageUpload } from "@/components/common/image-upload";
+import type { Hackathon } from "@/types/global";
 
 interface HackathonFormProps {
   onSuccess?: (hackathon: Hackathon) => void;
@@ -25,7 +28,9 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
   const [coverImage, setCoverImage] = useState<File | null>(null);
-  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(null);
+  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(
+    null,
+  );
 
   const {
     register,
@@ -39,13 +44,13 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
   const createHackathonMutation = useMutation({
     mutationFn: createHackathon,
     onSuccess: (data) => {
-      setSubmitSuccess('Hackathon created successfully!');
+      setSubmitSuccess("Hackathon created successfully!");
       setSubmitError(null);
       reset();
       onSuccess?.(data);
     },
     onError: (error: Error) => {
-      setSubmitError(error.message || 'Failed to create hackathon');
+      setSubmitError(error.message || "Failed to create hackathon");
       setSubmitSuccess(null);
     },
   });
@@ -53,7 +58,7 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
   const onSubmit = async (data: CreateHackathonFormData) => {
     setSubmitError(null);
     setSubmitSuccess(null);
-    
+
     try {
       // First, create the hackathon
       const apiData = {
@@ -62,30 +67,34 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
         registrationDeadline: data.registrationDeadline,
         submissionDeadline: data.submissionDeadline,
         votingDeadline: data.votingDeadline,
-        prizeAmount: data.prizeAmount ? parseFloat(data.prizeAmount) : undefined,
+        prizeAmount: data.prizeAmount
+          ? parseFloat(data.prizeAmount)
+          : undefined,
         entryFee: data.entryFee ? parseFloat(data.entryFee) : undefined,
-        maxParticipants: data.maxParticipants ? parseInt(data.maxParticipants, 10) : undefined,
+        maxParticipants: data.maxParticipants
+          ? parseInt(data.maxParticipants, 10)
+          : undefined,
       };
-      
+
       const hackathon = await createHackathonMutation.mutateAsync(apiData);
-      
+
       // If there's a cover image, upload it
       if (coverImage && hackathon.id) {
         try {
           await uploadImage({
             file: coverImage,
-            type: 'hackathon-cover',
+            type: "hackathon-cover",
             entityId: hackathon.id,
             width: 800,
             height: 400,
             quality: 80,
           });
         } catch (imageError) {
-          console.warn('Failed to upload cover image:', imageError);
+          console.warn("Failed to upload cover image:", imageError);
           // Don't fail the whole process if image upload fails
         }
       }
-      
+
       return hackathon;
     } catch (error) {
       throw error;
@@ -102,7 +111,7 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
     const regDeadline = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     const subDeadline = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
     const voteDeadline = new Date(now.getTime() + 21 * 24 * 60 * 60 * 1000);
-    
+
     return {
       registration: formatDateTimeLocal(regDeadline),
       submission: formatDateTimeLocal(subDeadline),
@@ -115,9 +124,11 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Create New Hackathon</CardTitle>
+        <CardTitle className="text-2xl font-bold">
+          Create New Hackathon
+        </CardTitle>
       </CardHeader>
-      
+
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Alert Messages */}
@@ -127,7 +138,7 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
               <AlertDescription>{submitError}</AlertDescription>
             </Alert>
           )}
-          
+
           {submitSuccess && (
             <Alert className="border-green-500 text-green-700 dark:border-green-400 dark:text-green-400">
               <CheckCircle className="h-4 w-4" />
@@ -142,8 +153,8 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
               <Input
                 id="title"
                 placeholder="Enter hackathon title"
-                {...register('title')}
-                className={errors.title ? 'border-red-500' : ''}
+                {...register("title")}
+                className={errors.title ? "border-red-500" : ""}
               />
               {errors.title && (
                 <p className="text-sm text-red-500">{errors.title.message}</p>
@@ -156,11 +167,13 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
                 id="description"
                 placeholder="Describe your hackathon, its goals, and requirements"
                 rows={4}
-                {...register('description')}
-                className={errors.description ? 'border-red-500' : ''}
+                {...register("description")}
+                className={errors.description ? "border-red-500" : ""}
               />
               {errors.description && (
-                <p className="text-sm text-red-500">{errors.description.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.description.message}
+                </p>
               )}
             </div>
 
@@ -187,16 +200,20 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
           {/* Deadlines */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="registrationDeadline">Registration Deadline *</Label>
+              <Label htmlFor="registrationDeadline">
+                Registration Deadline *
+              </Label>
               <Input
                 id="registrationDeadline"
                 type="datetime-local"
                 defaultValue={defaultDates.registration}
-                {...register('registrationDeadline')}
-                className={errors.registrationDeadline ? 'border-red-500' : ''}
+                {...register("registrationDeadline")}
+                className={errors.registrationDeadline ? "border-red-500" : ""}
               />
               {errors.registrationDeadline && (
-                <p className="text-sm text-red-500">{errors.registrationDeadline.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.registrationDeadline.message}
+                </p>
               )}
             </div>
 
@@ -206,11 +223,13 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
                 id="submissionDeadline"
                 type="datetime-local"
                 defaultValue={defaultDates.submission}
-                {...register('submissionDeadline')}
-                className={errors.submissionDeadline ? 'border-red-500' : ''}
+                {...register("submissionDeadline")}
+                className={errors.submissionDeadline ? "border-red-500" : ""}
               />
               {errors.submissionDeadline && (
-                <p className="text-sm text-red-500">{errors.submissionDeadline.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.submissionDeadline.message}
+                </p>
               )}
             </div>
 
@@ -220,11 +239,13 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
                 id="votingDeadline"
                 type="datetime-local"
                 defaultValue={defaultDates.voting}
-                {...register('votingDeadline')}
-                className={errors.votingDeadline ? 'border-red-500' : ''}
+                {...register("votingDeadline")}
+                className={errors.votingDeadline ? "border-red-500" : ""}
               />
               {errors.votingDeadline && (
-                <p className="text-sm text-red-500">{errors.votingDeadline.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.votingDeadline.message}
+                </p>
               )}
             </div>
           </div>
@@ -239,11 +260,13 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
                 step="0.01"
                 min="0"
                 placeholder="0"
-                {...register('prizeAmount')}
-                className={errors.prizeAmount ? 'border-red-500' : ''}
+                {...register("prizeAmount")}
+                className={errors.prizeAmount ? "border-red-500" : ""}
               />
               {errors.prizeAmount && (
-                <p className="text-sm text-red-500">{errors.prizeAmount.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.prizeAmount.message}
+                </p>
               )}
             </div>
 
@@ -255,11 +278,13 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
                 step="0.01"
                 min="0"
                 placeholder="0"
-                {...register('entryFee')}
-                className={errors.entryFee ? 'border-red-500' : ''}
+                {...register("entryFee")}
+                className={errors.entryFee ? "border-red-500" : ""}
               />
               {errors.entryFee && (
-                <p className="text-sm text-red-500">{errors.entryFee.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.entryFee.message}
+                </p>
               )}
             </div>
 
@@ -270,11 +295,13 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
                 type="number"
                 min="1"
                 placeholder="Unlimited"
-                {...register('maxParticipants')}
-                className={errors.maxParticipants ? 'border-red-500' : ''}
+                {...register("maxParticipants")}
+                className={errors.maxParticipants ? "border-red-500" : ""}
               />
               {errors.maxParticipants && (
-                <p className="text-sm text-red-500">{errors.maxParticipants.message}</p>
+                <p className="text-sm text-red-500">
+                  {errors.maxParticipants.message}
+                </p>
               )}
             </div>
           </div>
@@ -292,19 +319,15 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
                 Cancel
               </Button>
             )}
-            
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1"
-            >
+
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Creating...
                 </>
               ) : (
-                'Create Hackathon'
+                "Create Hackathon"
               )}
             </Button>
           </div>

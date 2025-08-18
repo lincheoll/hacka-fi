@@ -1,18 +1,27 @@
-'use client';
+"use client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from 'react';
-import { useAccount } from 'wagmi';
-import { useQuery } from '@tanstack/react-query';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Header } from '@/components/layout/header';
-import { fetchUserParticipations, fetchUserHackathons } from '@/lib/api-functions';
-import type { Participant, Hackathon } from '@/types/global';
+import { useEffect, useState } from "react";
+import { useAccount } from "wagmi";
+import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Header } from "@/components/layout/header";
+import {
+  fetchUserParticipations,
+  fetchUserHackathons,
+} from "@/lib/api-functions";
+import type { Participant, Hackathon } from "@/types/global";
 
 export default function DashboardPage() {
   const [mounted, setMounted] = useState(false);
@@ -45,24 +54,25 @@ function DashboardContent() {
   const { address: walletAddress, isConnected } = useAccount();
 
   // Fetch user participations
-  const { 
-    data: participations, 
-    isLoading: isLoadingParticipations, 
-    error: participationsError 
+  const {
+    data: participations,
+    isLoading: isLoadingParticipations,
+    error: participationsError,
   } = useQuery({
-    queryKey: ['user-participations', walletAddress],
-    queryFn: () => walletAddress ? fetchUserParticipations(walletAddress) : [],
+    queryKey: ["user-participations", walletAddress],
+    queryFn: () =>
+      walletAddress ? fetchUserParticipations(walletAddress) : [],
     enabled: !!walletAddress && isConnected,
   });
 
   // Fetch user created hackathons
-  const { 
-    data: createdHackathons, 
-    isLoading: isLoadingHackathons, 
-    error: hackathonsError 
+  const {
+    data: createdHackathons,
+    isLoading: isLoadingHackathons,
+    error: hackathonsError,
   } = useQuery({
-    queryKey: ['user-hackathons', walletAddress],
-    queryFn: () => walletAddress ? fetchUserHackathons(walletAddress) : [],
+    queryKey: ["user-hackathons", walletAddress],
+    queryFn: () => (walletAddress ? fetchUserHackathons(walletAddress) : []),
     enabled: !!walletAddress && isConnected,
   });
 
@@ -71,7 +81,9 @@ function DashboardContent() {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Header />
         <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+            Dashboard
+          </h1>
           <Alert>
             <AlertDescription>
               Please connect your wallet to view your dashboard.
@@ -84,30 +96,35 @@ function DashboardContent() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'REGISTRATION_OPEN':
-        return 'bg-green-100 text-green-800';
-      case 'SUBMISSION_OPEN':
-        return 'bg-blue-100 text-blue-800';
-      case 'VOTING_OPEN':
-        return 'bg-purple-100 text-purple-800';
-      case 'COMPLETED':
-        return 'bg-gray-100 text-gray-800';
+      case "REGISTRATION_OPEN":
+        return "bg-green-100 text-green-800";
+      case "SUBMISSION_OPEN":
+        return "bg-blue-100 text-blue-800";
+      case "VOTING_OPEN":
+        return "bg-purple-100 text-purple-800";
+      case "COMPLETED":
+        return "bg-gray-100 text-gray-800";
       default:
-        return 'bg-yellow-100 text-yellow-800';
+        return "bg-yellow-100 text-yellow-800";
     }
   };
 
   const formatStatus = (status: string) => {
-    return status.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase());
+    return status
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
-      
+
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Dashboard
+          </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Manage your hackathon participations and submissions
           </p>
@@ -142,7 +159,9 @@ function DashboardContent() {
             ) : !participations || participations.length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center">
-                  <p className="text-gray-500 mb-4">No hackathon participations yet</p>
+                  <p className="text-gray-500 mb-4">
+                    No hackathon participations yet
+                  </p>
                   <Button asChild>
                     <Link href="/hackathons">Join Your First Hackathon</Link>
                   </Button>
@@ -156,7 +175,7 @@ function DashboardContent() {
                       <div className="flex items-start justify-between">
                         <div>
                           <CardTitle className="text-lg">
-                            <Link 
+                            <Link
                               href={`/hackathons/${participation.hackathonId}`}
                               className="hover:text-blue-600"
                             >
@@ -165,26 +184,37 @@ function DashboardContent() {
                             </Link>
                           </CardTitle>
                           <CardDescription>
-                            Registered on {new Date(participation.registeredAt).toLocaleDateString()}
+                            Registered on{" "}
+                            {new Date(
+                              participation.registeredAt,
+                            ).toLocaleDateString()}
                           </CardDescription>
                         </div>
-                        <Badge variant="outline">
-                          Participant
-                        </Badge>
+                        <Badge variant="outline">Participant</Badge>
                       </div>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Submission Status:</span>
-                          <span className={participation.submissionUrl ? 'text-green-600' : 'text-gray-500'}>
-                            {participation.submissionUrl ? 'Submitted' : 'Not Submitted'}
+                          <span className="text-gray-600">
+                            Submission Status:
+                          </span>
+                          <span
+                            className={
+                              participation.submissionUrl
+                                ? "text-green-600"
+                                : "text-gray-500"
+                            }
+                          >
+                            {participation.submissionUrl
+                              ? "Submitted"
+                              : "Not Submitted"}
                           </span>
                         </div>
                         {participation.submissionUrl && (
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-gray-600">Project URL:</span>
-                            <a 
+                            <a
                               href={participation.submissionUrl}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -196,13 +226,17 @@ function DashboardContent() {
                         )}
                         <div className="flex gap-2 mt-3">
                           <Button asChild variant="outline" size="sm">
-                            <Link href={`/hackathons/${participation.hackathonId}`}>
+                            <Link
+                              href={`/hackathons/${participation.hackathonId}`}
+                            >
                               View Details
                             </Link>
                           </Button>
                           {!participation.submissionUrl && (
                             <Button asChild size="sm">
-                              <Link href={`/hackathons/${participation.hackathonId}#submit`}>
+                              <Link
+                                href={`/hackathons/${participation.hackathonId}#submit`}
+                              >
                                 Submit Project
                               </Link>
                             </Button>
@@ -244,9 +278,13 @@ function DashboardContent() {
             ) : !createdHackathons || createdHackathons.length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center">
-                  <p className="text-gray-500 mb-4">No hackathons created yet</p>
+                  <p className="text-gray-500 mb-4">
+                    No hackathons created yet
+                  </p>
                   <Button asChild>
-                    <Link href="/hackathons/create">Create Your First Hackathon</Link>
+                    <Link href="/hackathons/create">
+                      Create Your First Hackathon
+                    </Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -258,7 +296,7 @@ function DashboardContent() {
                       <div className="flex items-start justify-between">
                         <div>
                           <CardTitle className="text-lg">
-                            <Link 
+                            <Link
                               href={`/hackathons/${hackathon.id}`}
                               className="hover:text-blue-600"
                             >
@@ -266,7 +304,8 @@ function DashboardContent() {
                             </Link>
                           </CardTitle>
                           <CardDescription>
-                            Created on {new Date(hackathon.createdAt).toLocaleDateString()}
+                            Created on{" "}
+                            {new Date(hackathon.createdAt).toLocaleDateString()}
                           </CardDescription>
                         </div>
                         <Badge className={getStatusColor(hackathon.status)}>
@@ -277,17 +316,31 @@ function DashboardContent() {
                     <CardContent>
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Registration Deadline:</span>
-                          <span>{new Date(hackathon.registrationDeadline).toLocaleDateString()}</span>
+                          <span className="text-gray-600">
+                            Registration Deadline:
+                          </span>
+                          <span>
+                            {new Date(
+                              hackathon.registrationDeadline,
+                            ).toLocaleDateString()}
+                          </span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Submission Deadline:</span>
-                          <span>{new Date(hackathon.submissionDeadline).toLocaleDateString()}</span>
+                          <span className="text-gray-600">
+                            Submission Deadline:
+                          </span>
+                          <span>
+                            {new Date(
+                              hackathon.submissionDeadline,
+                            ).toLocaleDateString()}
+                          </span>
                         </div>
                         {hackathon.prizeAmount && (
                           <div className="flex items-center justify-between text-sm">
                             <span className="text-gray-600">Prize Amount:</span>
-                            <span className="font-medium">{hackathon.prizeAmount} KAIA</span>
+                            <span className="font-medium">
+                              {hackathon.prizeAmount} KAIA
+                            </span>
                           </div>
                         )}
                         <div className="flex gap-2 mt-3">
@@ -324,7 +377,7 @@ function DashboardContent() {
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold text-green-600">
-                {participations?.filter(p => p.submissionUrl).length || 0}
+                {participations?.filter((p) => p.submissionUrl).length || 0}
               </div>
               <div className="text-sm text-gray-600">Projects Submitted</div>
             </CardContent>

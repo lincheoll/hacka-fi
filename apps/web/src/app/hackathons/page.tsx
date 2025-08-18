@@ -1,11 +1,11 @@
-'use client';
-export const dynamic = 'force-dynamic';
+"use client";
+export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { Header } from "@/components/layout/header";
-import { HackathonList } from '@/components/features/hackathon/hackathon-list';
+import { HackathonList } from "@/components/features/hackathon/hackathon-list";
 
 export default function HackathonsPage() {
   const [mounted, setMounted] = useState(false);
@@ -39,7 +39,7 @@ export default function HackathonsPage() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
-      
+
       <div className="container mx-auto px-4 py-8">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
@@ -48,13 +48,12 @@ export default function HackathonsPage() {
               Hackathons
             </h1>
             <p className="text-gray-600 dark:text-gray-400">
-              Discover and join blockchain hackathons with transparent voting and automated prizes
+              Discover and join blockchain hackathons with transparent voting
+              and automated prizes
             </p>
           </div>
           <Button asChild className="mt-4 sm:mt-0">
-            <Link href="/hackathons/create">
-              Create Hackathon
-            </Link>
+            <Link href="/hackathons/create">Create Hackathon</Link>
           </Button>
         </div>
 

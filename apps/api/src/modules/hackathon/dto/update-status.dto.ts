@@ -41,7 +41,7 @@ export class StatusSummaryResponseDto {
       DRAFT: 5,
       REGISTRATION_OPEN: 2,
       SUBMISSION_OPEN: 1,
-      COMPLETED: 10
+      COMPLETED: 10,
     },
   })
   statusCounts!: Record<string, number>;
@@ -60,8 +60,8 @@ export class StatusSummaryResponseDto {
         fromStatus: 'REGISTRATION_OPEN',
         toStatus: 'REGISTRATION_CLOSED',
         reason: 'Registration deadline passed',
-        timestamp: '2024-08-17T10:00:00Z'
-      }
+        timestamp: '2024-08-17T10:00:00Z',
+      },
     ],
   })
   recentChanges!: Array<{

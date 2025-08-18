@@ -1,30 +1,36 @@
-'use client';
-export const dynamic = 'force-dynamic';
+"use client";
+export const dynamic = "force-dynamic";
 
-import { use, useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useAccount } from 'wagmi';
-import { useVotingStatus } from '@/hooks/use-voting-status';
+import { use, useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useAccount } from "wagmi";
+import { useVotingStatus } from "@/hooks/use-voting-status";
 import { Header } from "@/components/layout/header";
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ParticipantRegistration } from '@/components/features/hackathon/participant-registration';
-import { SubmissionTracker } from '@/components/features/hackathon/submission-tracker';
-import { HackathonCoverImage } from '@/components/common/optimized-image';
-import { HackathonStatusBadge } from '@/components/features/hackathon/hackathon-status-badge';
-import { HackathonCountdown } from '@/components/features/hackathon/hackathon-countdown';
-import { StatusManagement } from '@/components/features/hackathon/status-management';
-import { ActionButtons } from '@/components/features/hackathon/action-buttons';
-import { JudgeManagement } from '@/components/features/hackathon/judge-management';
-import { WinnerManagement } from '@/components/features/hackathon/winner-management';
-import { 
-  fetchHackathon, 
-  fetchParticipantStatus, 
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ParticipantRegistration } from "@/components/features/hackathon/participant-registration";
+import { SubmissionTracker } from "@/components/features/hackathon/submission-tracker";
+import { HackathonCoverImage } from "@/components/common/optimized-image";
+import { HackathonStatusBadge } from "@/components/features/hackathon/hackathon-status-badge";
+import { HackathonCountdown } from "@/components/features/hackathon/hackathon-countdown";
+import { StatusManagement } from "@/components/features/hackathon/status-management";
+import { ActionButtons } from "@/components/features/hackathon/action-buttons";
+import { JudgeManagement } from "@/components/features/hackathon/judge-management";
+import { WinnerManagement } from "@/components/features/hackathon/winner-management";
+import {
+  fetchHackathon,
+  fetchParticipantStatus,
   fetchHackathonParticipants,
   participateInHackathon,
   updateHackathonStatus,
-} from '@/lib/api-functions';
+} from "@/lib/api-functions";
 
 interface HackathonDetailPageProps {
   params: Promise<{ id: string }>;
@@ -42,32 +48,29 @@ export default function HackathonDetailPage({
   }, []);
 
   // Fetch hackathon details
-  const { 
-    data: hackathon, 
-    isLoading: isLoadingHackathon, 
-    error: hackathonError 
+  const {
+    data: hackathon,
+    isLoading: isLoadingHackathon,
+    error: hackathonError,
   } = useQuery({
-    queryKey: ['hackathon', id],
+    queryKey: ["hackathon", id],
     queryFn: () => fetchHackathon(id),
     enabled: !!id,
   });
 
   // Fetch participant status
-  const { 
-    data: participantStatus, 
-    isLoading: isLoadingParticipant 
-  } = useQuery({
-    queryKey: ['participant-status', id, walletAddress],
-    queryFn: () => walletAddress ? fetchParticipantStatus(id, walletAddress) : null,
-    enabled: !!id && !!walletAddress && isConnected && mounted,
-  });
+  const { data: participantStatus, isLoading: isLoadingParticipant } = useQuery(
+    {
+      queryKey: ["participant-status", id, walletAddress],
+      queryFn: () =>
+        walletAddress ? fetchParticipantStatus(id, walletAddress) : null,
+      enabled: !!id && !!walletAddress && isConnected && mounted,
+    },
+  );
 
   // Fetch all participants for display
-  const { 
-    data: participants, 
-    isLoading: isLoadingParticipants 
-  } = useQuery({
-    queryKey: ['hackathon-participants', id],
+  const { data: participants, isLoading: isLoadingParticipants } = useQuery({
+    queryKey: ["hackathon-participants", id],
     queryFn: () => fetchHackathonParticipants(id),
     enabled: !!id,
   });
@@ -112,7 +115,7 @@ export default function HackathonDetailPage({
         <div className="container mx-auto px-4 py-8">
           <Alert className="border-red-500 bg-red-50">
             <AlertDescription className="text-red-700">
-              {hackathonError?.message || 'Hackathon not found'}
+              {hackathonError?.message || "Hackathon not found"}
             </AlertDescription>
           </Alert>
         </div>
@@ -121,27 +124,28 @@ export default function HackathonDetailPage({
   }
 
   // Check if current user is the organizer
-  const isOrganizer = walletAddress?.toLowerCase() === hackathon.organizerAddress.toLowerCase();
+  const isOrganizer =
+    walletAddress?.toLowerCase() === hackathon.organizerAddress.toLowerCase();
 
   // Real API action handlers
   const handleRegister = async () => {
     if (!walletAddress) {
-      alert('Please connect your wallet');
+      alert("Please connect your wallet");
       return;
     }
-    
+
     try {
       await participateInHackathon(hackathon.id);
       // Refetch participant status after successful registration
       window.location.reload(); // Simple reload for now
     } catch (error) {
-      console.error('Registration failed:', error);
-      alert('Registration failed. Please try again.');
+      console.error("Registration failed:", error);
+      alert("Registration failed. Please try again.");
     }
   };
 
   const handleSubmit = async () => {
-    console.log('Submit project');
+    console.log("Submit project");
     // TODO: Implement submission API call
     // This would typically open a modal for submission URL input
   };
@@ -153,7 +157,7 @@ export default function HackathonDetailPage({
 
   const handleStatusUpdate = async (newStatus: string) => {
     if (!walletAddress) {
-      alert('Please connect your wallet');
+      alert("Please connect your wallet");
       return;
     }
 
@@ -161,17 +165,17 @@ export default function HackathonDetailPage({
       const result = await updateHackathonStatus(
         hackathon.id,
         newStatus,
-        'Manual status change by organizer',
-        { updatedBy: walletAddress }
+        "Manual status change by organizer",
+        { updatedBy: walletAddress },
       );
-      
-      console.log('Status updated successfully:', result);
-      
+
+      console.log("Status updated successfully:", result);
+
       // Refetch hackathon data to get updated status
       window.location.reload(); // Simple reload for now
     } catch (error) {
-      console.error('Status update failed:', error);
-      alert('Status update failed. Please try again.');
+      console.error("Status update failed:", error);
+      alert("Status update failed. Please try again.");
     }
   };
 
@@ -181,7 +185,7 @@ export default function HackathonDetailPage({
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
-      
+
       <div className="container mx-auto px-4 py-8">
         {/* Cover Image */}
         <div className="mb-8">
@@ -200,7 +204,8 @@ export default function HackathonDetailPage({
                 {hackathon.title}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                Organized by {hackathon.organizerAddress.slice(0, 6)}...{hackathon.organizerAddress.slice(-4)}
+                Organized by {hackathon.organizerAddress.slice(0, 6)}...
+                {hackathon.organizerAddress.slice(-4)}
               </p>
             </div>
             <HackathonStatusBadge status={hackathon.status} size="lg" />
@@ -227,14 +232,12 @@ export default function HackathonDetailPage({
               {isConnected && !isLoadingParticipant && (
                 <>
                   {participantStatus ? (
-                    <SubmissionTracker 
+                    <SubmissionTracker
                       participant={participantStatus}
                       hackathon={hackathon}
                     />
                   ) : (
-                    <ParticipantRegistration 
-                      hackathon={hackathon}
-                    />
+                    <ParticipantRegistration hackathon={hackathon} />
                   )}
                 </>
               )}
@@ -252,28 +255,41 @@ export default function HackathonDetailPage({
                 {isLoadingParticipants ? (
                   <div className="space-y-2">
                     {[...Array(3)].map((_, i) => (
-                      <div key={i} className="animate-pulse h-4 bg-gray-200 rounded"></div>
+                      <div
+                        key={i}
+                        className="animate-pulse h-4 bg-gray-200 rounded"
+                      ></div>
                     ))}
                   </div>
                 ) : participants && participants.length > 0 ? (
                   <div className="space-y-3">
                     {participants.map((participant) => (
-                      <div key={participant.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={participant.id}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div>
                           <div className="font-medium text-sm">
-                            {participant.userAddress.slice(0, 6)}...{participant.userAddress.slice(-4)}
+                            {participant.userAddress.slice(0, 6)}...
+                            {participant.userAddress.slice(-4)}
                           </div>
                           <div className="text-xs text-gray-500">
-                            Registered: {new Date(participant.registeredAt).toLocaleDateString()}
+                            Registered:{" "}
+                            {new Date(
+                              participant.registeredAt,
+                            ).toLocaleDateString()}
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           {participant.submissionUrl ? (
                             <>
-                              <Badge variant="outline" className="text-green-600 border-green-600">
+                              <Badge
+                                variant="outline"
+                                className="text-green-600 border-green-600"
+                              >
                                 Submitted
                               </Badge>
-                              <a 
+                              <a
                                 href={participant.submissionUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -292,7 +308,9 @@ export default function HackathonDetailPage({
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-500 text-center py-4">No participants yet</p>
+                  <p className="text-gray-500 text-center py-4">
+                    No participants yet
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -333,13 +351,11 @@ export default function HackathonDetailPage({
             )}
 
             {/* Judge Management (for organizers) */}
-            <JudgeManagement
-              hackathon={hackathon}
-              isOrganizer={isOrganizer}
-            />
+            <JudgeManagement hackathon={hackathon} isOrganizer={isOrganizer} />
 
             {/* Winner Management - Show for completed hackathons */}
-            {(hackathon.status === 'COMPLETED' || hackathon.status === 'VOTING_CLOSED') && (
+            {(hackathon.status === "COMPLETED" ||
+              hackathon.status === "VOTING_CLOSED") && (
               <WinnerManagement
                 hackathonId={hackathon.id}
                 isOrganizer={isOrganizer}
@@ -354,23 +370,35 @@ export default function HackathonDetailPage({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <div className="font-medium text-sm">Registration Deadline</div>
+                  <div className="font-medium text-sm">
+                    Registration Deadline
+                  </div>
                   <div className="text-sm text-gray-600">
-                    {new Date(hackathon.registrationDeadline).toLocaleDateString()} at{' '}
-                    {new Date(hackathon.registrationDeadline).toLocaleTimeString()}
+                    {new Date(
+                      hackathon.registrationDeadline,
+                    ).toLocaleDateString()}{" "}
+                    at{" "}
+                    {new Date(
+                      hackathon.registrationDeadline,
+                    ).toLocaleTimeString()}
                   </div>
                 </div>
                 <div>
                   <div className="font-medium text-sm">Submission Deadline</div>
                   <div className="text-sm text-gray-600">
-                    {new Date(hackathon.submissionDeadline).toLocaleDateString()} at{' '}
-                    {new Date(hackathon.submissionDeadline).toLocaleTimeString()}
+                    {new Date(
+                      hackathon.submissionDeadline,
+                    ).toLocaleDateString()}{" "}
+                    at{" "}
+                    {new Date(
+                      hackathon.submissionDeadline,
+                    ).toLocaleTimeString()}
                   </div>
                 </div>
                 <div>
                   <div className="font-medium text-sm">Voting Deadline</div>
                   <div className="text-sm text-gray-600">
-                    {new Date(hackathon.votingDeadline).toLocaleDateString()} at{' '}
+                    {new Date(hackathon.votingDeadline).toLocaleDateString()} at{" "}
                     {new Date(hackathon.votingDeadline).toLocaleTimeString()}
                   </div>
                 </div>
