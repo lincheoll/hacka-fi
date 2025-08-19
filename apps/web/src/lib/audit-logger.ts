@@ -29,7 +29,8 @@ export interface AuditLogFilter {
  * Audit logger for tracking all hackathon status changes
  */
 export class AuditLogger {
-  private static readonly API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  private static readonly API_BASE_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
   /**
    * Log a status change event
@@ -150,7 +151,9 @@ export class AuditLogger {
     hackathonId: string,
   ): Promise<AuditLogEntry[]> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/audit/hackathons/${hackathonId}/trail`);
+      const response = await fetch(
+        `${this.API_BASE_URL}/audit/hackathons/${hackathonId}/trail`,
+      );
       if (!response.ok) {
         throw new Error(`Failed to fetch audit trail: ${response.statusText}`);
       }
@@ -177,9 +180,13 @@ export class AuditLogger {
     }>;
   }> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/audit/hackathons/${hackathonId}/summary`);
+      const response = await fetch(
+        `${this.API_BASE_URL}/audit/hackathons/${hackathonId}/summary`,
+      );
       if (!response.ok) {
-        throw new Error(`Failed to fetch status summary: ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch status summary: ${response.statusText}`,
+        );
       }
       return await response.json();
     } catch (error) {
@@ -196,12 +203,14 @@ export class AuditLogger {
   /**
    * Private method to save log entry to backend
    */
-  private static async saveLogEntry(entry: Omit<AuditLogEntry, "id" | "timestamp">): Promise<void> {
+  private static async saveLogEntry(
+    entry: Omit<AuditLogEntry, "id" | "timestamp">,
+  ): Promise<void> {
     try {
       const response = await fetch(`${this.API_BASE_URL}/audit/logs`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(entry),
       });
@@ -225,20 +234,20 @@ export class AuditLogger {
   }> {
     try {
       const params = new URLSearchParams();
-      
-      if (filter.hackathonId) params.append('hackathonId', filter.hackathonId);
-      if (filter.action) params.append('action', filter.action);
-      if (filter.triggeredBy) params.append('triggeredBy', filter.triggeredBy);
-      if (filter.fromDate) params.append('fromDate', filter.fromDate);
-      if (filter.toDate) params.append('toDate', filter.toDate);
-      if (filter.limit) params.append('limit', filter.limit.toString());
-      if (filter.offset) params.append('offset', filter.offset.toString());
+
+      if (filter.hackathonId) params.append("hackathonId", filter.hackathonId);
+      if (filter.action) params.append("action", filter.action);
+      if (filter.triggeredBy) params.append("triggeredBy", filter.triggeredBy);
+      if (filter.fromDate) params.append("fromDate", filter.fromDate);
+      if (filter.toDate) params.append("toDate", filter.toDate);
+      if (filter.limit) params.append("limit", filter.limit.toString());
+      if (filter.offset) params.append("offset", filter.offset.toString());
 
       const response = await fetch(`${this.API_BASE_URL}/audit/logs?${params}`);
       if (!response.ok) {
         throw new Error(`Failed to query audit logs: ${response.statusText}`);
       }
-      
+
       return await response.json();
     } catch (error) {
       console.error("Failed to query audit logs:", error);
@@ -246,7 +255,6 @@ export class AuditLogger {
     }
   }
 }
-
 
 /**
  * Helper function to format audit log for display

@@ -198,33 +198,33 @@ export function ImageUpload({
                 type="button"
                 variant="destructive"
                 size="icon"
-                className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute w-8 h-8 transition-opacity opacity-0 top-2 right-2 group-hover:opacity-100"
                 onClick={handleRemove}
                 disabled={disabled}
               >
-                <X className="h-4 w-4" />
+                <X className="w-4 h-4" />
               </Button>
 
               {/* Loading overlay */}
               {isUploading && (
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <Loader2 className="h-8 w-8 text-white animate-spin" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <Loader2 className="w-8 h-8 text-white animate-spin" />
                 </div>
               )}
             </>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+            <div className="flex flex-col items-center justify-center h-full p-6 text-center">
               {isUploading ? (
                 <>
-                  <Loader2 className="h-12 w-12 text-blue-500 animate-spin mb-4" />
+                  <Loader2 className="w-12 h-12 mb-4 text-blue-500 animate-spin" />
                   <p className="text-sm text-gray-600">Uploading...</p>
                 </>
               ) : (
                 <>
                   {isDragging ? (
-                    <Upload className="h-12 w-12 text-blue-500 mb-4" />
+                    <Upload className="w-12 h-12 mb-4 text-blue-500" />
                   ) : (
-                    <ImageIcon className="h-12 w-12 text-gray-400 mb-4" />
+                    <ImageIcon className="w-12 h-12 mb-4 text-gray-400" />
                   )}
 
                   <div className="space-y-2">
@@ -255,7 +255,7 @@ export function ImageUpload({
       {/* Error message */}
       {error && (
         <Alert className="mt-2 border-red-500 bg-red-50">
-          <AlertDescription className="text-red-700 text-sm">
+          <AlertDescription className="text-sm text-red-700">
             {error}
           </AlertDescription>
         </Alert>

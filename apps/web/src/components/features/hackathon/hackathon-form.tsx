@@ -134,14 +134,14 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
           {/* Alert Messages */}
           {submitError && (
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
+              <AlertCircle className="w-4 h-4" />
               <AlertDescription>{submitError}</AlertDescription>
             </Alert>
           )}
 
           {submitSuccess && (
-            <Alert className="border-green-500 text-green-700 dark:border-green-400 dark:text-green-400">
-              <CheckCircle className="h-4 w-4" />
+            <Alert className="text-green-700 border-green-500 dark:border-green-400 dark:text-green-400">
+              <CheckCircle className="w-4 h-4" />
               <AlertDescription>{submitSuccess}</AlertDescription>
             </Alert>
           )}
@@ -187,7 +187,6 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
                 }}
                 placeholder="Upload a cover image for your hackathon"
                 width={800}
-                height={400}
                 variant="rectangle"
                 maxSize={5 * 1024 * 1024} // 5MB
               />
@@ -198,7 +197,7 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
           </div>
 
           {/* Deadlines */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="registrationDeadline">
                 Registration Deadline *
@@ -251,7 +250,7 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
           </div>
 
           {/* Optional Settings */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="prizeAmount">Prize Amount (KAIA)</Label>
               <Input
@@ -323,7 +322,7 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
             <Button type="submit" disabled={isSubmitting} className="flex-1">
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Creating...
                 </>
               ) : (

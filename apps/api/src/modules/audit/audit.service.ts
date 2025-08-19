@@ -1,6 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../common/database/prisma.service';
-import { AuditAction, TriggerType, HackathonStatus, Prisma } from '@prisma/client';
+import {
+  AuditAction,
+  TriggerType,
+  HackathonStatus,
+  Prisma,
+} from '@prisma/client';
 
 export interface AuditLogEntry {
   id: string;
@@ -251,9 +256,7 @@ export class AuditService {
       limit: 100, // Get all entries for the hackathon
     });
 
-    return logs.sort(
-      (a, b) => a.timestamp.getTime() - b.timestamp.getTime(),
-    );
+    return logs.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   }
 
   /**

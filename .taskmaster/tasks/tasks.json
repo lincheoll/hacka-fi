@@ -438,7 +438,7 @@
               "7.5"
             ],
             "details": "Build judge dashboard interface displaying assigned hackathons with voting status, implement progress tracking showing completed vs pending votes, create submission preview with participant details and files, add voting history and statistics, and implement notifications for upcoming voting deadlines",
-            "status": "pending",
+            "status": "done",
             "testStrategy": ""
           },
           {
@@ -550,7 +550,7 @@
     ],
     "metadata": {
       "created": "2025-08-15T08:54:10.658Z",
-      "updated": "2025-08-19T03:57:34.444Z",
+      "updated": "2025-08-19T08:47:26.486Z",
       "description": "Tasks for master context"
     }
   }

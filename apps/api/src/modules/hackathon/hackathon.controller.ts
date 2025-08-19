@@ -40,6 +40,9 @@ import {
   CastVoteDto,
   VoteResponseDto,
   HackathonVotingResultsDto,
+  JudgeDashboardResponseDto,
+  JudgeVotingStatisticsDto,
+  HackathonParticipantsPreviewDto,
 } from './dto';
 import { HackathonStatusService } from './hackathon-status.service';
 
@@ -833,5 +836,176 @@ export class HackathonController {
       updatedCount,
       processedCount: activeHackathons.length,
     };
+  }
+
+  // Judge Dashboard Endpoints
+
+  @Get('judges/dashboard/:address')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get judge dashboard',
+    description:
+      'Get dashboard information for a specific judge including assigned hackathons and voting progress.',
+  })
+  @ApiParam({
+    name: 'address',
+    description: 'Judge wallet address',
+    example: '0x1234567890123456789012345678901234567890',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Judge dashboard retrieved successfully',
+    type: JudgeDashboardResponseDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - only the judge can view their own dashboard',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Judge not found or has no assignments',
+  })
+  async getJudgeDashboard(
+    @Param('address') judgeAddress: string,
+    @Request() req: any,
+  ): Promise<JudgeDashboardResponseDto> {
+    // Ensure judges can only access their own dashboard
+    if (req.user.walletAddress.toLowerCase() !== judgeAddress.toLowerCase()) {
+      throw new Error(
+        'Access denied - only the judge can view their own dashboard',
+      );
+    }
+
+    return this.hackathonService.getJudgeAssignedHackathons(judgeAddress);
+  }
+
+  @Get('judges/:address/voting-progress/:hackathonId')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get judge voting progress for specific hackathon',
+    description:
+      'Get detailed voting progress for a judge in a specific hackathon.',
+  })
+  @ApiParam({
+    name: 'address',
+    description: 'Judge wallet address',
+    example: '0x1234567890123456789012345678901234567890',
+  })
+  @ApiParam({
+    name: 'hackathonId',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Voting progress retrieved successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - only the judge can view their own progress',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Judge not assigned to this hackathon',
+  })
+  async getJudgeVotingProgress(
+    @Param('address') judgeAddress: string,
+    @Param('hackathonId') hackathonId: string,
+    @Request() req: any,
+  ) {
+    // Ensure judges can only access their own progress
+    if (req.user.walletAddress.toLowerCase() !== judgeAddress.toLowerCase()) {
+      throw new Error(
+        'Access denied - only the judge can view their own progress',
+      );
+    }
+
+    return this.hackathonService.calculateJudgeVotingProgress(
+      judgeAddress,
+      hackathonId,
+    );
+  }
+
+  @Get('judges/:address/statistics')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get judge voting statistics',
+    description:
+      'Get comprehensive voting statistics for a judge across all hackathons.',
+  })
+  @ApiParam({
+    name: 'address',
+    description: 'Judge wallet address',
+    example: '0x1234567890123456789012345678901234567890',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Judge statistics retrieved successfully',
+    type: JudgeVotingStatisticsDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - only the judge can view their own statistics',
+  })
+  async getJudgeVotingStatistics(
+    @Param('address') judgeAddress: string,
+    @Request() req: any,
+  ): Promise<JudgeVotingStatisticsDto> {
+    // Ensure judges can only access their own statistics
+    if (req.user.walletAddress.toLowerCase() !== judgeAddress.toLowerCase()) {
+      throw new Error(
+        'Access denied - only the judge can view their own statistics',
+      );
+    }
+
+    return this.hackathonService.getJudgeVotingStatistics(judgeAddress);
+  }
+
+  @Get(':id/participants/preview/:judgeAddress')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Get hackathon participants preview for judge',
+    description:
+      'Get participants preview with voting status for a specific judge.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiParam({
+    name: 'judgeAddress',
+    description: 'Judge wallet address',
+    example: '0x1234567890123456789012345678901234567890',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Participants preview retrieved successfully',
+    type: HackathonParticipantsPreviewDto,
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Access denied - only assigned judges can view participants',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found or judge not assigned',
+  })
+  async getHackathonParticipantsPreview(
+    @Param('id') hackathonId: string,
+    @Param('judgeAddress') judgeAddress: string,
+    @Request() req: any,
+  ): Promise<HackathonParticipantsPreviewDto> {
+    // Ensure judges can only access their own participant previews
+    if (req.user.walletAddress.toLowerCase() !== judgeAddress.toLowerCase()) {
+      throw new Error(
+        'Access denied - only the judge can view their own participant preview',
+      );
+    }
+
+    return this.hackathonService.getHackathonParticipantsPreview(
+      hackathonId,
+      judgeAddress,
+    );
   }
 }

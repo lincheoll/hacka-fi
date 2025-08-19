@@ -495,3 +495,95 @@ export async function triggerStatusCheck(): Promise<{
   >("/hackathons/status/check", {});
   return handleApiResponse(response);
 }
+
+// Judge Dashboard API Functions
+export interface JudgeHackathonAssignment {
+  hackathon: {
+    id: string;
+    title: string;
+    description: string;
+    status: string;
+    votingDeadline: string;
+    createdAt: string;
+  };
+  votingProgress: {
+    totalParticipants: number;
+    completedVotes: number;
+    pendingVotes: number;
+    completionPercentage: number;
+  };
+  deadline: string;
+  priority: "high" | "medium" | "low";
+  daysUntilDeadline: number;
+  isOverdue: boolean;
+}
+
+export interface JudgeDashboardData {
+  assignedHackathons: JudgeHackathonAssignment[];
+  totalAssigned: number;
+  pendingHackathons: number;
+  completedHackathons: number;
+}
+
+export interface JudgeVotingStatistics {
+  totalVotesCast: number;
+  totalHackathonsJudged: number;
+  averageScore: number;
+  votesWithComments: number;
+  commentPercentage: number;
+  lastVotingActivity?: string;
+  scoreDistribution: Record<string, number>;
+}
+
+export interface ParticipantPreview {
+  id: number;
+  walletAddress: string;
+  submissionUrl?: string;
+  hasVoted: boolean;
+  currentScore?: number;
+  currentComment?: string;
+}
+
+export interface HackathonParticipantsPreview {
+  hackathonId: string;
+  participants: ParticipantPreview[];
+  total: number;
+}
+
+export async function fetchJudgeAssignedHackathons(
+  judgeAddress: string,
+): Promise<JudgeDashboardData> {
+  const response = await apiClient.get<ApiResponse<JudgeDashboardData>>(
+    `/hackathons/judges/dashboard/${judgeAddress}`,
+  );
+  return handleApiResponse(response);
+}
+
+export async function fetchJudgeVotingProgress(
+  judgeAddress: string,
+  hackathonId: string,
+): Promise<JudgeHackathonAssignment["votingProgress"]> {
+  const response = await apiClient.get<
+    ApiResponse<JudgeHackathonAssignment["votingProgress"]>
+  >(`/hackathons/judges/${judgeAddress}/voting-progress/${hackathonId}`);
+  return handleApiResponse(response);
+}
+
+export async function fetchJudgeVotingStatistics(
+  judgeAddress: string,
+): Promise<JudgeVotingStatistics> {
+  const response = await apiClient.get<ApiResponse<JudgeVotingStatistics>>(
+    `/hackathons/judges/${judgeAddress}/statistics`,
+  );
+  return handleApiResponse(response);
+}
+
+export async function fetchHackathonParticipantsPreview(
+  hackathonId: string,
+  judgeAddress: string,
+): Promise<HackathonParticipantsPreview> {
+  const response = await apiClient.get<
+    ApiResponse<HackathonParticipantsPreview>
+  >(`/hackathons/${hackathonId}/participants/preview/${judgeAddress}`);
+  return handleApiResponse(response);
+}

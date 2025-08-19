@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Query, Param, Body, UseGuards, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Query,
+  Param,
+  Body,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -10,7 +19,11 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Public } from '../auth/decorators/public.decorator';
 import { AuditLoggerService } from './audit-logger.service';
-import { AuditService, AuditLogFilter, CreateAuditLogDto } from './audit.service';
+import {
+  AuditService,
+  AuditLogFilter,
+  CreateAuditLogDto,
+} from './audit.service';
 import { AuditAction, TriggerType, HackathonStatus } from '@prisma/client';
 
 export class AuditLogsQueryDto {
@@ -49,7 +62,8 @@ export class AuditController {
   @Public()
   @ApiOperation({
     summary: 'Create audit log entry',
-    description: 'Create a new audit log entry for tracking hackathon status changes.',
+    description:
+      'Create a new audit log entry for tracking hackathon status changes.',
   })
   @ApiResponse({
     status: 201,
@@ -95,11 +109,11 @@ export class AuditController {
   })
   async getLogs(@Query() query: AuditLogsQueryDto) {
     const filter: AuditLogFilter = {};
-    
+
     if (query.hackathonId) filter.hackathonId = query.hackathonId;
     if (query.action) filter.action = query.action;
     if (query.triggeredBy) filter.triggeredBy = query.triggeredBy;
-    
+
     if (query.fromDate) {
       const fromDate = new Date(query.fromDate);
       if (isNaN(fromDate.getTime())) {
@@ -107,7 +121,7 @@ export class AuditController {
       }
       filter.fromDate = fromDate;
     }
-    
+
     if (query.toDate) {
       const toDate = new Date(query.toDate);
       if (isNaN(toDate.getTime())) {
@@ -115,7 +129,7 @@ export class AuditController {
       }
       filter.toDate = toDate;
     }
-    
+
     filter.limit = query.limit ? Number(query.limit) : 50;
     filter.offset = query.offset ? Number(query.offset) : 0;
 
@@ -215,11 +229,11 @@ export class AuditController {
   })
   async exportLogsToCSV(@Query() query: AuditLogsQueryDto) {
     const filter: AuditLogFilter = {};
-    
+
     if (query.hackathonId) filter.hackathonId = query.hackathonId;
     if (query.action) filter.action = query.action;
     if (query.triggeredBy) filter.triggeredBy = query.triggeredBy;
-    
+
     if (query.fromDate) {
       const fromDate = new Date(query.fromDate);
       if (isNaN(fromDate.getTime())) {
@@ -227,7 +241,7 @@ export class AuditController {
       }
       filter.fromDate = fromDate;
     }
-    
+
     if (query.toDate) {
       const toDate = new Date(query.toDate);
       if (isNaN(toDate.getTime())) {
@@ -237,7 +251,7 @@ export class AuditController {
     }
 
     const csvData = await this.auditService.exportAuditLogsToCSV(filter);
-    
+
     return {
       data: csvData,
       filename: `audit-logs-${new Date().toISOString().split('T')[0]}.csv`,

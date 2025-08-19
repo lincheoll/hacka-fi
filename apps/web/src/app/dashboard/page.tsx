@@ -363,6 +363,24 @@ function DashboardContent() {
           </div>
         </div>
 
+        {/* Judge Dashboard Access */}
+        <div className="mt-8">
+          <Card className="border-2 border-dashed border-blue-200 bg-blue-50">
+            <CardContent className="p-6 text-center">
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                Judge Dashboard
+              </h3>
+              <p className="text-blue-700 mb-4">
+                Access your judge dashboard to manage voting assignments and
+                track progress
+              </p>
+              <Button asChild variant="default">
+                <Link href="/dashboard/judge">Go to Judge Dashboard</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Quick Stats */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
           <Card>

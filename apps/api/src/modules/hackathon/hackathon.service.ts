@@ -14,7 +14,12 @@ import {
 import { VoteValidationService } from '../voting/vote-validation.service';
 import { AuditService } from '../audit/audit.service';
 import { ConfigService } from '@nestjs/config';
-import { HackathonStatus, Prisma, AuditAction, TriggerType } from '@prisma/client';
+import {
+  HackathonStatus,
+  Prisma,
+  AuditAction,
+  TriggerType,
+} from '@prisma/client';
 import { PrismaService } from '../../common/database/prisma.service';
 import {
   CreateHackathonDto,
@@ -31,6 +36,12 @@ import {
   VoteResponseDto,
   HackathonVotingResultsDto,
   RankingMetricsDto,
+  JudgeDashboardResponseDto,
+  JudgeHackathonAssignmentDto,
+  JudgeVotingStatisticsDto,
+  VotingProgressDto,
+  HackathonParticipantsPreviewDto,
+  ParticipantPreviewDto,
 } from './dto';
 
 @Injectable()
@@ -206,7 +217,7 @@ export class HackathonService {
     let statusChanged = false;
     const oldStatus = existingHackathon.status;
     const newStatus = updateHackathonDto.status;
-    
+
     if (newStatus && oldStatus !== newStatus) {
       this.validateStatusTransition(oldStatus, newStatus);
       statusChanged = true;
@@ -254,10 +265,15 @@ export class HackathonService {
           `Status manually changed by organizer: ${existingHackathon.title}`,
           updaterAddress,
         );
-        this.logger.log(`Status change logged: ${oldStatus} → ${newStatus} for hackathon ${id}`);
+        this.logger.log(
+          `Status change logged: ${oldStatus} → ${newStatus} for hackathon ${id}`,
+        );
       } catch (auditError) {
         this.logger.error('Failed to log status change audit:', {
-          error: auditError instanceof Error ? auditError.message : String(auditError),
+          error:
+            auditError instanceof Error
+              ? auditError.message
+              : String(auditError),
           hackathonId: id,
           fromStatus: oldStatus,
           toStatus: newStatus,
@@ -1020,5 +1036,246 @@ export class HackathonService {
     }
 
     return response;
+  }
+
+  // Judge Dashboard Methods
+
+  /**
+   * Get hackathons assigned to a specific judge
+   */
+  async getJudgeAssignedHackathons(
+    judgeAddress: string,
+  ): Promise<JudgeDashboardResponseDto> {
+    this.logger.log(`Fetching assigned hackathons for judge ${judgeAddress}`);
+
+    // Get all hackathons where this judge is assigned
+    const judgeAssignments = await this.prisma.hackathonJudge.findMany({
+      where: { judgeAddress },
+      include: {
+        hackathon: {
+          include: {
+            _count: {
+              select: { participants: true },
+            },
+            participants: true,
+          },
+        },
+      },
+      orderBy: { hackathon: { votingDeadline: 'asc' } }, // Order by deadline
+    });
+
+    const assignedHackathons: JudgeHackathonAssignmentDto[] = [];
+    let completedHackathons = 0;
+    let pendingHackathons = 0;
+
+    for (const assignment of judgeAssignments) {
+      const hackathon = assignment.hackathon;
+
+      // Calculate voting progress for this judge
+      const votingProgress = await this.calculateJudgeVotingProgress(
+        judgeAddress,
+        hackathon.id,
+      );
+
+      // Calculate deadline priority
+      const now = new Date();
+      const deadline = new Date(hackathon.votingDeadline);
+      const daysUntilDeadline = Math.ceil(
+        (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+      );
+      const isOverdue = now > deadline;
+
+      let priority: 'high' | 'medium' | 'low';
+      if (isOverdue || daysUntilDeadline <= 1) {
+        priority = 'high';
+      } else if (daysUntilDeadline <= 3) {
+        priority = 'medium';
+      } else {
+        priority = 'low';
+      }
+
+      // Track completion status
+      if (votingProgress.completionPercentage === 100) {
+        completedHackathons++;
+      } else {
+        pendingHackathons++;
+      }
+
+      const hackathonAssignment: JudgeHackathonAssignmentDto = {
+        hackathon: this.mapToResponseDto(hackathon),
+        votingProgress,
+        deadline: hackathon.votingDeadline.toISOString(),
+        priority,
+        daysUntilDeadline: Math.max(0, daysUntilDeadline),
+        isOverdue,
+      };
+
+      assignedHackathons.push(hackathonAssignment);
+    }
+
+    this.logger.log(
+      `Found ${assignedHackathons.length} assigned hackathons for judge ${judgeAddress}`,
+    );
+
+    return {
+      assignedHackathons,
+      totalAssigned: assignedHackathons.length,
+      pendingHackathons,
+      completedHackathons,
+    };
+  }
+
+  /**
+   * Calculate voting progress for a specific judge in a hackathon
+   */
+  public async calculateJudgeVotingProgress(
+    judgeAddress: string,
+    hackathonId: string,
+  ): Promise<VotingProgressDto> {
+    // Get total participants in the hackathon
+    const totalParticipants = await this.prisma.participant.count({
+      where: { hackathonId },
+    });
+
+    // Get votes cast by this judge in this hackathon
+    const completedVotes = await this.prisma.vote.count({
+      where: {
+        hackathonId,
+        judgeAddress,
+      },
+    });
+
+    const pendingVotes = totalParticipants - completedVotes;
+    const completionPercentage =
+      totalParticipants > 0
+        ? Math.round((completedVotes / totalParticipants) * 100)
+        : 0;
+
+    return {
+      totalParticipants,
+      completedVotes,
+      pendingVotes,
+      completionPercentage,
+    };
+  }
+
+  /**
+   * Get voting statistics for a specific judge
+   */
+  async getJudgeVotingStatistics(
+    judgeAddress: string,
+  ): Promise<JudgeVotingStatisticsDto> {
+    this.logger.log(`Fetching voting statistics for judge ${judgeAddress}`);
+
+    // Get all votes by this judge
+    const votes = await this.prisma.vote.findMany({
+      where: { judgeAddress },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // Get unique hackathons judged
+    const uniqueHackathonIds = new Set(votes.map((vote) => vote.hackathonId));
+    const totalHackathonsJudged = uniqueHackathonIds.size;
+
+    // Calculate statistics
+    const totalVotesCast = votes.length;
+    const votesWithComments = votes.filter((vote) => vote.comment).length;
+    const commentPercentage =
+      totalVotesCast > 0
+        ? Math.round((votesWithComments / totalVotesCast) * 100)
+        : 0;
+
+    // Calculate average score
+    const totalScore = votes.reduce((sum, vote) => sum + vote.score, 0);
+    const averageScore =
+      totalVotesCast > 0
+        ? Math.round((totalScore / totalVotesCast) * 10) / 10
+        : 0;
+
+    // Calculate score distribution
+    const scoreDistribution: Record<string, number> = {
+      '1-2': 0,
+      '3-4': 0,
+      '5-6': 0,
+      '7-8': 0,
+      '9-10': 0,
+    };
+
+    votes.forEach((vote) => {
+      if (vote.score >= 1 && vote.score <= 2) scoreDistribution['1-2']++;
+      else if (vote.score >= 3 && vote.score <= 4) scoreDistribution['3-4']++;
+      else if (vote.score >= 5 && vote.score <= 6) scoreDistribution['5-6']++;
+      else if (vote.score >= 7 && vote.score <= 8) scoreDistribution['7-8']++;
+      else if (vote.score >= 9 && vote.score <= 10) scoreDistribution['9-10']++;
+    });
+
+    // Get last voting activity
+    const lastVotingActivity =
+      votes.length > 0 ? votes[0].createdAt.toISOString() : '';
+
+    this.logger.log(
+      `Judge ${judgeAddress} statistics: ${totalVotesCast} votes across ${totalHackathonsJudged} hackathons`,
+    );
+
+    return {
+      totalVotesCast,
+      totalHackathonsJudged,
+      averageScore,
+      votesWithComments,
+      commentPercentage,
+      lastVotingActivity,
+      scoreDistribution,
+    };
+  }
+
+  /**
+   * Get participants preview for a specific hackathon for a judge
+   */
+  async getHackathonParticipantsPreview(
+    hackathonId: string,
+    judgeAddress: string,
+  ): Promise<HackathonParticipantsPreviewDto> {
+    this.logger.log(
+      `Fetching participants preview for hackathon ${hackathonId} and judge ${judgeAddress}`,
+    );
+
+    // Get all participants in the hackathon
+    const participants = await this.prisma.participant.findMany({
+      where: { hackathonId },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    // Get all votes by this judge for this hackathon
+    const judgeVotes = await this.prisma.vote.findMany({
+      where: {
+        hackathonId,
+        judgeAddress,
+      },
+    });
+
+    // Create a map for quick lookup
+    const voteMap = new Map(
+      judgeVotes.map((vote) => [vote.participantId, vote]),
+    );
+
+    const participantsPreview: ParticipantPreviewDto[] = participants.map(
+      (participant) => {
+        const vote = voteMap.get(participant.id);
+        return {
+          id: participant.id,
+          walletAddress: participant.walletAddress,
+          submissionUrl: participant.submissionUrl || '',
+          hasVoted: !!vote,
+          currentScore: vote?.score || 0,
+          currentComment: vote?.comment || '',
+        };
+      },
+    );
+
+    return {
+      hackathonId,
+      participants: participantsPreview,
+      total: participants.length,
+    };
   }
 }

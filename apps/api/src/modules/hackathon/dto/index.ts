@@ -6,3 +6,4 @@ export * from './query-hackathon.dto';
 export * from './update-status.dto';
 export * from './judge.dto';
 export * from './vote.dto';
+export * from './judge-dashboard.dto';

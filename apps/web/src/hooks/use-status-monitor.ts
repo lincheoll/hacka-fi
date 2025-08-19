@@ -29,8 +29,8 @@ export function useStatusMonitor(
   } = options;
 
   const queryClient = useQueryClient();
-  const intervalRef = useRef<NodeJS.Timeout>();
-  const lastCheckRef = useRef<string>();
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastCheckRef = useRef<string | null>(null);
 
   const checkAndUpdateStatus = useCallback(async () => {
     if (!hackathon || !enabled) return;
@@ -113,7 +113,7 @@ export function useMultiStatusMonitor(
   } = options;
 
   const queryClient = useQueryClient();
-  const intervalRef = useRef<NodeJS.Timeout>();
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const checkAllStatuses = useCallback(async () => {
     if (!enabled || hackathons.length === 0) return;
