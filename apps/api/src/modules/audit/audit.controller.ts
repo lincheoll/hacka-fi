@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Query, Param, Body, UseGuards, BadRequestException } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -10,19 +10,54 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Public } from '../auth/decorators/public.decorator';
 import { AuditLoggerService } from './audit-logger.service';
+import { AuditService, AuditLogFilter, CreateAuditLogDto } from './audit.service';
+import { AuditAction, TriggerType, HackathonStatus } from '@prisma/client';
 
 export class AuditLogsQueryDto {
   hackathonId?: string;
-  action?: string;
+  action?: AuditAction;
+  triggeredBy?: TriggerType;
+  fromDate?: string;
+  toDate?: string;
   limit?: number;
   offset?: number;
+}
+
+export class CreateAuditLogRequestDto {
+  hackathonId!: string;
+  action!: AuditAction;
+  fromStatus?: HackathonStatus;
+  toStatus!: HackathonStatus;
+  reason!: string;
+  triggeredBy!: TriggerType;
+  userAddress?: string;
+  metadata?: Record<string, unknown>;
+  ipAddress?: string;
+  userAgent?: string;
 }
 
 @ApiTags('Audit Logs')
 @Controller('audit')
 @UseGuards(JwtAuthGuard)
 export class AuditController {
-  constructor(private readonly auditLogger: AuditLoggerService) {}
+  constructor(
+    private readonly auditLogger: AuditLoggerService,
+    private readonly auditService: AuditService,
+  ) {}
+
+  @Post('logs')
+  @Public()
+  @ApiOperation({
+    summary: 'Create audit log entry',
+    description: 'Create a new audit log entry for tracking hackathon status changes.',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Audit log entry created successfully',
+  })
+  async createAuditLog(@Body() createAuditLogDto: CreateAuditLogRequestDto) {
+    return this.auditService.logStatusChange(createAuditLogDto);
+  }
 
   @Get('logs')
   @Public()
@@ -59,13 +94,32 @@ export class AuditController {
     description: 'Audit logs retrieved successfully',
   })
   async getLogs(@Query() query: AuditLogsQueryDto) {
-    const filter: any = {};
+    const filter: AuditLogFilter = {};
+    
     if (query.hackathonId) filter.hackathonId = query.hackathonId;
     if (query.action) filter.action = query.action;
+    if (query.triggeredBy) filter.triggeredBy = query.triggeredBy;
+    
+    if (query.fromDate) {
+      const fromDate = new Date(query.fromDate);
+      if (isNaN(fromDate.getTime())) {
+        throw new BadRequestException('Invalid fromDate format');
+      }
+      filter.fromDate = fromDate;
+    }
+    
+    if (query.toDate) {
+      const toDate = new Date(query.toDate);
+      if (isNaN(toDate.getTime())) {
+        throw new BadRequestException('Invalid toDate format');
+      }
+      filter.toDate = toDate;
+    }
+    
     filter.limit = query.limit ? Number(query.limit) : 50;
     filter.offset = query.offset ? Number(query.offset) : 0;
 
-    return this.auditLogger.getLogs(filter);
+    return this.auditService.getLogs(filter);
   }
 
   @Get('hackathons/:id/trail')
@@ -84,7 +138,7 @@ export class AuditController {
     description: 'Audit trail retrieved successfully',
   })
   async getHackathonAuditTrail(@Param('id') hackathonId: string) {
-    return this.auditLogger.getHackathonAuditTrail(hackathonId);
+    return this.auditService.getHackathonAuditTrail(hackathonId);
   }
 
   @Get('hackathons/:id/summary')
@@ -103,7 +157,7 @@ export class AuditController {
     description: 'Status change summary retrieved successfully',
   })
   async getStatusChangeSummary(@Param('id') hackathonId: string) {
-    return this.auditLogger.getStatusChangeSummary(hackathonId);
+    return this.auditService.getStatusChangeSummary(hackathonId);
   }
 
   @Get('statistics')
@@ -119,5 +173,75 @@ export class AuditController {
   async getAuditStatistics() {
     // Note: In real implementation, you'd want admin guard here
     return this.auditLogger.getAuditStatistics();
+  }
+
+  @Get('export/csv')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Export audit logs to CSV',
+    description: 'Export audit logs in CSV format. Admin only.',
+  })
+  @ApiQuery({
+    name: 'hackathonId',
+    required: false,
+    description: 'Filter by hackathon ID',
+  })
+  @ApiQuery({
+    name: 'action',
+    required: false,
+    description: 'Filter by action type',
+  })
+  @ApiQuery({
+    name: 'fromDate',
+    required: false,
+    description: 'Filter from date (ISO format)',
+  })
+  @ApiQuery({
+    name: 'toDate',
+    required: false,
+    description: 'Filter to date (ISO format)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'CSV data returned successfully',
+    headers: {
+      'Content-Type': {
+        description: 'text/csv',
+      },
+      'Content-Disposition': {
+        description: 'attachment; filename="audit-logs.csv"',
+      },
+    },
+  })
+  async exportLogsToCSV(@Query() query: AuditLogsQueryDto) {
+    const filter: AuditLogFilter = {};
+    
+    if (query.hackathonId) filter.hackathonId = query.hackathonId;
+    if (query.action) filter.action = query.action;
+    if (query.triggeredBy) filter.triggeredBy = query.triggeredBy;
+    
+    if (query.fromDate) {
+      const fromDate = new Date(query.fromDate);
+      if (isNaN(fromDate.getTime())) {
+        throw new BadRequestException('Invalid fromDate format');
+      }
+      filter.fromDate = fromDate;
+    }
+    
+    if (query.toDate) {
+      const toDate = new Date(query.toDate);
+      if (isNaN(toDate.getTime())) {
+        throw new BadRequestException('Invalid toDate format');
+      }
+      filter.toDate = toDate;
+    }
+
+    const csvData = await this.auditService.exportAuditLogsToCSV(filter);
+    
+    return {
+      data: csvData,
+      filename: `audit-logs-${new Date().toISOString().split('T')[0]}.csv`,
+      contentType: 'text/csv',
+    };
   }
 }

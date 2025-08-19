@@ -144,14 +144,19 @@ model AuditLog {
   reason        String
   triggeredBy   TriggerType    @map("triggered_by")
   userAddress   String?        @map("user_address")
-  metadata      String?        // JSON string for additional data
+  metadata      Json?        // JSON for additional data
   ipAddress     String?        @map("ip_address")
   userAgent     String?        @map("user_agent")
+  timestamp     DateTime       @default(now()) // Add timestamp field for frontend compatibility
   createdAt     DateTime       @default(now()) @map("created_at")
 
   hackathon Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
   user      UserProfile? @relation(fields: [userAddress], references: [walletAddress])
 
+  @@index([hackathonId])
+  @@index([timestamp])
+  @@index([action])
+  @@index([triggeredBy])
   @@map("audit_logs")
 }
 
@@ -185,3 +190,4 @@ enum AchievementType {
   JUDGE
   CREATOR
 }
+

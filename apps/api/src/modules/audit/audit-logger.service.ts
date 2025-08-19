@@ -45,7 +45,7 @@ export class AuditLoggerService {
           reason: entry.reason,
           triggeredBy: entry.triggeredBy,
           userAddress: entry.userAddress ?? null,
-          metadata: entry.metadata ? JSON.stringify(entry.metadata) : null,
+          metadata: entry.metadata as any,
           ipAddress: entry.ipAddress ?? null,
           userAgent: entry.userAgent ?? null,
         },
@@ -202,7 +202,7 @@ export class AuditLoggerService {
       // Parse metadata JSON
       const enrichedLogs = logs.map((log) => ({
         ...log,
-        metadata: log.metadata ? JSON.parse(log.metadata) : null,
+        metadata: log.metadata as any,
       }));
 
       return {

@@ -9,6 +9,7 @@ import { UserModule } from './modules/user/user.module';
 import { VotingModule } from './modules/voting/voting.module';
 import { Web3Module } from './modules/web3/web3.module';
 import { UploadModule } from './modules/upload/upload.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { CommonModule } from './common/common.module';
 import { PrismaModule } from './common/database/prisma.module';
 import { configValidationSchema } from './config/app.config';
@@ -28,6 +29,7 @@ import { DatabaseHealthController } from './common/database/database-health.cont
     VotingModule,
     Web3Module,
     UploadModule,
+    AuditModule,
     CommonModule,
   ],
   controllers: [AppController, DatabaseHealthController],

@@ -11,8 +11,10 @@ import {
   WinnerDeterminationService,
   WinnerDeterminationResult,
 } from './winner-determination.service';
+import { VoteValidationService } from '../voting/vote-validation.service';
+import { AuditService } from '../audit/audit.service';
 import { ConfigService } from '@nestjs/config';
-import { HackathonStatus, Prisma } from '@prisma/client';
+import { HackathonStatus, Prisma, AuditAction, TriggerType } from '@prisma/client';
 import { PrismaService } from '../../common/database/prisma.service';
 import {
   CreateHackathonDto,
@@ -40,6 +42,8 @@ export class HackathonService {
     private readonly configService: ConfigService,
     private readonly rankingService: RankingService,
     private readonly winnerDeterminationService: WinnerDeterminationService,
+    private readonly voteValidationService: VoteValidationService,
+    private readonly auditService: AuditService,
   ) {}
 
   async createHackathon(
@@ -198,15 +202,14 @@ export class HackathonService {
       );
     }
 
-    // Validate status transitions
-    if (
-      updateHackathonDto.status &&
-      existingHackathon.status !== updateHackathonDto.status
-    ) {
-      this.validateStatusTransition(
-        existingHackathon.status,
-        updateHackathonDto.status,
-      );
+    // Validate status transitions and prepare for audit logging
+    let statusChanged = false;
+    const oldStatus = existingHackathon.status;
+    const newStatus = updateHackathonDto.status;
+    
+    if (newStatus && oldStatus !== newStatus) {
+      this.validateStatusTransition(oldStatus, newStatus);
+      statusChanged = true;
     }
 
     // Validate deadline if being updated
@@ -240,6 +243,28 @@ export class HackathonService {
         },
       },
     });
+
+    // Log audit trail for status changes
+    if (statusChanged && newStatus) {
+      try {
+        await this.auditService.logManualOverride(
+          id,
+          oldStatus,
+          newStatus,
+          `Status manually changed by organizer: ${existingHackathon.title}`,
+          updaterAddress,
+        );
+        this.logger.log(`Status change logged: ${oldStatus} → ${newStatus} for hackathon ${id}`);
+      } catch (auditError) {
+        this.logger.error('Failed to log status change audit:', {
+          error: auditError instanceof Error ? auditError.message : String(auditError),
+          hackathonId: id,
+          fromStatus: oldStatus,
+          toStatus: newStatus,
+        });
+        // Don't fail the update if audit logging fails
+      }
+    }
 
     this.logger.log(`Updated hackathon ${id} by ${updaterAddress}`);
     return this.mapToResponseDto(updatedHackathon);
@@ -591,108 +616,136 @@ export class HackathonService {
     castVoteDto: CastVoteDto,
     judgeAddress: string,
   ): Promise<VoteResponseDto> {
-    const hackathon = await this.prisma.hackathon.findUnique({
-      where: { id: hackathonId },
+    this.logger.log(
+      `Vote attempt by judge ${judgeAddress} for participant ${castVoteDto.participantId} in hackathon ${hackathonId}`,
+    );
+
+    // Comprehensive validation using VoteValidationService
+    const validationResult = await this.voteValidationService.validateVote({
+      hackathonId,
+      judgeAddress,
+      castVoteDto,
     });
 
-    if (!hackathon) {
-      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
-    }
-
-    // Check if hackathon is in voting phase
-    if (hackathon.status !== HackathonStatus.VOTING_OPEN) {
-      throw new BadRequestException('Hackathon is not in voting phase');
-    }
-
-    // Check if voting deadline has passed
-    if (new Date() > hackathon.votingDeadline) {
-      throw new BadRequestException('Voting deadline has passed');
-    }
-
-    // Check if user is a judge
-    const judge = await this.prisma.hackathonJudge.findUnique({
-      where: {
-        hackathonId_judgeAddress: {
-          hackathonId,
-          judgeAddress,
-        },
-      },
-    });
-
-    if (!judge) {
-      throw new ForbiddenException('Only authorized judges can vote');
-    }
-
-    // Check if participant exists
-    const participant = await this.prisma.participant.findUnique({
-      where: { id: castVoteDto.participantId },
-    });
-
-    if (!participant || participant.hackathonId !== hackathonId) {
-      throw new NotFoundException('Participant not found in this hackathon');
-    }
-
-    // Check if judge has already voted for this participant
-    const existingVote = await this.prisma.vote.findUnique({
-      where: {
-        hackathonId_judgeAddress_participantId: {
+    if (!validationResult.isValid) {
+      this.logger.warn(
+        `Vote validation failed: ${validationResult.error} (Code: ${validationResult.errorCode})`,
+        {
           hackathonId,
           judgeAddress,
           participantId: castVoteDto.participantId,
+          metadata: validationResult.metadata,
         },
-      },
+      );
+
+      // Throw appropriate exception based on validation result
+      throw this.voteValidationService.getValidationException(validationResult);
+    }
+
+    this.logger.log(`Vote validation passed for judge ${judgeAddress}`, {
+      metadata: validationResult.metadata,
     });
 
-    if (existingVote) {
-      // Update existing vote
-      const updatedVote = await this.prisma.vote.update({
-        where: { id: existingVote.id },
-        data: {
-          score: castVoteDto.score,
-          comment: castVoteDto.comment || null,
-        },
+    // Check if this is an update or new vote
+    const isUpdate = validationResult.metadata?.isUpdate || false;
+
+    try {
+      if (isUpdate) {
+        // Update existing vote
+        const existingVote = await this.prisma.vote.findUnique({
+          where: {
+            hackathonId_judgeAddress_participantId: {
+              hackathonId,
+              judgeAddress,
+              participantId: castVoteDto.participantId,
+            },
+          },
+        });
+
+        if (!existingVote) {
+          throw new NotFoundException('Existing vote not found for update');
+        }
+
+        const updatedVote = await this.prisma.vote.update({
+          where: { id: existingVote.id },
+          data: {
+            score: castVoteDto.score,
+            comment: castVoteDto.comment || null,
+          },
+        });
+
+        this.logger.log(
+          `Vote updated by judge ${judgeAddress} for participant ${castVoteDto.participantId}`,
+          {
+            voteId: updatedVote.id,
+            oldScore: existingVote.score,
+            newScore: updatedVote.score,
+            hasComment: !!updatedVote.comment,
+          },
+        );
+
+        return {
+          id: updatedVote.id,
+          hackathonId: updatedVote.hackathonId,
+          judgeAddress: updatedVote.judgeAddress,
+          participantId: updatedVote.participantId,
+          score: updatedVote.score,
+          comment: updatedVote.comment,
+          createdAt: updatedVote.createdAt,
+          updatedAt: updatedVote.updatedAt,
+        };
+      } else {
+        // Create new vote
+        const vote = await this.prisma.vote.create({
+          data: {
+            hackathonId,
+            judgeAddress,
+            participantId: castVoteDto.participantId,
+            score: castVoteDto.score,
+            comment: castVoteDto.comment || null,
+          },
+        });
+
+        this.logger.log(
+          `New vote cast by judge ${judgeAddress} for participant ${castVoteDto.participantId}`,
+          {
+            voteId: vote.id,
+            score: vote.score,
+            hasComment: !!vote.comment,
+          },
+        );
+
+        return {
+          id: vote.id,
+          hackathonId: vote.hackathonId,
+          judgeAddress: vote.judgeAddress,
+          participantId: vote.participantId,
+          score: vote.score,
+          comment: vote.comment,
+          createdAt: vote.createdAt,
+          updatedAt: vote.updatedAt,
+        };
+      }
+    } catch (error) {
+      this.logger.error(`Failed to ${isUpdate ? 'update' : 'create'} vote`, {
+        error: error instanceof Error ? error.message : String(error),
+        hackathonId,
+        judgeAddress,
+        participantId: castVoteDto.participantId,
       });
 
-      this.logger.log(
-        `Vote updated by judge ${judgeAddress} for participant ${castVoteDto.participantId}`,
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException ||
+        error instanceof ForbiddenException
+      ) {
+        throw error;
+      }
+
+      // Handle unexpected database errors
+      throw new BadRequestException(
+        'Failed to process vote. Please try again.',
       );
-
-      return {
-        id: updatedVote.id,
-        hackathonId: updatedVote.hackathonId,
-        judgeAddress: updatedVote.judgeAddress,
-        participantId: updatedVote.participantId,
-        score: updatedVote.score,
-        comment: updatedVote.comment,
-        createdAt: updatedVote.createdAt,
-        updatedAt: updatedVote.updatedAt,
-      };
-    } else {
-      // Create new vote
-      const vote = await this.prisma.vote.create({
-        data: {
-          hackathonId,
-          judgeAddress,
-          participantId: castVoteDto.participantId,
-          score: castVoteDto.score,
-          comment: castVoteDto.comment || null,
-        },
-      });
-
-      this.logger.log(
-        `Vote cast by judge ${judgeAddress} for participant ${castVoteDto.participantId}`,
-      );
-
-      return {
-        id: vote.id,
-        hackathonId: vote.hackathonId,
-        judgeAddress: vote.judgeAddress,
-        participantId: vote.participantId,
-        score: vote.score,
-        comment: vote.comment,
-        createdAt: vote.createdAt,
-        updatedAt: vote.updatedAt,
-      };
     }
   }
 

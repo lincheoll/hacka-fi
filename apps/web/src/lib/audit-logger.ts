@@ -3,11 +3,11 @@ import { HackathonStatus } from "@/types/global";
 export interface AuditLogEntry {
   id: string;
   hackathonId: string;
-  action: "status_change" | "manual_override" | "automatic_transition";
+  action: "STATUS_CHANGE" | "MANUAL_OVERRIDE" | "AUTOMATIC_TRANSITION";
   fromStatus?: HackathonStatus;
   toStatus: HackathonStatus;
   reason: string;
-  triggeredBy: "system" | "organizer" | "admin";
+  triggeredBy: "SYSTEM" | "ORGANIZER" | "ADMIN";
   userAddress?: string;
   metadata?: Record<string, unknown>;
   timestamp: string;
@@ -17,8 +17,8 @@ export interface AuditLogEntry {
 
 export interface AuditLogFilter {
   hackathonId?: string;
-  action?: string;
-  triggeredBy?: string;
+  action?: "STATUS_CHANGE" | "MANUAL_OVERRIDE" | "AUTOMATIC_TRANSITION";
+  triggeredBy?: "SYSTEM" | "ORGANIZER" | "ADMIN";
   fromDate?: string;
   toDate?: string;
   limit?: number;
@@ -29,33 +29,27 @@ export interface AuditLogFilter {
  * Audit logger for tracking all hackathon status changes
  */
 export class AuditLogger {
+  private static readonly API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
   /**
    * Log a status change event
    */
   static async logStatusChange(
     entry: Omit<AuditLogEntry, "id" | "timestamp">,
   ): Promise<void> {
-    const logEntry: AuditLogEntry = {
-      ...entry,
-      id: generateLogId(),
-      timestamp: new Date().toISOString(),
-    };
-
     try {
-      // TODO: Implement actual database logging
-      await this.saveLogEntry(logEntry);
+      await this.saveLogEntry(entry);
 
       // Also log to console for development
       console.log("Audit Log:", {
-        hackathonId: logEntry.hackathonId,
-        action: logEntry.action,
-        statusChange: logEntry.fromStatus
-          ? `${logEntry.fromStatus} → ${logEntry.toStatus}`
-          : logEntry.toStatus,
-        reason: logEntry.reason,
-        triggeredBy: logEntry.triggeredBy,
-        userAddress: logEntry.userAddress,
-        timestamp: logEntry.timestamp,
+        hackathonId: entry.hackathonId,
+        action: entry.action,
+        statusChange: entry.fromStatus
+          ? `${entry.fromStatus} → ${entry.toStatus}`
+          : entry.toStatus,
+        reason: entry.reason,
+        triggeredBy: entry.triggeredBy,
+        userAddress: entry.userAddress,
       });
     } catch (error) {
       console.error("Failed to log audit entry:", error);
@@ -75,11 +69,11 @@ export class AuditLogger {
   ): Promise<void> {
     await this.logStatusChange({
       hackathonId,
-      action: "automatic_transition",
+      action: "AUTOMATIC_TRANSITION",
       fromStatus,
       toStatus,
       reason,
-      triggeredBy: "system",
+      triggeredBy: "SYSTEM",
       metadata,
     });
   }
@@ -98,11 +92,11 @@ export class AuditLogger {
   ): Promise<void> {
     await this.logStatusChange({
       hackathonId,
-      action: "manual_override",
+      action: "MANUAL_OVERRIDE",
       fromStatus,
       toStatus,
       reason,
-      triggeredBy: "organizer",
+      triggeredBy: "ORGANIZER",
       userAddress,
       ipAddress,
       userAgent,
@@ -122,11 +116,11 @@ export class AuditLogger {
   ): Promise<void> {
     await this.logStatusChange({
       hackathonId,
-      action: "manual_override",
+      action: "MANUAL_OVERRIDE",
       fromStatus,
       toStatus,
       reason,
-      triggeredBy: "admin",
+      triggeredBy: "ADMIN",
       userAddress: adminAddress,
       metadata,
     });
@@ -141,14 +135,8 @@ export class AuditLogger {
     hasMore: boolean;
   }> {
     try {
-      // TODO: Implement actual database query
-      const { logs, total } = await this.queryLogs(filter);
-
-      return {
-        logs,
-        total,
-        hasMore: (filter.offset || 0) + logs.length < total,
-      };
+      const response = await this.queryLogs(filter);
+      return response;
     } catch (error) {
       console.error("Failed to retrieve audit logs:", error);
       return { logs: [], total: 0, hasMore: false };
@@ -161,15 +149,16 @@ export class AuditLogger {
   static async getHackathonAuditTrail(
     hackathonId: string,
   ): Promise<AuditLogEntry[]> {
-    const { logs } = await this.getLogs({
-      hackathonId,
-      limit: 100, // Get all entries for the hackathon
-    });
-
-    return logs.sort(
-      (a, b) =>
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-    );
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/audit/hackathons/${hackathonId}/trail`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch audit trail: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Failed to retrieve hackathon audit trail:", error);
+      return [];
+    }
   }
 
   /**
@@ -187,69 +176,77 @@ export class AuditLogger {
       reason: string;
     }>;
   }> {
-    const logs = await this.getHackathonAuditTrail(hackathonId);
-
-    const automaticChanges = logs.filter(
-      (log) => log.triggeredBy === "system",
-    ).length;
-    const manualChanges = logs.filter(
-      (log) => log.triggeredBy !== "system",
-    ).length;
-
-    const timeline = logs.map((log) => ({
-      status: log.toStatus,
-      timestamp: log.timestamp,
-      triggeredBy: log.triggeredBy,
-      reason: log.reason,
-    }));
-
-    return {
-      totalChanges: logs.length,
-      automaticChanges,
-      manualChanges,
-      lastChange: logs[logs.length - 1],
-      timeline,
-    };
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/audit/hackathons/${hackathonId}/summary`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch status summary: ${response.statusText}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Failed to retrieve status change summary:", error);
+      return {
+        totalChanges: 0,
+        automaticChanges: 0,
+        manualChanges: 0,
+        timeline: [],
+      };
+    }
   }
 
   /**
-   * Private method to save log entry (implement with your database)
-   * TODO: This should be moved to NestJS backend and use actual database
+   * Private method to save log entry to backend
    */
-  private static async saveLogEntry(entry: AuditLogEntry): Promise<void> {
-    // TODO: MOVE TO NESTJS BACKEND
-    // This is a temporary mock implementation
-    // Real implementation should be in apps/api/src/audit/audit-logger.service.ts
+  private static async saveLogEntry(entry: Omit<AuditLogEntry, "id" | "timestamp">): Promise<void> {
+    try {
+      const response = await fetch(`${this.API_BASE_URL}/audit/logs`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(entry),
+      });
 
-    console.warn("MOCK: Audit log not saved to database:", entry);
-    // For now, we'll just store in memory (not persistent)
+      if (!response.ok) {
+        throw new Error(`Failed to save audit log: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error("Failed to save audit entry:", error);
+      throw error;
+    }
   }
 
   /**
-   * Private method to query logs (implement with your database)
-   * TODO: This should be moved to NestJS backend and use actual database
+   * Private method to query logs from backend
    */
-  private static async queryLogs(): Promise<{
+  private static async queryLogs(filter: AuditLogFilter): Promise<{
     logs: AuditLogEntry[];
     total: number;
+    hasMore: boolean;
   }> {
-    // TODO: MOVE TO NESTJS BACKEND
-    // This is a temporary mock implementation
-    console.warn("MOCK: Audit logs not queried from database");
+    try {
+      const params = new URLSearchParams();
+      
+      if (filter.hackathonId) params.append('hackathonId', filter.hackathonId);
+      if (filter.action) params.append('action', filter.action);
+      if (filter.triggeredBy) params.append('triggeredBy', filter.triggeredBy);
+      if (filter.fromDate) params.append('fromDate', filter.fromDate);
+      if (filter.toDate) params.append('toDate', filter.toDate);
+      if (filter.limit) params.append('limit', filter.limit.toString());
+      if (filter.offset) params.append('offset', filter.offset.toString());
 
-    return {
-      logs: [], // Return actual logs from database
-      total: 0,
-    };
+      const response = await fetch(`${this.API_BASE_URL}/audit/logs?${params}`);
+      if (!response.ok) {
+        throw new Error(`Failed to query audit logs: ${response.statusText}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error("Failed to query audit logs:", error);
+      throw error;
+    }
   }
 }
 
-/**
- * Generate unique log ID
- */
-function generateLogId(): string {
-  return `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
 
 /**
  * Helper function to format audit log for display
