@@ -31,6 +31,7 @@ import type {
   HackathonStatusSummaryResponse,
   VotingPeriodInfo,
   VotingPhaseHackathon,
+  ExportResultsResponse,
 } from "@/types/api";
 import type { Hackathon, User, Participant } from "@/types/global";
 
@@ -585,5 +586,17 @@ export async function fetchHackathonParticipantsPreview(
   const response = await apiClient.get<
     ApiResponse<HackathonParticipantsPreview>
   >(`/hackathons/${hackathonId}/participants/preview/${judgeAddress}`);
+  return handleApiResponse(response);
+}
+
+// Results Export API Functions
+export async function exportResults(
+  hackathonId: string,
+  format: "json" | "csv" = "json",
+): Promise<ExportResultsResponse> {
+  const response = await apiClient.get<ApiResponse<ExportResultsResponse>>(
+    `/hackathons/${hackathonId}/winners/export`,
+    { format },
+  );
   return handleApiResponse(response);
 }

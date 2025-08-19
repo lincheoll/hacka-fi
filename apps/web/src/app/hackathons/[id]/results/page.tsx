@@ -25,8 +25,17 @@ import {
   BarChart3,
   ExternalLink,
 } from "lucide-react";
-import { fetchHackathon, fetchVotingResults } from "@/lib/api-functions";
+import {
+  fetchHackathon,
+  fetchVotingResults,
+  getWinners,
+  areWinnersFinalized,
+} from "@/lib/api-functions";
 import { HackathonStatusBadge } from "@/components/features/hackathon/hackathon-status-badge";
+import { PrizeDistributionChart } from "@/components/features/hackathon/prize-distribution-chart";
+import { WinnersPodium } from "@/components/features/hackathon/winners-podium";
+import { WinnerAnnouncement } from "@/components/features/hackathon/winner-announcement";
+import { ResultsExport } from "@/components/features/hackathon/results-export";
 
 interface ResultsPageProps {
   params: Promise<{ id: string }>;
@@ -63,6 +72,22 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     enabled: !!id && mounted,
   });
 
+  // Fetch winner information
+  const { data: winnerData, isLoading: isLoadingWinners } = useQuery({
+    queryKey: ["winners", id],
+    queryFn: () => getWinners(id),
+    enabled: !!id && mounted,
+    retry: false, // Don't retry if winners aren't available yet
+  });
+
+  // Fetch winner status
+  const { data: winnerStatus, isLoading: isLoadingWinnerStatus } = useQuery({
+    queryKey: ["winner-status", id],
+    queryFn: () => areWinnersFinalized(id),
+    enabled: !!id && mounted,
+    retry: false,
+  });
+
   if (!mounted) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -78,7 +103,12 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     );
   }
 
-  if (isLoadingHackathon || isLoadingResults) {
+  if (
+    isLoadingHackathon ||
+    isLoadingResults ||
+    isLoadingWinners ||
+    isLoadingWinnerStatus
+  ) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Header />
@@ -261,65 +291,114 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           </Card>
         </div>
 
-        {/* Winners Podium */}
-        {winners.length > 0 && (
-          <Card className="mb-8 bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Trophy className="h-6 w-6 text-yellow-500" />
-                Winners
-              </CardTitle>
-              <CardDescription>
-                Congratulations to our top performers!
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {winners.map((participant, index) => (
-                  <div key={participant.participantId} className="text-center">
-                    <div className="mb-4">{getRankIcon(index + 1)}</div>
-                    <div className="font-medium text-lg mb-2">
-                      {participant.walletAddress.slice(0, 6)}...
-                      {participant.walletAddress.slice(-4)}
-                    </div>
-                    {getRankBadge(index + 1)}
-                    <div className="mt-2 space-y-1">
-                      <div className="flex items-center justify-center gap-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-bold">
-                          {participant.weightedScore !== undefined
-                            ? participant.weightedScore.toFixed(1)
-                            : participant.averageScore.toFixed(1)}
-                          /10
-                        </span>
-                      </div>
-                      {participant.weightedScore !== undefined && (
-                        <div className="text-xs text-gray-500">
-                          Raw: {participant.averageScore.toFixed(1)} | Weighted
-                          Score
-                        </div>
-                      )}
-                      <div className="text-sm text-gray-600">
-                        {participant.totalVotes} votes
-                      </div>
-                    </div>
-                    {participant.submissionUrl && (
-                      <a
-                        href={participant.submissionUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center text-blue-600 hover:underline text-sm mt-2"
-                      >
-                        View Project
-                        <ExternalLink className="h-3 w-3 ml-1" />
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Winner Announcement & Podium */}
+        {winnerData && winnerData.winners && winnerData.winners.length > 0 && (
+          <div className="mb-8 space-y-6">
+            <WinnerAnnouncement
+              winners={winnerData.winners}
+              hackathonTitle={hackathon.title}
+              hackathonId={id}
+              totalPrizePool={winnerData.totalPrizePool || "0"}
+              currency="KAIA"
+              showAnimation={false}
+            />
+          </div>
         )}
+
+        {/* Winners Podium (fallback to basic results if no winner data) */}
+        {winnerData?.winners && winnerData.winners.length > 0 ? (
+          <div className="mb-8">
+            <WinnersPodium
+              winners={winnerData.winners}
+              prizeDistribution={winnerData.prizeDistribution}
+              currency="KAIA"
+            />
+          </div>
+        ) : (
+          winners.length > 0 && (
+            <Card className="mb-8 bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Trophy className="h-6 w-6 text-yellow-500" />
+                  Winners
+                </CardTitle>
+                <CardDescription>
+                  Congratulations to our top performers!
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {winners.map((participant, index) => (
+                    <div
+                      key={participant.participantId}
+                      className="text-center"
+                    >
+                      <div className="mb-4">{getRankIcon(index + 1)}</div>
+                      <div className="font-medium text-lg mb-2">
+                        {participant.walletAddress.slice(0, 6)}...
+                        {participant.walletAddress.slice(-4)}
+                      </div>
+                      {getRankBadge(index + 1)}
+                      <div className="mt-2 space-y-1">
+                        <div className="flex items-center justify-center gap-1">
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <span className="font-bold">
+                            {participant.weightedScore !== undefined
+                              ? participant.weightedScore.toFixed(1)
+                              : participant.averageScore.toFixed(1)}
+                            /10
+                          </span>
+                        </div>
+                        {participant.weightedScore !== undefined && (
+                          <div className="text-xs text-gray-500">
+                            Raw: {participant.averageScore.toFixed(1)} |
+                            Weighted Score
+                          </div>
+                        )}
+                        <div className="text-sm text-gray-600">
+                          {participant.totalVotes} votes
+                        </div>
+                      </div>
+                      {participant.submissionUrl && (
+                        <a
+                          href={participant.submissionUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center text-blue-600 hover:underline text-sm mt-2"
+                        >
+                          View Project
+                          <ExternalLink className="h-3 w-3 ml-1" />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )
+        )}
+
+        {/* Prize Distribution Chart */}
+        {winnerData &&
+          winnerData.prizeDistribution &&
+          winnerData.prizeDistribution.length > 0 && (
+            <div className="mb-8">
+              <PrizeDistributionChart
+                prizeDistribution={winnerData.prizeDistribution}
+                totalPrizePool={winnerData.totalPrizePool || "0"}
+                currency="KAIA"
+              />
+            </div>
+          )}
+
+        {/* Results Export */}
+        <div className="mb-8">
+          <ResultsExport
+            hackathonId={id}
+            hackathonTitle={hackathon.title}
+            isCompleted={winnerStatus?.finalized || false}
+          />
+        </div>
 
         {/* Full Results Table */}
         <Card>

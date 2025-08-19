@@ -687,6 +687,38 @@ export class HackathonController {
     return this.hackathonService.getTop3Winners(id);
   }
 
+  @Get(':id/winners/export')
+  @Public()
+  @ApiOperation({
+    summary: 'Export results data',
+    description: 'Export detailed results data for external use or archival.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiQuery({
+    name: 'format',
+    description: 'Export format (json, csv)',
+    required: false,
+    example: 'json',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Results exported successfully',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found',
+  })
+  async exportResults(
+    @Param('id') id: string,
+    @Query('format') format: 'json' | 'csv' = 'json',
+  ) {
+    return this.hackathonService.exportResults(id, format);
+  }
+
   @Get(':id/winners/status')
   @Public()
   @ApiOperation({

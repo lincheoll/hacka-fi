@@ -324,3 +324,63 @@ export interface VotingPhaseHackathon {
     votes: number;
   };
 }
+
+// Results Export API types
+export interface ExportResultsResponse {
+  format: "json" | "csv";
+  data: unknown;
+  headers?: string[];
+  hackathonInfo?: HackathonExportInfo;
+}
+
+export interface HackathonExportInfo {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  createdAt: string;
+  registrationDeadline: string;
+  submissionDeadline: string;
+  votingDeadline: string;
+  organizerAddress: string;
+  prizeAmount: string | null;
+  totalParticipants: number;
+  totalJudges: number;
+}
+
+export interface ParticipantExportData {
+  id: number;
+  walletAddress: string;
+  submissionUrl: string | null;
+  registeredAt: string;
+  rank: number | null;
+  prizeAmount: string | null;
+  votes: VoteExportData[];
+  averageScore: number;
+  totalVotes: number;
+}
+
+export interface VoteExportData {
+  judgeAddress: string;
+  judgeName: string;
+  score: number;
+  comment: string | null;
+  createdAt: string;
+}
+
+export interface JudgeExportData {
+  walletAddress: string;
+  name: string;
+  assignedAt: string;
+}
+
+export interface DetailedExportData {
+  hackathon: HackathonExportInfo;
+  participants: ParticipantExportData[];
+  judges: JudgeExportData[];
+  winners: WinnerResult[];
+  prizeDistribution: PrizeDistribution[];
+  totalPrizePool: string;
+  rankingMetrics: RankingMetrics | null;
+  exportedAt: string;
+}

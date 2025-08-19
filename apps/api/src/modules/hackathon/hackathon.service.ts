@@ -1278,4 +1278,148 @@ export class HackathonService {
       total: participants.length,
     };
   }
+
+  /**
+   * Export detailed results data for a hackathon
+   */
+  async exportResults(
+    hackathonId: string,
+    format: 'json' | 'csv' = 'json',
+  ): Promise<any> {
+    this.logger.log(
+      `Exporting results for hackathon ${hackathonId} in ${format} format`,
+    );
+
+    // Get hackathon details
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+      include: {
+        participants: {
+          include: {
+            votes: {
+              include: {
+                judge: {
+                  select: {
+                    walletAddress: true,
+                    username: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: { rank: 'asc' },
+        },
+        judges: {
+          include: {
+            judge: {
+              select: {
+                walletAddress: true,
+                username: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon ${hackathonId} not found`);
+    }
+
+    // Get winner determination data if available
+    let winnerData = null;
+    try {
+      winnerData = await this.getWinners(hackathonId);
+    } catch (error) {
+      this.logger.warn(`No winner data available for hackathon ${hackathonId}`);
+    }
+
+    // Prepare export data
+    const exportData = {
+      hackathon: {
+        id: hackathon.id,
+        title: hackathon.title,
+        description: hackathon.description,
+        status: hackathon.status,
+        createdAt: hackathon.createdAt,
+        registrationDeadline: hackathon.registrationDeadline,
+        submissionDeadline: hackathon.submissionDeadline,
+        votingDeadline: hackathon.votingDeadline,
+        organizerAddress: hackathon.organizerAddress,
+        prizeAmount: hackathon.prizeAmount,
+        totalParticipants: hackathon.participants.length,
+        totalJudges: hackathon.judges.length,
+      },
+      participants: hackathon.participants.map((participant) => ({
+        id: participant.id,
+        walletAddress: participant.walletAddress,
+        submissionUrl: participant.submissionUrl,
+        registeredAt: participant.createdAt,
+        rank: participant.rank,
+        prizeAmount: participant.prizeAmount,
+        votes: participant.votes.map((vote) => ({
+          judgeAddress: vote.judgeAddress,
+          judgeName: vote.judge?.username || 'Unknown',
+          score: vote.score,
+          comment: vote.comment,
+          createdAt: vote.createdAt,
+        })),
+        averageScore:
+          participant.votes.length > 0
+            ? participant.votes.reduce((sum, vote) => sum + vote.score, 0) /
+              participant.votes.length
+            : 0,
+        totalVotes: participant.votes.length,
+      })),
+      judges: hackathon.judges.map((judgeAssignment) => ({
+        walletAddress: judgeAssignment.judgeAddress,
+        name: judgeAssignment.judge?.username || 'Unknown',
+        assignedAt: judgeAssignment.addedAt,
+      })),
+      winners: winnerData?.winners || [],
+      prizeDistribution: winnerData?.prizeDistribution || [],
+      totalPrizePool: winnerData?.totalPrizePool || '0',
+      rankingMetrics: winnerData?.rankingMetrics || null,
+      exportedAt: new Date().toISOString(),
+    };
+
+    if (format === 'csv') {
+      // Convert to CSV format for participants results
+      const csvData = hackathon.participants.map((participant) => ({
+        rank: participant.rank || 'N/A',
+        walletAddress: participant.walletAddress,
+        submissionUrl: participant.submissionUrl || '',
+        averageScore:
+          participant.votes.length > 0
+            ? (
+                participant.votes.reduce((sum, vote) => sum + vote.score, 0) /
+                participant.votes.length
+              ).toFixed(2)
+            : '0.00',
+        totalVotes: participant.votes.length,
+        prizeAmount: participant.prizeAmount || '0',
+        registeredAt: participant.createdAt.toISOString(),
+      }));
+
+      return {
+        format: 'csv',
+        data: csvData,
+        headers: [
+          'rank',
+          'walletAddress',
+          'submissionUrl',
+          'averageScore',
+          'totalVotes',
+          'prizeAmount',
+          'registeredAt',
+        ],
+        hackathonInfo: exportData.hackathon,
+      };
+    }
+
+    return {
+      format: 'json',
+      data: exportData,
+    };
+  }
 }
