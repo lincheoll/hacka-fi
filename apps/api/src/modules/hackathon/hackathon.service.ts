@@ -14,6 +14,7 @@ import {
 import { VoteValidationService } from '../voting/vote-validation.service';
 import { AuditService } from '../audit/audit.service';
 import { ConfigService } from '@nestjs/config';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import {
   HackathonStatus,
   Prisma,
@@ -55,6 +56,7 @@ export class HackathonService {
     private readonly winnerDeterminationService: WinnerDeterminationService,
     private readonly voteValidationService: VoteValidationService,
     private readonly auditService: AuditService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   async createHackathon(
@@ -280,6 +282,16 @@ export class HackathonService {
         });
         // Don't fail the update if audit logging fails
       }
+
+      // Emit status change event for automated distribution
+      this.eventEmitter.emit('hackathon.status.changed', {
+        hackathonId: id,
+        oldStatus,
+        newStatus,
+        triggeredBy: 'ORGANIZER',
+        userAddress: updaterAddress,
+        timestamp: new Date(),
+      });
     }
 
     this.logger.log(`Updated hackathon ${id} by ${updaterAddress}`);

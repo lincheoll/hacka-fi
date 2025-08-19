@@ -50,6 +50,7 @@ model Hackathon {
   achievements   UserAchievement[]
   auditLogs      AuditLog[]
   judges         HackathonJudge[]
+  prizePool      PrizePool?
 
   @@map("hackathons")
 }
@@ -158,6 +159,82 @@ model AuditLog {
   @@index([action])
   @@index([triggeredBy])
   @@map("audit_logs")
+}
+
+model PrizePool {
+  id                    Int      @id @default(autoincrement())
+  hackathonId           String   @unique @map("hackathon_id")
+  totalAmount           String   @map("total_amount") // Using String for BigInt compatibility
+  contractPoolId        String?  @map("contract_pool_id") // Smart contract pool ID
+  contractAddress       String?  @map("contract_address") // Prize pool contract address
+  isDeposited           Boolean  @default(false) @map("is_deposited")
+  depositTxHash         String?  @map("deposit_tx_hash")
+  isDistributed         Boolean  @default(false) @map("is_distributed")
+  distributionTxHash    String?  @map("distribution_tx_hash")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  hackathon             Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+  deposits              PrizePoolDeposit[]
+  distributions         PrizeDistribution[]
+
+  @@map("prize_pools")
+}
+
+model PrizePoolDeposit {
+  id                    Int      @id @default(autoincrement())
+  prizePoolId           Int      @map("prize_pool_id")
+  depositorAddress      String   @map("depositor_address")
+  amount                String   // Using String for BigInt compatibility
+  txHash                String   @map("tx_hash")
+  blockNumber           Int?     @map("block_number")
+  status                DepositStatus @default(PENDING)
+  createdAt             DateTime @default(now()) @map("created_at")
+  confirmedAt           DateTime? @map("confirmed_at")
+
+  prizePool             PrizePool @relation(fields: [prizePoolId], references: [id], onDelete: Cascade)
+
+  @@index([prizePoolId])
+  @@index([status])
+  @@index([txHash])
+  @@map("prize_pool_deposits")
+}
+
+model PrizeDistribution {
+  id                    Int      @id @default(autoincrement())
+  prizePoolId           Int      @map("prize_pool_id")
+  hackathonId           String   @map("hackathon_id")
+  recipientAddress      String   @map("recipient_address")
+  position              Int      // 1st, 2nd, 3rd place
+  amount                String   // Using String for BigInt compatibility
+  percentage            Int      // Percentage in basis points (e.g., 6000 = 60%)
+  txHash                String?  @map("tx_hash")
+  blockNumber           Int?     @map("block_number")
+  status                DistributionStatus @default(PENDING)
+  executedAt            DateTime? @map("executed_at")
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  prizePool             PrizePool @relation(fields: [prizePoolId], references: [id], onDelete: Cascade)
+
+  @@index([prizePoolId])
+  @@index([hackathonId])
+  @@index([status])
+  @@index([txHash])
+  @@map("prize_distributions")
+}
+
+enum DepositStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+}
+
+enum DistributionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
 }
 
 enum AuditAction {
