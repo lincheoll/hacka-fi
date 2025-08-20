@@ -177,6 +177,7 @@ model PrizePool {
   hackathon             Hackathon @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
   deposits              PrizePoolDeposit[]
   distributions         PrizeDistribution[]
+  distributionTransactions DistributionTransaction[]
 
   @@map("prize_pools")
 }
@@ -213,6 +214,7 @@ model PrizeDistribution {
   status                DistributionStatus @default(PENDING)
   executedAt            DateTime? @map("executed_at")
   createdAt             DateTime @default(now()) @map("created_at")
+  error                 String?
 
   prizePool             PrizePool @relation(fields: [prizePoolId], references: [id], onDelete: Cascade)
 
@@ -221,6 +223,35 @@ model PrizeDistribution {
   @@index([status])
   @@index([txHash])
   @@map("prize_distributions")
+}
+
+model DistributionTransaction {
+  id                    Int      @id @default(autoincrement())
+  hackathonId           String   @map("hackathon_id")
+  prizePoolId           Int      @map("prize_pool_id")
+  txHash                String   @unique @map("tx_hash")
+  status                DistributionStatus @default(PENDING)
+  submittedAt           DateTime @map("submitted_at")
+  confirmedAt           DateTime? @map("confirmed_at")
+  failedAt              DateTime? @map("failed_at")
+  retryCount            Int      @default(0) @map("retry_count")
+  gasPrice              String?  @map("gas_price")
+  gasLimit              String?  @map("gas_limit")
+  gasUsed               String?  @map("gas_used")
+  blockNumber           String?  @map("block_number")
+  error                 String?
+  recipients            Json     // Array of recipient addresses
+  amounts               Json     // Array of amounts
+  totalAmount           String   @map("total_amount")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  prizePool             PrizePool @relation(fields: [prizePoolId], references: [id], onDelete: Cascade)
+
+  @@index([hackathonId])
+  @@index([status])
+  @@index([submittedAt])
+  @@map("distribution_transactions")
 }
 
 enum DepositStatus {

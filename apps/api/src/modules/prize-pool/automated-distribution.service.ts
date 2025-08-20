@@ -4,7 +4,7 @@ import { PrismaService } from '../../common/database/prisma.service';
 import { PrizePoolService } from './prize-pool.service';
 import { WinnerDeterminationService } from '../hackathon/winner-determination.service';
 import { AuditService } from '../audit/audit.service';
-import { PrizePoolContractService } from '../web3/prize-pool-contract.service';
+import { TransactionMonitorService } from './transaction-monitor.service';
 import {
   HackathonStatus,
   DistributionStatus,
@@ -49,7 +49,7 @@ export class AutomatedDistributionService {
     private readonly prizePoolService: PrizePoolService,
     private readonly winnerDeterminationService: WinnerDeterminationService,
     private readonly auditService: AuditService,
-    private readonly prizePoolContract: PrizePoolContractService,
+    private readonly transactionMonitor: TransactionMonitorService,
   ) {}
 
   /**
@@ -204,34 +204,30 @@ export class AutomatedDistributionService {
       const validDistributions = distributions.filter(Boolean);
 
       // 3. Execute smart contract distribution
-      const distributionResult = await this.executeSmartContractDistribution(
-        hackathonId,
-        winnerResults,
-      );
+      const recipients = winnerResults.winners.map((w: any) => w.walletAddress);
+      const amounts = winnerResults.prizeDistribution.map((p: any) => p.amount);
+
+      const distributionResult =
+        await this.transactionMonitor.submitDistributionTransaction(
+          hackathonId,
+          recipients,
+          amounts,
+          prizePool.id,
+        );
 
       // 4. Update database records
       if (distributionResult.success && distributionResult.txHash) {
-        // Update prize pool as distributed
-        await this.prisma.prizePool.update({
-          where: { id: prizePool.id },
-          data: {
-            isDistributed: true,
-            distributionTxHash: distributionResult.txHash,
-          },
-        });
-
-        // Update distribution statuses
+        // Update distribution statuses as pending (waiting for confirmation)
         await Promise.all(
           validDistributions.map(async (dist) => {
             if (dist) {
               await this.prisma.prizeDistribution.update({
                 where: { id: dist.id },
                 data: {
-                  status: DistributionStatus.COMPLETED,
+                  status: DistributionStatus.PENDING, // Still pending confirmation
                   ...(distributionResult.txHash && {
                     txHash: distributionResult.txHash,
                   }),
-                  executedAt: new Date(),
                 },
               });
             }
@@ -240,37 +236,49 @@ export class AutomatedDistributionService {
 
         // Update participant prize amounts
         await Promise.all(
-          winnerResults.winners.map(async (winner) => {
-            if (winner.prizeAmount) {
+          winnerResults.winners.map(async (winner: any) => {
+            if (winner.prizeAmount && winner.rank && winner.walletAddress) {
               await this.prisma.participant.updateMany({
                 where: {
                   hackathonId,
                   walletAddress: winner.walletAddress,
                 },
                 data: {
-                  rank: winner.rank,
-                  prizeAmount: winner.prizeAmount,
+                  ...(winner.rank && { rank: winner.rank }),
+                  ...(winner.prizeAmount && {
+                    prizeAmount: winner.prizeAmount,
+                  }),
                 },
               });
             }
           }),
         );
 
-        // Log audit trail
+        // Log audit trail for transaction submission
         await this.auditService.logStatusChange({
           hackathonId,
           action: AuditAction.AUTOMATIC_TRANSITION,
           fromStatus: HackathonStatus.COMPLETED,
           toStatus: HackathonStatus.COMPLETED,
-          reason: `Automated prize distribution completed. Tx: ${distributionResult.txHash}`,
+          reason: `Prize distribution transaction submitted. Tx: ${distributionResult.txHash} (pending confirmation)`,
           triggeredBy: TriggerType.SYSTEM,
+          metadata: {
+            transactionHash: distributionResult.txHash,
+            recipients: recipients.length,
+            totalAmount: amounts.reduce(
+              (sum, amount) => (BigInt(sum) + BigInt(amount)).toString(),
+              '0',
+            ),
+          },
         });
 
-        job.status = 'COMPLETED';
-        this.logger.log(`Distribution completed for hackathon ${hackathonId}`);
+        job.status = 'PROCESSING'; // Transaction submitted but not confirmed
+        this.logger.log(
+          `Distribution transaction submitted for hackathon ${hackathonId}: ${distributionResult.txHash}`,
+        );
       } else {
         throw new Error(
-          distributionResult.error || 'Smart contract distribution failed',
+          distributionResult.error || 'Transaction submission failed',
         );
       }
 
@@ -323,48 +331,6 @@ export class AutomatedDistributionService {
         success: false,
         error: job.lastError,
         winners: [],
-      };
-    }
-  }
-
-  /**
-   * Execute smart contract distribution
-   */
-  private async executeSmartContractDistribution(
-    hackathonId: string,
-    winnerResults: any,
-  ): Promise<{ success: boolean; txHash?: string; error?: string }> {
-    try {
-      this.logger.log(
-        `Executing smart contract distribution for hackathon ${hackathonId}`,
-      );
-
-      // For now, we'll simulate the smart contract call
-      // In a real implementation, this would call the PrizePool contract's distributePrizes function
-
-      // Simulate transaction hash
-      const mockTxHash = `0x${Math.random().toString(16).substring(2)}${Math.random().toString(16).substring(2)}`;
-
-      // TODO: Replace with actual smart contract call
-      // const txHash = await this.prizePoolContract.distributePrizes(
-      //   hackathonId,
-      //   winnerResults.winners.map(w => w.walletAddress),
-      //   winnerResults.prizeDistribution.map(p => p.amount)
-      // );
-
-      this.logger.log(
-        `Smart contract distribution completed. Tx: ${mockTxHash}`,
-      );
-
-      return {
-        success: true,
-        txHash: mockTxHash,
-      };
-    } catch (error) {
-      this.logger.error('Smart contract distribution failed:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : String(error),
       };
     }
   }

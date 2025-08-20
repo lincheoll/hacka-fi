@@ -231,27 +231,62 @@ export class PrizePoolContractService {
     }
   }
 
-  async distributePrizes(hackathonId: bigint): Promise<Hash> {
+  async distributePrizes(
+    hackathonId: string,
+    recipients: string[],
+    amounts: string[],
+    options?: {
+      gasPrice?: string;
+      gasLimit?: string;
+    },
+  ): Promise<{ success: boolean; txHash?: string; error?: string }> {
     const walletClient = this.web3Service.getWalletClient();
 
     try {
-      const hash = await walletClient.writeContract({
+      // Validate inputs
+      if (recipients.length !== amounts.length) {
+        throw new Error(
+          'Recipients and amounts arrays must have the same length',
+        );
+      }
+
+      // Convert amounts to BigInt array
+      const amountsBigInt = amounts.map((amount) => BigInt(amount));
+
+      // Prepare transaction parameters
+      const txParams: any = {
         address: this.prizePoolAddress,
         abi: PRIZE_POOL_ABI,
         functionName: 'distributePrizes',
-        args: [hackathonId],
+        args: [BigInt(hackathonId), recipients as Address[], amountsBigInt],
         chain: this.web3Service.getChain(),
         account: this.web3Service.getWalletAccount(),
-      });
+      };
+
+      // Add gas parameters if provided
+      if (options?.gasPrice) {
+        txParams.gasPrice = BigInt(options.gasPrice);
+      }
+      if (options?.gasLimit) {
+        txParams.gas = BigInt(options.gasLimit);
+      }
+
+      const hash = await walletClient.writeContract(txParams);
 
       this.logger.log(`Prize distribution transaction submitted: ${hash}`);
-      return hash;
+      return {
+        success: true,
+        txHash: hash,
+      };
     } catch (error) {
       this.logger.error(
         `Failed to distribute prizes for hackathon ${hackathonId}`,
         error,
       );
-      throw error;
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
     }
   }
 
@@ -324,6 +359,36 @@ export class PrizePoolContractService {
     } catch (error) {
       this.logger.error(`Failed to estimate gas for distribute prizes`, error);
       throw error;
+    }
+  }
+
+  async estimateDistributionGas(
+    recipients: string[],
+    amounts: string[],
+  ): Promise<bigint> {
+    const publicClient = this.web3Service.getPublicClient();
+    const walletClient = this.web3Service.getWalletClient();
+
+    try {
+      // Use a mock hackathon ID for gas estimation
+      const mockHackathonId = BigInt(1);
+      const amountsBigInt = amounts.map((amount) => BigInt(amount));
+
+      const gas = await publicClient.estimateContractGas({
+        address: this.prizePoolAddress,
+        abi: PRIZE_POOL_ABI,
+        functionName: 'distributePrizes',
+        args: [mockHackathonId, recipients as Address[], amountsBigInt],
+        account: walletClient.account,
+      });
+
+      return gas;
+    } catch (error) {
+      this.logger.error(`Failed to estimate gas for distribution`, error);
+      // Return a reasonable fallback
+      const baseGas = 100000n;
+      const perRecipientGas = 50000n;
+      return baseGas + perRecipientGas * BigInt(recipients.length);
     }
   }
 }

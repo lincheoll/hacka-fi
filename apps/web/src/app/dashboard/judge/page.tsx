@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = "force-dynamic";
 
 import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
@@ -8,7 +9,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Note: This would be better handled with Next.js middleware in a production app
 export default function JudgeDashboardPage() {
-  const { address: walletAddress, isConnected } = useAccount();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -19,9 +19,9 @@ export default function JudgeDashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container px-4 py-8 mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+            <div className="w-1/3 h-8 mb-4 bg-gray-200 rounded"></div>
             <div className="space-y-4">
               <div className="h-32 bg-gray-200 rounded"></div>
               <div className="h-32 bg-gray-200 rounded"></div>
@@ -32,12 +32,18 @@ export default function JudgeDashboardPage() {
     );
   }
 
+  return <JudgePageContent />;
+}
+
+function JudgePageContent() {
+  const { address: walletAddress, isConnected } = useAccount();
+
   if (!isConnected || !walletAddress) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-8">
+        <div className="container px-4 py-8 mx-auto">
+          <h1 className="mb-8 text-3xl font-bold text-gray-900">
             Judge Dashboard
           </h1>
           <Alert>
@@ -53,7 +59,7 @@ export default function JudgeDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container px-4 py-8 mx-auto">
         <JudgeDashboard />
       </div>
     </div>

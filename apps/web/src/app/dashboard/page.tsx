@@ -33,9 +33,9 @@ export default function DashboardPage() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container px-4 py-8 mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+            <div className="w-1/3 h-8 mb-4 bg-gray-200 rounded"></div>
             <div className="space-y-4">
               <div className="h-32 bg-gray-200 rounded"></div>
               <div className="h-32 bg-gray-200 rounded"></div>
@@ -79,8 +79,8 @@ function DashboardContent() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
+        <div className="container px-4 py-8 mx-auto">
+          <h1 className="mb-8 text-3xl font-bold text-gray-900 dark:text-white">
             Dashboard
           </h1>
           <Alert>
@@ -119,9 +119,9 @@ function DashboardContent() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <Header />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container px-4 py-8 mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
             Dashboard
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
@@ -129,7 +129,7 @@ function DashboardContent() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
           {/* Participations Section */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -158,7 +158,7 @@ function DashboardContent() {
             ) : !participations || participations.length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center">
-                  <p className="text-gray-500 mb-4">
+                  <p className="mb-4 text-gray-500">
                     No hackathon participations yet
                   </p>
                   <Button asChild>
@@ -217,7 +217,7 @@ function DashboardContent() {
                               href={participation.submissionUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline max-w-xs truncate"
+                              className="max-w-xs text-blue-600 truncate hover:underline"
                             >
                               {participation.submissionUrl}
                             </a>
@@ -277,7 +277,7 @@ function DashboardContent() {
             ) : !createdHackathons || createdHackathons.length === 0 ? (
               <Card>
                 <CardContent className="p-6 text-center">
-                  <p className="text-gray-500 mb-4">
+                  <p className="mb-4 text-gray-500">
                     No hackathons created yet
                   </p>
                   <Button asChild>
@@ -365,12 +365,12 @@ function DashboardContent() {
 
         {/* Judge Dashboard Access */}
         <div className="mt-8">
-          <Card className="border-2 border-dashed border-blue-200 bg-blue-50">
+          <Card className="border-2 border-blue-200 border-dashed bg-blue-50">
             <CardContent className="p-6 text-center">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">
+              <h3 className="mb-2 text-lg font-semibold text-blue-900">
                 Judge Dashboard
               </h3>
-              <p className="text-blue-700 mb-4">
+              <p className="mb-4 text-blue-700">
                 Access your judge dashboard to manage voting assignments and
                 track progress
               </p>
@@ -382,7 +382,7 @@ function DashboardContent() {
         </div>
 
         {/* Quick Stats */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 mt-12 md:grid-cols-3">
           <Card>
             <CardContent className="p-6 text-center">
               <div className="text-2xl font-bold text-blue-600">
