@@ -7,3 +7,5 @@ export * from './update-status.dto';
 export * from './judge.dto';
 export * from './vote.dto';
 export * from './judge-dashboard.dto';
+export * from './public-api.dto';
+export * from './analytics.dto';

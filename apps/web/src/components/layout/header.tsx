@@ -11,6 +11,8 @@ export function Header() {
 
   const navigationItems = [
     { href: "/hackathons", label: "Hackathons" },
+    { href: "/winners", label: "Winners" },
+    { href: "/hackathons/archive", label: "Archive" },
     { href: "/dashboard", label: "Dashboard" },
     { href: "/profile/me", label: "Profile" },
   ];

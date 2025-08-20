@@ -83,6 +83,25 @@ services:
     profiles:
       - production
 
+  # Nginx reverse proxy (production only)
+  nginx:
+    image: nginx:alpine
+    container_name: hacka-fi-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/ssl:ro  # Mount SSL certificates directory
+    depends_on:
+      - api
+      - web
+    networks:
+      - hacka-fi-network
+    profiles:
+      - production
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
