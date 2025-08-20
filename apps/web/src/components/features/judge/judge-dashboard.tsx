@@ -67,7 +67,7 @@ export function JudgeDashboard() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+        <div className="w-32 h-32 border-b-2 rounded-full animate-spin border-primary"></div>
       </div>
     );
   }
@@ -113,7 +113,7 @@ export function JudgeDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Judge Dashboard</h1>
           <p className="text-muted-foreground">
@@ -126,7 +126,7 @@ export function JudgeDashboard() {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">
@@ -180,7 +180,7 @@ export function JudgeDashboard() {
       <DeadlineNotifications assignments={dashboardData.assignedHackathons} />
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Assigned Hackathons */}
         <div className="lg:col-span-2">
           <AssignedHackathons
