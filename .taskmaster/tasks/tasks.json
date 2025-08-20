@@ -543,7 +543,74 @@
           8
         ],
         "status": "pending",
-        "subtasks": []
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Wallet-based User Profile Creation",
+            "description": "Implement user profile creation system using wallet-based identity management with basic profile structure",
+            "dependencies": [],
+            "details": "Create user profile database schema with wallet address as primary identifier. Implement profile creation API endpoints that automatically generate profiles when users connect their wallets. Build profile data models including username, bio, avatar URL, creation date, and wallet address. Add profile existence checks and automatic profile initialization on first wallet connection. Implement basic profile retrieval functionality by wallet address.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "Profile Editing with Avatar Upload",
+            "description": "Build profile editing functionality allowing users to update display information and upload avatars",
+            "dependencies": [
+              "9.1"
+            ],
+            "details": "Create profile editing interface with forms for updating display name, bio, and avatar. Implement secure file upload system for avatar images with validation, resizing, and optimization. Build profile update API endpoints with proper authentication and validation. Add image storage integration (cloud storage or IPFS) for avatar persistence. Implement profile update confirmation and error handling with user feedback.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Achievement Tracking System",
+            "description": "Implement comprehensive achievement tracking across multiple hackathons with automated badge assignment",
+            "dependencies": [
+              "9.1"
+            ],
+            "details": "Create achievement database schema tracking hackathon participation, wins, rankings, and special accomplishments. Build achievement calculation engine that processes hackathon results and updates user achievements automatically. Implement achievement types including participation badges, winner badges, streak achievements, and milestone rewards. Create achievement assignment logic triggered by hackathon completion events. Add achievement history tracking with timestamps and hackathon references.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Statistics Calculation and Leaderboards",
+            "description": "Build user statistics calculation system and implement leaderboards with various ranking metrics",
+            "dependencies": [
+              "9.3"
+            ],
+            "details": "Implement statistics calculation engine computing participation count, win rate, average ranking, and total earnings. Create leaderboard system with multiple ranking categories (most wins, highest earnings, best win rate, most active). Build leaderboard API endpoints with pagination, filtering, and sorting options. Implement real-time statistics updates triggered by hackathon events. Add leaderboard caching and optimization for performance. Create statistics display components for profile pages.",
+            "status": "done",
+            "testStrategy": ""
+          },
+          {
+            "id": 5,
+            "title": "Badge System with Achievement Tiers",
+            "description": "Create comprehensive badge system with different achievement tiers and visual badge display",
+            "dependencies": [
+              "9.3"
+            ],
+            "details": "Design badge tier system with categories like participant, winner, frequent competitor, and special achievements. Create badge visual assets and metadata including names, descriptions, and rarity levels. Implement badge assignment logic with tier progression and unlock conditions. Build badge display system for profile pages with hover details and achievement dates. Add badge collection interface showing earned and available badges. Implement badge sharing functionality for social features.",
+            "status": "pending",
+            "testStrategy": ""
+          },
+          {
+            "id": 6,
+            "title": "Social Features and Profile Sharing",
+            "description": "Implement social features including profile sharing, achievement showcase, and community interaction",
+            "dependencies": [
+              "9.2",
+              "9.4",
+              "9.5"
+            ],
+            "details": "Create public profile pages with shareable URLs and social media integration. Implement achievement showcase functionality allowing users to highlight their best accomplishments. Build profile sharing system with social media cards and metadata. Add follow/connection features for community building. Implement profile discovery with search and filtering options. Create achievement comparison tools and community leaderboards. Add profile privacy settings and visibility controls.",
+            "status": "pending",
+            "testStrategy": ""
+          }
+        ]
       },
       {
         "id": 10,
@@ -615,7 +682,7 @@
     ],
     "metadata": {
       "created": "2025-08-15T08:54:10.658Z",
-      "updated": "2025-08-20T01:55:45.446Z",
+      "updated": "2025-08-20T07:04:37.324Z",
       "description": "Tasks for master context"
     }
   }
