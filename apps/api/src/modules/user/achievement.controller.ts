@@ -25,7 +25,14 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { AchievementService } from './achievement.service';
 import { AchievementType } from '@prisma/client';
-import { IsEnum, IsOptional, IsString, IsEthereumAddress, IsInt, Min } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsString,
+  IsEthereumAddress,
+  IsInt,
+  Min,
+} from 'class-validator';
 
 export class ManualAwardAchievementDto {
   @IsEthereumAddress()
@@ -87,22 +94,25 @@ export class AchievementController {
   })
   async getUserAchievements(
     @Param('address') address: string,
-    @Query('includeProgress', new DefaultValuePipe(false), ParseBoolPipe) includeProgress: boolean,
+    @Query('includeProgress', new DefaultValuePipe(false), ParseBoolPipe)
+    includeProgress: boolean,
   ) {
     try {
       if (includeProgress) {
-        const achievementProgress = await this.achievementService.getUserAchievementProgress(address);
+        const achievementProgress =
+          await this.achievementService.getUserAchievementProgress(address);
         return {
           success: true,
           data: {
             address,
             achievementProgress,
             total: achievementProgress.length,
-            earned: achievementProgress.filter(a => a.isEarned).length,
+            earned: achievementProgress.filter((a) => a.isEarned).length,
           },
         };
       } else {
-        const achievements = await this.achievementService.getUserAchievements(address);
+        const achievements =
+          await this.achievementService.getUserAchievements(address);
         return {
           success: true,
           data: {
@@ -140,7 +150,8 @@ export class AchievementController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getCurrentUserAchievements(
     @Req() req: any,
-    @Query('includeProgress', new DefaultValuePipe(true), ParseBoolPipe) includeProgress: boolean,
+    @Query('includeProgress', new DefaultValuePipe(true), ParseBoolPipe)
+    includeProgress: boolean,
   ) {
     const userAddress = req.user.walletAddress;
     return this.getUserAchievements(userAddress, includeProgress);
@@ -161,11 +172,12 @@ export class AchievementController {
   })
   async getUserAchievementProgress(@Param('address') address: string) {
     try {
-      const progress = await this.achievementService.getUserAchievementProgress(address);
-      
-      const earned = progress.filter(p => p.isEarned);
-      const available = progress.filter(p => !p.isEarned);
-      const inProgress = available.filter(p => p.progress > 0);
+      const progress =
+        await this.achievementService.getUserAchievementProgress(address);
+
+      const earned = progress.filter((p) => p.isEarned);
+      const available = progress.filter((p) => !p.isEarned);
+      const inProgress = available.filter((p) => p.progress > 0);
 
       return {
         success: true,
@@ -176,12 +188,18 @@ export class AchievementController {
             earnedCount: earned.length,
             availableCount: available.length,
             inProgressCount: inProgress.length,
-            completionRate: progress.length > 0 ? Math.round((earned.length / progress.length) * 100) : 0,
+            completionRate:
+              progress.length > 0
+                ? Math.round((earned.length / progress.length) * 100)
+                : 0,
           },
           achievements: {
-            earned: earned.sort((a, b) => (b.earnedAt?.getTime() || 0) - (a.earnedAt?.getTime() || 0)),
+            earned: earned.sort(
+              (a, b) =>
+                (b.earnedAt?.getTime() || 0) - (a.earnedAt?.getTime() || 0),
+            ),
             inProgress: inProgress.sort((a, b) => b.progress - a.progress),
-            available: available.filter(p => p.progress === 0),
+            available: available.filter((p) => p.progress === 0),
           },
         },
       };
@@ -207,14 +225,18 @@ export class AchievementController {
     description: 'Achievement check triggered successfully',
   })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
-  async triggerAchievementCheck(@Body() dto: TriggerAchievementCheckDto, @Req() req: any) {
+  async triggerAchievementCheck(
+    @Body() dto: TriggerAchievementCheckDto,
+    @Req() req: any,
+  ) {
     try {
       const adminAddress = req.user.walletAddress;
-      
-      const newAchievements = await this.achievementService.checkAndAwardAchievements(
-        dto.userAddress,
-        dto.hackathonId,
-      );
+
+      const newAchievements =
+        await this.achievementService.checkAndAwardAchievements(
+          dto.userAddress,
+          dto.hackathonId,
+        );
 
       return {
         success: true,
@@ -250,10 +272,13 @@ export class AchievementController {
     description: 'Achievement awarded successfully',
   })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
-  async manuallyAwardAchievement(@Body() dto: ManualAwardAchievementDto, @Req() req: any) {
+  async manuallyAwardAchievement(
+    @Body() dto: ManualAwardAchievementDto,
+    @Req() req: any,
+  ) {
     try {
       const adminAddress = req.user.walletAddress;
-      
+
       const achievement = await this.achievementService.awardAchievement(
         dto.userAddress,
         dto.achievementType,
@@ -298,15 +323,20 @@ export class AchievementController {
   })
   async getGlobalAchievementStats() {
     try {
-      const stats = await this.achievementService['prisma'].userAchievement.groupBy({
+      const stats = await this.achievementService[
+        'prisma'
+      ].userAchievement.groupBy({
         by: ['achievementType'],
         _count: {
           id: true,
         },
       });
 
-      const totalUsers = await this.achievementService['prisma'].userProfile.count();
-      const usersWithAchievements = await this.achievementService['prisma'].userProfile.count({
+      const totalUsers =
+        await this.achievementService['prisma'].userProfile.count();
+      const usersWithAchievements = await this.achievementService[
+        'prisma'
+      ].userProfile.count({
         where: {
           achievements: {
             some: {},
@@ -314,21 +344,28 @@ export class AchievementController {
         },
       });
 
-      const achievementStats = stats.reduce((acc, stat) => {
-        acc[stat.achievementType] = stat._count.id;
-        return acc;
-      }, {} as Record<string, number>);
+      const achievementStats = stats.reduce(
+        (acc, stat) => {
+          acc[stat.achievementType] = stat._count.id;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
 
       return {
         success: true,
         data: {
           totalUsers,
           usersWithAchievements,
-          achievementParticipationRate: totalUsers > 0 
-            ? Math.round((usersWithAchievements / totalUsers) * 100) 
-            : 0,
+          achievementParticipationRate:
+            totalUsers > 0
+              ? Math.round((usersWithAchievements / totalUsers) * 100)
+              : 0,
           achievementsByType: achievementStats,
-          totalAchievementsEarned: stats.reduce((sum, stat) => sum + stat._count.id, 0),
+          totalAchievementsEarned: stats.reduce(
+            (sum, stat) => sum + stat._count.id,
+            0,
+          ),
         },
       };
     } catch (error) {
@@ -365,7 +402,7 @@ export class AchievementController {
   ) {
     try {
       const achievementType = type.toUpperCase() as AchievementType;
-      
+
       // Validate achievement type
       if (!Object.values(AchievementType).includes(achievementType)) {
         return {
@@ -374,7 +411,9 @@ export class AchievementController {
         };
       }
 
-      const leaderboard = await this.achievementService['prisma'].userAchievement.groupBy({
+      const leaderboard = await this.achievementService[
+        'prisma'
+      ].userAchievement.groupBy({
         by: ['userAddress'],
         where: {
           achievementType,
@@ -391,8 +430,10 @@ export class AchievementController {
       });
 
       // Get user profiles for the leaderboard
-      const userAddresses = leaderboard.map(entry => entry.userAddress);
-      const profiles = await this.achievementService['prisma'].userProfile.findMany({
+      const userAddresses = leaderboard.map((entry) => entry.userAddress);
+      const profiles = await this.achievementService[
+        'prisma'
+      ].userProfile.findMany({
         where: {
           walletAddress: { in: userAddresses },
         },
@@ -403,7 +444,7 @@ export class AchievementController {
         },
       });
 
-      const profileMap = new Map(profiles.map(p => [p.walletAddress, p]));
+      const profileMap = new Map(profiles.map((p) => [p.walletAddress, p]));
 
       const leaderboardWithProfiles = leaderboard.map((entry, index) => {
         const profile = profileMap.get(entry.userAddress);

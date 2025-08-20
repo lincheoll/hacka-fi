@@ -22,7 +22,8 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
-import { LeaderboardService, LeaderboardCategory } from './leaderboard.service';
+import { LeaderboardService } from './leaderboard.service';
+import type { LeaderboardCategory } from './leaderboard.service';
 
 @ApiTags('Leaderboards')
 @Controller('leaderboard')
@@ -75,18 +76,23 @@ export class LeaderboardController {
     description: 'Invalid category or parameters',
   })
   async getLeaderboard(
-    @Param('category', new ParseEnumPipe({
-      'total-earnings': 'total-earnings',
-      'total-wins': 'total-wins',
-      'win-rate': 'win-rate',
-      'total-participations': 'total-participations',
-      'average-rank': 'average-rank',
-      'created-hackathons': 'created-hackathons',
-      'achievements-count': 'achievements-count',
-    })) category: LeaderboardCategory,
+    @Param(
+      'category',
+      new ParseEnumPipe({
+        'total-earnings': 'total-earnings',
+        'total-wins': 'total-wins',
+        'win-rate': 'win-rate',
+        'total-participations': 'total-participations',
+        'average-rank': 'average-rank',
+        'created-hackathons': 'created-hackathons',
+        'achievements-count': 'achievements-count',
+      }),
+    )
+    category: LeaderboardCategory,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
     @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset: number,
-    @Query('period', new DefaultValuePipe('all-time')) period: 'all-time' | 'monthly' | 'weekly',
+    @Query('period', new DefaultValuePipe('all-time'))
+    period: 'all-time' | 'monthly' | 'weekly',
   ) {
     try {
       // Validate and cap limits
@@ -320,7 +326,7 @@ export class LeaderboardController {
   async refreshLeaderboardCache(@Req() req: any) {
     try {
       const adminAddress = req.user.walletAddress;
-      
+
       await this.leaderboardService.refreshAllCaches();
 
       return {
@@ -376,41 +382,51 @@ export class LeaderboardController {
             winner: this.compareValues(
               rankings1.rankings.totalEarnings.value,
               rankings2.rankings.totalEarnings.value,
-              'higher'
+              'higher',
             ),
-            difference: BigInt(rankings1.rankings.totalEarnings.value) - BigInt(rankings2.rankings.totalEarnings.value),
+            difference:
+              BigInt(rankings1.rankings.totalEarnings.value) -
+              BigInt(rankings2.rankings.totalEarnings.value),
           },
           totalWins: {
             winner: this.compareValues(
               rankings1.rankings.totalWins.value,
               rankings2.rankings.totalWins.value,
-              'higher'
+              'higher',
             ),
-            difference: rankings1.rankings.totalWins.value - rankings2.rankings.totalWins.value,
+            difference:
+              rankings1.rankings.totalWins.value -
+              rankings2.rankings.totalWins.value,
           },
           winRate: {
             winner: this.compareValues(
               rankings1.rankings.winRate.value,
               rankings2.rankings.winRate.value,
-              'higher'
+              'higher',
             ),
-            difference: rankings1.rankings.winRate.value - rankings2.rankings.winRate.value,
+            difference:
+              rankings1.rankings.winRate.value -
+              rankings2.rankings.winRate.value,
           },
           totalParticipations: {
             winner: this.compareValues(
               rankings1.rankings.totalParticipations.value,
               rankings2.rankings.totalParticipations.value,
-              'higher'
+              'higher',
             ),
-            difference: rankings1.rankings.totalParticipations.value - rankings2.rankings.totalParticipations.value,
+            difference:
+              rankings1.rankings.totalParticipations.value -
+              rankings2.rankings.totalParticipations.value,
           },
           averageRank: {
             winner: this.compareValues(
               rankings1.rankings.averageRank.value,
               rankings2.rankings.averageRank.value,
-              'lower' // Lower average rank is better
+              'lower', // Lower average rank is better
             ),
-            difference: rankings1.rankings.averageRank.value - rankings2.rankings.averageRank.value,
+            difference:
+              rankings1.rankings.averageRank.value -
+              rankings2.rankings.averageRank.value,
           },
         },
       };
@@ -428,9 +444,15 @@ export class LeaderboardController {
     }
   }
 
-  private compareValues(value1: any, value2: any, betterWhen: 'higher' | 'lower'): 'user1' | 'user2' | 'tie' {
-    const val1 = typeof value1 === 'string' ? parseFloat(value1) : Number(value1);
-    const val2 = typeof value2 === 'string' ? parseFloat(value2) : Number(value2);
+  private compareValues(
+    value1: any,
+    value2: any,
+    betterWhen: 'higher' | 'lower',
+  ): 'user1' | 'user2' | 'tie' {
+    const val1 =
+      typeof value1 === 'string' ? parseFloat(value1) : Number(value1);
+    const val2 =
+      typeof value2 === 'string' ? parseFloat(value2) : Number(value2);
 
     if (val1 === val2) return 'tie';
 

@@ -8,8 +8,17 @@ import { LeaderboardController } from './leaderboard.controller';
 import { PrismaService } from '../../common/database/prisma.service';
 
 @Module({
-  providers: [UserProfileService, AchievementService, LeaderboardService, PrismaService],
-  controllers: [UserProfileController, AchievementController, LeaderboardController],
+  providers: [
+    UserProfileService,
+    AchievementService,
+    LeaderboardService,
+    PrismaService,
+  ],
+  controllers: [
+    UserProfileController,
+    AchievementController,
+    LeaderboardController,
+  ],
   exports: [UserProfileService, AchievementService, LeaderboardService],
 })
 export class UserModule {}

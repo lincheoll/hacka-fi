@@ -25,7 +25,13 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserProfileService } from './user-profile.service';
-import { IsOptional, IsString, MaxLength, IsEthereumAddress, MinLength } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  MaxLength,
+  IsEthereumAddress,
+  MinLength,
+} from 'class-validator';
 
 export class CreateUserProfileDto {
   @IsEthereumAddress()
@@ -92,7 +98,7 @@ export class UserProfileController {
   @ApiResponse({ status: 404, description: 'User profile not found' })
   async getUserProfile(@Param('address') address: string) {
     const profile = await this.userProfileService.getProfile(address);
-    
+
     if (!profile) {
       return {
         success: false,
@@ -122,8 +128,9 @@ export class UserProfileController {
   })
   @ApiResponse({ status: 404, description: 'User profile not found' })
   async getUserProfileWithStats(@Param('address') address: string) {
-    const profileWithStats = await this.userProfileService.getProfileWithStats(address);
-    
+    const profileWithStats =
+      await this.userProfileService.getProfileWithStats(address);
+
     if (!profileWithStats) {
       return {
         success: false,
@@ -171,7 +178,7 @@ export class UserProfileController {
     const result = await this.userProfileService.getParticipationHistory(
       address,
       Math.min(limit, 50), // Cap at 50 records
-      Math.max(offset, 0),  // Ensure non-negative
+      Math.max(offset, 0), // Ensure non-negative
     );
 
     return {
@@ -217,7 +224,8 @@ export class UserProfileController {
     }
 
     // Check if profile already exists
-    const existingProfile = await this.userProfileService.getProfile(targetAddress);
+    const existingProfile =
+      await this.userProfileService.getProfile(targetAddress);
     if (existingProfile) {
       return {
         success: false,
@@ -257,7 +265,7 @@ export class UserProfileController {
     @Req() req: any,
   ) {
     const userWalletAddress = req.user.walletAddress;
-    
+
     const updatedProfile = await this.userProfileService.updateProfile(
       userWalletAddress,
       updateDto,
@@ -283,14 +291,16 @@ export class UserProfileController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getCurrentUserProfile(@Req() req: any) {
     const userWalletAddress = req.user.walletAddress;
-    
+
     // Try to get profile with stats, create if doesn't exist
-    let profileWithStats = await this.userProfileService.getProfileWithStats(userWalletAddress);
-    
+    let profileWithStats =
+      await this.userProfileService.getProfileWithStats(userWalletAddress);
+
     if (!profileWithStats) {
       // Auto-create profile for authenticated user
       await this.userProfileService.getOrCreateProfile(userWalletAddress);
-      profileWithStats = await this.userProfileService.getProfileWithStats(userWalletAddress);
+      profileWithStats =
+        await this.userProfileService.getProfileWithStats(userWalletAddress);
     }
 
     return {
@@ -309,8 +319,12 @@ export class UserProfileController {
     status: 200,
     description: 'Username availability checked',
   })
-  async checkUsernameAvailability(@Body(ValidationPipe) checkDto: CheckUsernameDto) {
-    const isAvailable = await this.userProfileService.isUsernameAvailable(checkDto.username);
+  async checkUsernameAvailability(
+    @Body(ValidationPipe) checkDto: CheckUsernameDto,
+  ) {
+    const isAvailable = await this.userProfileService.isUsernameAvailable(
+      checkDto.username,
+    );
 
     return {
       success: true,
@@ -366,7 +380,7 @@ export class UserProfileController {
     const result = await this.userProfileService.searchUsers(
       query.trim(),
       Math.min(limit, 50), // Cap at 50 records
-      Math.max(offset, 0),  // Ensure non-negative
+      Math.max(offset, 0), // Ensure non-negative
     );
 
     return {
@@ -384,7 +398,8 @@ export class UserProfileController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Initialize user profile for authenticated user (auto-create if not exists)',
+    summary:
+      'Initialize user profile for authenticated user (auto-create if not exists)',
   })
   @ApiResponse({
     status: 200,
@@ -393,14 +408,16 @@ export class UserProfileController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async initializeUserProfile(@Req() req: any) {
     const userWalletAddress = req.user.walletAddress;
-    
-    const profile = await this.userProfileService.getOrCreateProfile(userWalletAddress);
+
+    const profile =
+      await this.userProfileService.getOrCreateProfile(userWalletAddress);
 
     return {
       success: true,
-      message: profile.createdAt === profile.updatedAt ? 
-        'User profile created successfully' : 
-        'User profile already exists',
+      message:
+        profile.createdAt === profile.updatedAt
+          ? 'User profile created successfully'
+          : 'User profile already exists',
       data: profile,
     };
   }

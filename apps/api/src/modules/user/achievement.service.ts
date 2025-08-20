@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../common/database/prisma.service';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
-import { UserAchievement, AchievementType, HackathonStatus } from '@prisma/client';
+import {
+  UserAchievement,
+  AchievementType,
+  HackathonStatus,
+} from '@prisma/client';
 
 export interface AchievementDefinition {
   type: AchievementType;
@@ -25,7 +29,7 @@ export interface AchievementProgressInfo {
   icon: string;
   rarity: string;
   isEarned: boolean;
-  earnedAt?: Date;
+  earnedAt: Date | undefined;
   progress: number; // 0-100
   requirement: string;
   currentValue: number;
@@ -35,7 +39,7 @@ export interface AchievementProgressInfo {
 @Injectable()
 export class AchievementService {
   private readonly logger = new Logger(AchievementService.name);
-  
+
   // Achievement definitions - these could be moved to a config file or database
   private readonly achievementDefinitions: AchievementDefinition[] = [
     // Participation Achievements
@@ -119,7 +123,8 @@ export class AchievementService {
       description: 'Achieve 50% win rate with at least 4 participations',
       icon: '📈',
       rarity: 'rare',
-      condition: (stats) => stats.winRate >= 50 && stats.totalParticipations >= 4,
+      condition: (stats) =>
+        stats.winRate >= 50 && stats.totalParticipations >= 4,
     },
     {
       type: AchievementType.WINNER,
@@ -127,7 +132,8 @@ export class AchievementService {
       description: 'Achieve 70% win rate with at least 5 participations',
       icon: '⭐',
       rarity: 'epic',
-      condition: (stats) => stats.winRate >= 70 && stats.totalParticipations >= 5,
+      condition: (stats) =>
+        stats.winRate >= 70 && stats.totalParticipations >= 5,
     },
 
     // Judge Achievements
@@ -172,10 +178,14 @@ export class AchievementService {
     {
       type: AchievementType.PARTICIPANT,
       title: 'Consistent Performer',
-      description: 'Maintain average rank of 3 or better with 5+ participations',
+      description:
+        'Maintain average rank of 3 or better with 5+ participations',
       icon: '🎯',
       rarity: 'rare',
-      condition: (stats) => stats.averageRank > 0 && stats.averageRank <= 3 && stats.totalParticipations >= 5,
+      condition: (stats) =>
+        stats.averageRank > 0 &&
+        stats.averageRank <= 3 &&
+        stats.totalParticipations >= 5,
     },
   ];
 
@@ -187,21 +197,26 @@ export class AchievementService {
   /**
    * Get all achievements for a user
    */
-  async getUserAchievements(userAddress: string): Promise<UserAchievementWithDetails[]> {
+  async getUserAchievements(
+    userAddress: string,
+  ): Promise<UserAchievementWithDetails[]> {
     try {
       const normalizedAddress = userAddress.toLowerCase();
-      
+
       const achievements = await this.prisma.userAchievement.findMany({
         where: { userAddress: normalizedAddress },
         orderBy: { earnedAt: 'desc' },
       });
 
-      return achievements.map(achievement => ({
+      return achievements.map((achievement) => ({
         ...achievement,
         definition: this.getAchievementDefinition(achievement.achievementType),
       }));
     } catch (error) {
-      this.logger.error(`Failed to get user achievements for ${userAddress}:`, error);
+      this.logger.error(
+        `Failed to get user achievements for ${userAddress}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -209,7 +224,9 @@ export class AchievementService {
   /**
    * Get achievement progress for a user (earned + available achievements)
    */
-  async getUserAchievementProgress(userAddress: string): Promise<AchievementProgressInfo[]> {
+  async getUserAchievementProgress(
+    userAddress: string,
+  ): Promise<AchievementProgressInfo[]> {
     try {
       const normalizedAddress = userAddress.toLowerCase();
 
@@ -238,7 +255,7 @@ export class AchievementService {
       });
 
       const earnedAchievementMap = new Map(
-        earnedAchievements.map(a => [`${a.achievementType}`, a])
+        earnedAchievements.map((a) => [`${a.achievementType}`, a]),
       );
 
       // Generate progress info for all achievements
@@ -246,7 +263,7 @@ export class AchievementService {
 
       // Group definitions by type to avoid duplicates
       const definitionsByType = new Map<string, AchievementDefinition>();
-      
+
       for (const def of this.achievementDefinitions) {
         const key = `${def.type}-${def.title}`;
         definitionsByType.set(key, def);
@@ -263,7 +280,7 @@ export class AchievementService {
           icon: definition.icon,
           rarity: definition.rarity,
           isEarned: !!earned,
-          earnedAt: earned?.earnedAt,
+          earnedAt: earned?.earnedAt || undefined,
           progress: progress.percentage,
           requirement: progress.requirement,
           currentValue: progress.currentValue,
@@ -278,7 +295,10 @@ export class AchievementService {
         return b.progress - a.progress;
       });
     } catch (error) {
-      this.logger.error(`Failed to get achievement progress for ${userAddress}:`, error);
+      this.logger.error(
+        `Failed to get achievement progress for ${userAddress}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -286,7 +306,10 @@ export class AchievementService {
   /**
    * Check and award achievements for a user based on their current stats
    */
-  async checkAndAwardAchievements(userAddress: string, hackathonId?: string): Promise<UserAchievement[]> {
+  async checkAndAwardAchievements(
+    userAddress: string,
+    hackathonId?: string,
+  ): Promise<UserAchievement[]> {
     try {
       const normalizedAddress = userAddress.toLowerCase();
 
@@ -311,7 +334,9 @@ export class AchievementService {
 
       const stats = this.calculateUserStatsForAchievements(userProfile);
       const existingAchievements = new Set(
-        userProfile.achievements.map(a => `${a.achievementType}-${a.hackathonId || 'global'}`)
+        userProfile.achievements.map(
+          (a) => `${a.achievementType}-${a.hackathonId || 'global'}`,
+        ),
       );
 
       const newAchievements: UserAchievement[] = [];
@@ -319,7 +344,7 @@ export class AchievementService {
       // Check each achievement definition
       for (const definition of this.achievementDefinitions) {
         const achievementKey = `${definition.type}-${hackathonId || 'global'}`;
-        
+
         // Skip if already earned
         if (existingAchievements.has(achievementKey)) {
           continue;
@@ -332,11 +357,11 @@ export class AchievementService {
             definition.type,
             hackathonId,
           );
-          
+
           if (achievement) {
             newAchievements.push(achievement);
             this.logger.log(
-              `Achievement "${definition.title}" awarded to ${userAddress}${hackathonId ? ` for hackathon ${hackathonId}` : ''}`
+              `Achievement "${definition.title}" awarded to ${userAddress}${hackathonId ? ` for hackathon ${hackathonId}` : ''}`,
             );
           }
         }
@@ -353,7 +378,10 @@ export class AchievementService {
 
       return newAchievements;
     } catch (error) {
-      this.logger.error(`Failed to check achievements for ${userAddress}:`, error);
+      this.logger.error(
+        `Failed to check achievements for ${userAddress}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -381,7 +409,9 @@ export class AchievementService {
       });
 
       if (existing) {
-        this.logger.debug(`Achievement ${achievementType} already exists for ${userAddress}`);
+        this.logger.debug(
+          `Achievement ${achievementType} already exists for ${userAddress}`,
+        );
         return existing;
       }
 
@@ -389,15 +419,18 @@ export class AchievementService {
         data: {
           userAddress: normalizedAddress,
           achievementType,
-          hackathonId,
-          rank,
-          prizeAmount,
+          hackathonId: hackathonId ?? null,
+          rank: rank ?? null,
+          prizeAmount: prizeAmount ?? null,
         },
       });
 
       return achievement;
     } catch (error) {
-      this.logger.error(`Failed to award achievement ${achievementType} to ${userAddress}:`, error);
+      this.logger.error(
+        `Failed to award achievement ${achievementType} to ${userAddress}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -406,8 +439,13 @@ export class AchievementService {
    * Handle hackathon completion events to award achievements
    */
   @OnEvent('hackathon.completed')
-  async handleHackathonCompleted(event: { hackathonId: string; results: any[] }) {
-    this.logger.log(`Processing achievements for completed hackathon: ${event.hackathonId}`);
+  async handleHackathonCompleted(event: {
+    hackathonId: string;
+    results: any[];
+  }) {
+    this.logger.log(
+      `Processing achievements for completed hackathon: ${event.hackathonId}`,
+    );
 
     try {
       // Award participation achievements to all participants
@@ -431,12 +469,15 @@ export class AchievementService {
             AchievementType.WINNER,
             event.hackathonId,
             participant.rank,
-            participant.prizeAmount,
+            participant.prizeAmount || undefined,
           );
         }
 
         // Check for other achievements based on updated stats
-        await this.checkAndAwardAchievements(participant.walletAddress, event.hackathonId);
+        await this.checkAndAwardAchievements(
+          participant.walletAddress,
+          event.hackathonId,
+        );
       }
 
       // Award creator achievement
@@ -452,26 +493,35 @@ export class AchievementService {
         );
       }
 
-      this.logger.log(`Achievement processing completed for hackathon: ${event.hackathonId}`);
+      this.logger.log(
+        `Achievement processing completed for hackathon: ${event.hackathonId}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to process achievements for hackathon ${event.hackathonId}:`, error);
+      this.logger.error(
+        `Failed to process achievements for hackathon ${event.hackathonId}:`,
+        error,
+      );
     }
   }
 
   /**
    * Get achievement definition by type
    */
-  private getAchievementDefinition(type: AchievementType): AchievementDefinition {
-    const definition = this.achievementDefinitions.find(d => d.type === type);
-    
-    return definition || {
-      type,
-      title: 'Unknown Achievement',
-      description: 'Achievement definition not found',
-      icon: '❓',
-      rarity: 'common',
-      condition: () => false,
-    };
+  private getAchievementDefinition(
+    type: AchievementType,
+  ): AchievementDefinition {
+    const definition = this.achievementDefinitions.find((d) => d.type === type);
+
+    return (
+      definition || {
+        type,
+        title: 'Unknown Achievement',
+        description: 'Achievement definition not found',
+        icon: '❓',
+        rarity: 'common',
+        condition: () => false,
+      }
+    );
   }
 
   /**
@@ -480,15 +530,22 @@ export class AchievementService {
   private calculateUserStatsForAchievements(userProfile: any) {
     const totalParticipations = userProfile.participations.length;
     const totalWins = userProfile.participations.filter(
-      (p: any) => p.rank !== null && p.rank <= 3
+      (p: any) => p.rank !== null && p.rank <= 3,
     ).length;
-    
-    const winRate = totalParticipations > 0 ? (totalWins / totalParticipations) * 100 : 0;
-    
-    const rankedParticipations = userProfile.participations.filter((p: any) => p.rank !== null);
-    const averageRank = rankedParticipations.length > 0
-      ? rankedParticipations.reduce((sum: number, p: any) => sum + p.rank, 0) / rankedParticipations.length
-      : 0;
+
+    const winRate =
+      totalParticipations > 0 ? (totalWins / totalParticipations) * 100 : 0;
+
+    const rankedParticipations = userProfile.participations.filter(
+      (p: any) => p.rank !== null,
+    );
+    const averageRank =
+      rankedParticipations.length > 0
+        ? rankedParticipations.reduce(
+            (sum: number, p: any) => sum + p.rank,
+            0,
+          ) / rankedParticipations.length
+        : 0;
 
     return {
       totalParticipations,
@@ -504,7 +561,10 @@ export class AchievementService {
   /**
    * Calculate achievement progress
    */
-  private calculateAchievementProgress(definition: AchievementDefinition, stats: any) {
+  private calculateAchievementProgress(
+    definition: AchievementDefinition,
+    stats: any,
+  ) {
     let currentValue = 0;
     let targetValue = 1;
     let requirement = definition.description;
@@ -532,7 +592,10 @@ export class AchievementService {
       targetValue = 1;
     }
 
-    const percentage = Math.min(100, Math.round((currentValue / targetValue) * 100));
+    const percentage = Math.min(
+      100,
+      Math.round((currentValue / targetValue) * 100),
+    );
 
     return {
       currentValue,

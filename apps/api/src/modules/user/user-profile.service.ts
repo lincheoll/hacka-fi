@@ -1,12 +1,17 @@
-import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../../common/database/prisma.service';
 import { UserProfile, Prisma } from '@prisma/client';
 
 export interface UserProfileWithStats {
   walletAddress: string;
-  username?: string;
-  bio?: string;
-  avatarUrl?: string;
+  username: string | undefined;
+  bio: string | undefined;
+  avatarUrl: string | undefined;
   createdAt: Date;
   updatedAt: Date;
   stats: {
@@ -25,9 +30,9 @@ export interface UserParticipationHistory {
   hackathonId: string;
   hackathonTitle: string;
   hackathonStatus: string;
-  submissionUrl?: string;
-  rank?: number;
-  prizeAmount?: string;
+  submissionUrl: string | undefined;
+  rank: number | undefined;
+  prizeAmount: string | undefined;
   participatedAt: Date;
   isWinner: boolean;
 }
@@ -70,16 +75,19 @@ export class UserProfileService {
       const profile = await this.prisma.userProfile.create({
         data: {
           walletAddress: data.walletAddress.toLowerCase(),
-          username: data.username,
-          bio: data.bio,
-          avatarUrl: data.avatarUrl,
+          username: data.username ?? null,
+          bio: data.bio ?? null,
+          avatarUrl: data.avatarUrl ?? null,
         },
       });
 
       this.logger.log(`User profile created for ${data.walletAddress}`);
       return profile;
     } catch (error) {
-      this.logger.error(`Failed to create user profile for ${data.walletAddress}:`, error);
+      this.logger.error(
+        `Failed to create user profile for ${data.walletAddress}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -95,7 +103,10 @@ export class UserProfileService {
 
       return profile;
     } catch (error) {
-      this.logger.error(`Failed to get user profile for ${walletAddress}:`, error);
+      this.logger.error(
+        `Failed to get user profile for ${walletAddress}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -103,10 +114,12 @@ export class UserProfileService {
   /**
    * Get user profile with comprehensive statistics
    */
-  async getProfileWithStats(walletAddress: string): Promise<UserProfileWithStats | null> {
+  async getProfileWithStats(
+    walletAddress: string,
+  ): Promise<UserProfileWithStats | null> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       const profile = await this.prisma.userProfile.findUnique({
         where: { walletAddress: normalizedAddress },
         include: {
@@ -131,15 +144,18 @@ export class UserProfileService {
 
       return {
         walletAddress: profile.walletAddress,
-        username: profile.username,
-        bio: profile.bio,
-        avatarUrl: profile.avatarUrl,
+        username: profile.username || undefined,
+        bio: profile.bio || undefined,
+        avatarUrl: profile.avatarUrl || undefined,
         createdAt: profile.createdAt,
         updatedAt: profile.updatedAt,
         stats,
       };
     } catch (error) {
-      this.logger.error(`Failed to get user profile with stats for ${walletAddress}:`, error);
+      this.logger.error(
+        `Failed to get user profile with stats for ${walletAddress}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -147,7 +163,10 @@ export class UserProfileService {
   /**
    * Update user profile
    */
-  async updateProfile(walletAddress: string, data: UpdateUserProfileDto): Promise<UserProfile> {
+  async updateProfile(
+    walletAddress: string,
+    data: UpdateUserProfileDto,
+  ): Promise<UserProfile> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
 
@@ -183,7 +202,10 @@ export class UserProfileService {
       this.logger.log(`User profile updated for ${walletAddress}`);
       return updatedProfile;
     } catch (error) {
-      this.logger.error(`Failed to update user profile for ${walletAddress}:`, error);
+      this.logger.error(
+        `Failed to update user profile for ${walletAddress}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -217,16 +239,18 @@ export class UserProfileService {
         where: { walletAddress: normalizedAddress },
       });
 
-      const history: UserParticipationHistory[] = participations.map((participation) => ({
-        hackathonId: participation.hackathonId,
-        hackathonTitle: participation.hackathon.title,
-        hackathonStatus: participation.hackathon.status,
-        submissionUrl: participation.submissionUrl,
-        rank: participation.rank,
-        prizeAmount: participation.prizeAmount,
-        participatedAt: participation.createdAt,
-        isWinner: participation.rank !== null && participation.rank <= 3,
-      }));
+      const history: UserParticipationHistory[] = participations.map(
+        (participation) => ({
+          hackathonId: participation.hackathonId,
+          hackathonTitle: participation.hackathon.title,
+          hackathonStatus: participation.hackathon.status,
+          submissionUrl: participation.submissionUrl || undefined,
+          rank: participation.rank || undefined,
+          prizeAmount: participation.prizeAmount || undefined,
+          participatedAt: participation.createdAt,
+          isWinner: participation.rank !== null && participation.rank <= 3,
+        }),
+      );
 
       return {
         history,
@@ -234,7 +258,10 @@ export class UserProfileService {
         hasMore: offset + limit < total,
       };
     } catch (error) {
-      this.logger.error(`Failed to get participation history for ${walletAddress}:`, error);
+      this.logger.error(
+        `Failed to get participation history for ${walletAddress}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -245,7 +272,7 @@ export class UserProfileService {
   async getOrCreateProfile(walletAddress: string): Promise<UserProfile> {
     try {
       const normalizedAddress = walletAddress.toLowerCase();
-      
+
       let profile = await this.prisma.userProfile.findUnique({
         where: { walletAddress: normalizedAddress },
       });
@@ -258,7 +285,10 @@ export class UserProfileService {
 
       return profile;
     } catch (error) {
-      this.logger.error(`Failed to get or create user profile for ${walletAddress}:`, error);
+      this.logger.error(
+        `Failed to get or create user profile for ${walletAddress}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -266,7 +296,10 @@ export class UserProfileService {
   /**
    * Check if username is available
    */
-  async isUsernameAvailable(username: string, excludeAddress?: string): Promise<boolean> {
+  async isUsernameAvailable(
+    username: string,
+    excludeAddress?: string,
+  ): Promise<boolean> {
     try {
       const existingUser = await this.prisma.userProfile.findUnique({
         where: { username },
@@ -277,9 +310,14 @@ export class UserProfileService {
       }
 
       // If excludeAddress is provided, allow the username if it belongs to that address
-      return excludeAddress ? existingUser.walletAddress === excludeAddress.toLowerCase() : false;
+      return excludeAddress
+        ? existingUser.walletAddress === excludeAddress.toLowerCase()
+        : false;
     } catch (error) {
-      this.logger.error(`Failed to check username availability for ${username}:`, error);
+      this.logger.error(
+        `Failed to check username availability for ${username}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -304,7 +342,6 @@ export class UserProfileService {
           {
             username: {
               contains: searchQuery,
-              mode: 'insensitive' as const,
             },
           },
           {
@@ -319,10 +356,7 @@ export class UserProfileService {
         where: whereClause,
         take: limit,
         skip: offset,
-        orderBy: [
-          { username: 'asc' },
-          { walletAddress: 'asc' },
-        ],
+        orderBy: [{ username: 'asc' }, { walletAddress: 'asc' }],
       });
 
       const total = await this.prisma.userProfile.count({
@@ -364,13 +398,20 @@ export class UserProfileService {
       .toString();
 
     // Win rate (percentage of participations that resulted in top 3)
-    const winRate = totalParticipations > 0 ? (totalWins / totalParticipations) * 100 : 0;
+    const winRate =
+      totalParticipations > 0 ? (totalWins / totalParticipations) * 100 : 0;
 
     // Calculate average rank (only for completed hackathons where rank is assigned)
-    const rankedParticipations = profile.participations.filter((p: any) => p.rank !== null);
-    const averageRank = rankedParticipations.length > 0
-      ? rankedParticipations.reduce((sum: number, p: any) => sum + p.rank, 0) / rankedParticipations.length
-      : 0;
+    const rankedParticipations = profile.participations.filter(
+      (p: any) => p.rank !== null,
+    );
+    const averageRank =
+      rankedParticipations.length > 0
+        ? rankedParticipations.reduce(
+            (sum: number, p: any) => sum + p.rank,
+            0,
+          ) / rankedParticipations.length
+        : 0;
 
     // Created hackathons
     const createdHackathons = profile.createdHackathons.length;

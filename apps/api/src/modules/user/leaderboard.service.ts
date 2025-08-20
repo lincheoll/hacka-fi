@@ -32,10 +32,10 @@ export interface UserRankingInfo {
   };
 }
 
-export type LeaderboardCategory = 
-  | 'total-earnings' 
-  | 'total-wins' 
-  | 'win-rate' 
+export type LeaderboardCategory =
+  | 'total-earnings'
+  | 'total-wins'
+  | 'win-rate'
   | 'total-participations'
   | 'average-rank'
   | 'created-hackathons'
@@ -44,7 +44,10 @@ export type LeaderboardCategory =
 @Injectable()
 export class LeaderboardService {
   private readonly logger = new Logger(LeaderboardService.name);
-  private leaderboardCache = new Map<string, { data: LeaderboardResponse; expiry: Date }>();
+  private leaderboardCache = new Map<
+    string,
+    { data: LeaderboardResponse; expiry: Date }
+  >();
   private readonly cacheExpiryHours = 1; // Cache for 1 hour
 
   constructor(private readonly prisma: PrismaService) {}
@@ -59,7 +62,7 @@ export class LeaderboardService {
     period: 'all-time' | 'monthly' | 'weekly' = 'all-time',
   ): Promise<LeaderboardResponse> {
     const cacheKey = `${category}-${limit}-${offset}-${period}`;
-    
+
     // Check cache first
     const cached = this.leaderboardCache.get(cacheKey);
     if (cached && cached.expiry > new Date()) {
@@ -70,7 +73,11 @@ export class LeaderboardService {
 
     switch (category) {
       case 'total-earnings':
-        leaderboard = await this.getTotalEarningsLeaderboard(limit, offset, period);
+        leaderboard = await this.getTotalEarningsLeaderboard(
+          limit,
+          offset,
+          period,
+        );
         break;
       case 'total-wins':
         leaderboard = await this.getTotalWinsLeaderboard(limit, offset, period);
@@ -79,16 +86,32 @@ export class LeaderboardService {
         leaderboard = await this.getWinRateLeaderboard(limit, offset, period);
         break;
       case 'total-participations':
-        leaderboard = await this.getTotalParticipationsLeaderboard(limit, offset, period);
+        leaderboard = await this.getTotalParticipationsLeaderboard(
+          limit,
+          offset,
+          period,
+        );
         break;
       case 'average-rank':
-        leaderboard = await this.getAverageRankLeaderboard(limit, offset, period);
+        leaderboard = await this.getAverageRankLeaderboard(
+          limit,
+          offset,
+          period,
+        );
         break;
       case 'created-hackathons':
-        leaderboard = await this.getCreatedHackathonsLeaderboard(limit, offset, period);
+        leaderboard = await this.getCreatedHackathonsLeaderboard(
+          limit,
+          offset,
+          period,
+        );
         break;
       case 'achievements-count':
-        leaderboard = await this.getAchievementsCountLeaderboard(limit, offset, period);
+        leaderboard = await this.getAchievementsCountLeaderboard(
+          limit,
+          offset,
+          period,
+        );
         break;
       default:
         throw new Error(`Unknown leaderboard category: ${category}`);
@@ -128,12 +151,36 @@ export class LeaderboardService {
 
     // Get rankings for each category
     const rankings = await Promise.all([
-      this.getUserRankInCategory('total-earnings', normalizedAddress, userStats.totalEarnings),
-      this.getUserRankInCategory('total-wins', normalizedAddress, userStats.totalWins),
-      this.getUserRankInCategory('win-rate', normalizedAddress, userStats.winRate),
-      this.getUserRankInCategory('total-participations', normalizedAddress, userStats.totalParticipations),
-      this.getUserRankInCategory('average-rank', normalizedAddress, userStats.averageRank),
-      this.getUserRankInCategory('created-hackathons', normalizedAddress, userStats.createdHackathons),
+      this.getUserRankInCategory(
+        'total-earnings',
+        normalizedAddress,
+        userStats.totalEarnings,
+      ),
+      this.getUserRankInCategory(
+        'total-wins',
+        normalizedAddress,
+        userStats.totalWins,
+      ),
+      this.getUserRankInCategory(
+        'win-rate',
+        normalizedAddress,
+        userStats.winRate,
+      ),
+      this.getUserRankInCategory(
+        'total-participations',
+        normalizedAddress,
+        userStats.totalParticipations,
+      ),
+      this.getUserRankInCategory(
+        'average-rank',
+        normalizedAddress,
+        userStats.averageRank,
+      ),
+      this.getUserRankInCategory(
+        'created-hackathons',
+        normalizedAddress,
+        userStats.createdHackathons,
+      ),
     ]);
 
     return {
@@ -300,7 +347,7 @@ export class LeaderboardService {
       username: result.username,
       avatarUrl: result.avatarUrl,
       value: Number(result.winRate),
-      metadata: { 
+      metadata: {
         category: 'winRate',
         totalParticipations: Number(result.totalParticipations),
         totalWins: Number(result.totalWins),
@@ -412,7 +459,7 @@ export class LeaderboardService {
       username: result.username,
       avatarUrl: result.avatarUrl,
       value: Number(result.averageRank),
-      metadata: { 
+      metadata: {
         category: 'averageRank',
         totalRankedParticipations: Number(result.totalRankedParticipations),
       },
@@ -532,10 +579,16 @@ export class LeaderboardService {
     userValue: any,
   ): Promise<{ rank: number; value: any; total: number }> {
     // This is a simplified implementation - in a real app you'd want to optimize these queries
-    const leaderboard = await this.getLeaderboard(category as LeaderboardCategory, 1000, 0);
-    
-    const userEntry = leaderboard.entries.find(entry => entry.userAddress === userAddress);
-    
+    const leaderboard = await this.getLeaderboard(
+      category as LeaderboardCategory,
+      1000,
+      0,
+    );
+
+    const userEntry = leaderboard.entries.find(
+      (entry) => entry.userAddress === userAddress,
+    );
+
     return {
       rank: userEntry?.rank || leaderboard.entries.length + 1,
       value: userValue,
@@ -551,18 +604,28 @@ export class LeaderboardService {
     const totalWins = userProfile.participations.filter(
       (p: any) => p.rank !== null && p.rank <= 3,
     ).length;
-    
+
     const totalEarnings = userProfile.participations
       .filter((p: any) => p.prizeAmount)
-      .reduce((sum: bigint, p: any) => sum + BigInt(p.prizeAmount || '0'), BigInt(0))
+      .reduce(
+        (sum: bigint, p: any) => sum + BigInt(p.prizeAmount || '0'),
+        BigInt(0),
+      )
       .toString();
 
-    const winRate = totalParticipations > 0 ? (totalWins / totalParticipations) * 100 : 0;
-    
-    const rankedParticipations = userProfile.participations.filter((p: any) => p.rank !== null);
-    const averageRank = rankedParticipations.length > 0
-      ? rankedParticipations.reduce((sum: number, p: any) => sum + p.rank, 0) / rankedParticipations.length
-      : 0;
+    const winRate =
+      totalParticipations > 0 ? (totalWins / totalParticipations) * 100 : 0;
+
+    const rankedParticipations = userProfile.participations.filter(
+      (p: any) => p.rank !== null,
+    );
+    const averageRank =
+      rankedParticipations.length > 0
+        ? rankedParticipations.reduce(
+            (sum: number, p: any) => sum + p.rank,
+            0,
+          ) / rankedParticipations.length
+        : 0;
 
     return {
       totalParticipations,
@@ -580,13 +643,17 @@ export class LeaderboardService {
    */
   private getPeriodFilter(period: string): string | null {
     const now = new Date();
-    
+
     switch (period) {
       case 'weekly':
         const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         return `'${weekAgo.toISOString()}'`;
       case 'monthly':
-        const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+        const monthAgo = new Date(
+          now.getFullYear(),
+          now.getMonth() - 1,
+          now.getDate(),
+        );
         return `'${monthAgo.toISOString()}'`;
       case 'all-time':
       default:
@@ -608,10 +675,12 @@ export class LeaderboardService {
       }
     }
 
-    expiredKeys.forEach(key => this.leaderboardCache.delete(key));
+    expiredKeys.forEach((key) => this.leaderboardCache.delete(key));
 
     if (expiredKeys.length > 0) {
-      this.logger.debug(`Cleared ${expiredKeys.length} expired leaderboard cache entries`);
+      this.logger.debug(
+        `Cleared ${expiredKeys.length} expired leaderboard cache entries`,
+      );
     }
   }
 
