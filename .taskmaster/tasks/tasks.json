@@ -666,11 +666,67 @@
             "parentTaskId": 10
           }
         ]
+      },
+      {
+        "id": 11,
+        "title": "Token-Based Prize Pool Support",
+        "description": "Enable creation of prize pools using specific Kaia network ERC20 tokens like USDT instead of only native KAIA.",
+        "details": "Add ERC20 token support to PrizePool contract, update backend and frontend to handle token addresses, and allow users to select tokens when creating hackathon prize pools.",
+        "testStrategy": "Verify pool creation and distribution with multiple tokens, ensure ERC20 balances and allowances are handled correctly, and confirm UI and contract interactions work for tokens like USDT and KAIA.",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "todo",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Extend PrizePool contract for ERC20 tokens",
+            "description": "Modify PrizePool to accept token addresses and manage ERC20 deposits, transfers, and prize distribution.",
+            "dependencies": [],
+            "details": "Use OpenZeppelin SafeERC20 for transfers, store token address in pool, and ensure fallback to native KAIA works when no token is specified.",
+            "status": "todo",
+            "testStrategy": ""
+          },
+          {
+            "id": 2,
+            "title": "API and database updates for token pools",
+            "description": "Update backend endpoints and persistence to store token information and support pool creation with arbitrary tokens.",
+            "dependencies": [
+              "11.1"
+            ],
+            "details": "Add token address fields to relevant models, validate token metadata, and handle allowance approvals in API flows.",
+            "status": "todo",
+            "testStrategy": ""
+          },
+          {
+            "id": 3,
+            "title": "Frontend token selection UI",
+            "description": "Provide user interface to choose ERC20 tokens when creating a pool and manage approvals.",
+            "dependencies": [
+              "11.2"
+            ],
+            "details": "Implement token selector component for Kaia tokens like USDT, display balances, and handle allowance prompts.",
+            "status": "todo",
+            "testStrategy": ""
+          },
+          {
+            "id": 4,
+            "title": "Integration tests for multi-token pools",
+            "description": "Add tests to ensure pools operate correctly with different tokens and distributions.",
+            "dependencies": [
+              "11.3"
+            ],
+            "details": "Write contract and end-to-end tests covering pool creation, prize funding, and distribution using tokens such as USDT.",
+            "status": "todo",
+            "testStrategy": ""
+          }
+        ]
       }
     ],
     "metadata": {
       "created": "2025-08-15T08:54:10.658Z",
-      "updated": "2025-08-20T15:12:34.570Z",
+      "updated": "2025-08-22T04:41:47Z",
       "description": "Tasks for master context"
     }
   }
