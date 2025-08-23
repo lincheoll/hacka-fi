@@ -137,11 +137,6 @@ class ApiClient {
 
 export const apiClient = new ApiClient();
 
-// Helper function for handling API responses
-export function handleApiResponse<T>(response: ApiResponse<T>): T {
-  return response.data;
-}
-
 // Helper function for handling paginated responses
 export function handlePaginatedResponse<T>(
   response: PaginatedResponse<T>,

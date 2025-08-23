@@ -38,7 +38,7 @@ export enum HackathonStatus {
 export interface Participant {
   id: string;
   hackathonId: string;
-  userAddress: string;
+  walletAddress: string;
   submissionUrl?: string;
   registeredAt: string;
 }

@@ -1,4 +1,4 @@
-import { apiClient, handleApiResponse, handlePaginatedResponse } from "./api";
+import { apiClient, handlePaginatedResponse } from "./api";
 import type {
   ApiResponse,
   PaginatedResponse,
@@ -39,16 +39,13 @@ import type { Hackathon, User, Participant } from "@/types/global";
 export async function loginWithWallet(
   data: LoginRequest,
 ): Promise<LoginResponse> {
-  const response = await apiClient.post<ApiResponse<LoginResponse>>(
-    "/auth/login",
-    data,
-  );
-  return handleApiResponse(response);
+  const response = await apiClient.post<LoginResponse>("/auth/login", data);
+  return response;
 }
 
 export async function getAuthProfile(): Promise<User> {
-  const response = await apiClient.get<ApiResponse<User>>("/auth/profile");
-  return handleApiResponse(response);
+  const response = await apiClient.get<User>("/auth/profile");
+  return response;
 }
 
 // Hackathon API Functions
@@ -78,31 +75,23 @@ export async function fetchHackathons(filters?: {
 }
 
 export async function fetchHackathon(id: string): Promise<Hackathon> {
-  const response = await apiClient.get<ApiResponse<Hackathon>>(
-    `/hackathons/${id}`,
-  );
-  return handleApiResponse(response);
+  const response = await apiClient.get<Hackathon>(`/hackathons/${id}`);
+  return response;
 }
 
 export async function createHackathon(
   data: CreateHackathonRequest,
 ): Promise<Hackathon> {
-  const response = await apiClient.post<ApiResponse<Hackathon>>(
-    "/hackathons",
-    data,
-  );
-  return handleApiResponse(response);
+  const response = await apiClient.post<Hackathon>("/hackathons", data);
+  return response;
 }
 
 export async function updateHackathon(
   id: string,
   data: UpdateHackathonRequest,
 ): Promise<Hackathon> {
-  const response = await apiClient.put<ApiResponse<Hackathon>>(
-    `/hackathons/${id}`,
-    data,
-  );
-  return handleApiResponse(response);
+  const response = await apiClient.put<Hackathon>(`/hackathons/${id}`, data);
+  return response;
 }
 
 // Participant API Functions
@@ -132,10 +121,10 @@ export async function fetchParticipantStatus(
   walletAddress: string,
 ): Promise<Participant | null> {
   try {
-    const response = await apiClient.get<ApiResponse<Participant>>(
+    const response = await apiClient.get<Participant>(
       `/hackathons/${hackathonId}/participants/${walletAddress}`,
     );
-    return handleApiResponse(response);
+    return response;
   } catch {
     // Return null if participant not found (404)
     return null;
@@ -145,10 +134,10 @@ export async function fetchParticipantStatus(
 export async function fetchUserParticipations(
   walletAddress: string,
 ): Promise<Participant[]> {
-  const response = await apiClient.get<ApiResponse<Participant[]>>(
+  const response = await apiClient.get<Participant[]>(
     `/users/${walletAddress}/participations`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 // Legacy function for backward compatibility
@@ -156,36 +145,33 @@ export async function participateInHackathon(
   id: string,
   submissionUrl?: string,
 ): Promise<void> {
-  await apiClient.post<ApiResponse<void>>(`/hackathons/${id}/participate`, {
+  await apiClient.post<void>(`/hackathons/${id}/participate`, {
     submissionUrl,
   });
 }
 
 export async function deleteHackathon(id: string): Promise<void> {
-  await apiClient.delete<ApiResponse<void>>(`/hackathons/${id}`);
+  await apiClient.delete<void>(`/hackathons/${id}`);
 }
 
 // User API Functions
 export async function fetchUserProfile(address: string): Promise<User> {
-  const response = await apiClient.get<ApiResponse<User>>(`/users/${address}`);
-  return handleApiResponse(response);
+  const response = await apiClient.get<User>(`/users/${address}`);
+  return response;
 }
 
 export async function updateUserProfile(data: Partial<User>): Promise<User> {
-  const response = await apiClient.post<ApiResponse<User>>(
-    "/users/profile",
-    data,
-  );
-  return handleApiResponse(response);
+  const response = await apiClient.post<User>("/users/profile", data);
+  return response;
 }
 
 export async function fetchUserHackathons(
   address: string,
 ): Promise<Hackathon[]> {
-  const response = await apiClient.get<ApiResponse<Hackathon[]>>(
+  const response = await apiClient.get<Hackathon[]>(
     `/users/${address}/hackathons`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 // Judge Management API Functions
@@ -193,30 +179,27 @@ export async function addJudge(
   hackathonId: string,
   data: AddJudgeRequest,
 ): Promise<Judge> {
-  const response = await apiClient.post<ApiResponse<Judge>>(
+  const response = await apiClient.post<Judge>(
     `/hackathons/${hackathonId}/judges`,
     data,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function removeJudge(
   hackathonId: string,
   data: RemoveJudgeRequest,
 ): Promise<void> {
-  await apiClient.delete<ApiResponse<void>>(
-    `/hackathons/${hackathonId}/judges`,
-    data,
-  );
+  await apiClient.delete<void>(`/hackathons/${hackathonId}/judges`, data);
 }
 
 export async function fetchJudges(
   hackathonId: string,
 ): Promise<JudgeListResponse> {
-  const response = await apiClient.get<ApiResponse<JudgeListResponse>>(
+  const response = await apiClient.get<JudgeListResponse>(
     `/hackathons/${hackathonId}/judges`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 // Voting API Functions
@@ -224,38 +207,38 @@ export async function castVote(
   hackathonId: string,
   data: CastVoteRequest,
 ): Promise<Vote> {
-  const response = await apiClient.post<ApiResponse<Vote>>(
+  const response = await apiClient.post<Vote>(
     `/hackathons/${hackathonId}/vote`,
     data,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function fetchVotingResults(
   hackathonId: string,
 ): Promise<VotingResultsResponse> {
-  const response = await apiClient.get<ApiResponse<VotingResultsResponse>>(
+  const response = await apiClient.get<VotingResultsResponse>(
     `/hackathons/${hackathonId}/results`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function fetchHackathonVotes(
   hackathonId: string,
 ): Promise<unknown[]> {
-  const response = await apiClient.get<ApiResponse<unknown[]>>(
+  const response = await apiClient.get<unknown[]>(
     `/hackathons/${hackathonId}/votes`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function fetchHackathonParticipants(
   hackathonId: string,
 ): Promise<Participant[]> {
-  const response = await apiClient.get<ApiResponse<Participant[]>>(
+  const response = await apiClient.get<Participant[]>(
     `/hackathons/${hackathonId}/participants`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 // File Upload API Functions
@@ -322,7 +305,7 @@ export async function uploadImage(
 }
 
 export async function deleteFile(filename: string): Promise<void> {
-  await apiClient.delete<ApiResponse<void>>(`/upload/${filename}`);
+  await apiClient.delete<void>(`/upload/${filename}`);
 }
 
 // Status Management API Functions
@@ -332,17 +315,18 @@ export async function updateHackathonStatus(
   reason: string,
   metadata?: Record<string, unknown>,
 ): Promise<{ message: string; hackathon: Hackathon }> {
-  const response = await apiClient.patch<
-    ApiResponse<{ message: string; hackathon: Hackathon }>
-  >(`/hackathons/${hackathonId}/status`, { status, reason, metadata });
-  return handleApiResponse(response);
+  const response = await apiClient.patch<{
+    message: string;
+    hackathon: Hackathon;
+  }>(`/hackathons/${hackathonId}/status`, { status, reason, metadata });
+  return response;
 }
 
 export async function getStatusSummary(): Promise<HackathonStatusSummaryResponse> {
-  const response = await apiClient.get<
-    ApiResponse<HackathonStatusSummaryResponse>
-  >("/hackathons/status/summary");
-  return handleApiResponse(response);
+  const response = await apiClient.get<HackathonStatusSummaryResponse>(
+    "/hackathons/status/summary",
+  );
+  return response;
 }
 
 // Audit Log API Functions
@@ -361,101 +345,100 @@ export async function getAuditLogs(filters?: {
       }
     : undefined;
 
-  const response = await apiClient.get<ApiResponse<AuditLogsResponse>>(
+  const response = await apiClient.get<AuditLogsResponse>(
     "/audit/logs",
     stringFilters,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function getHackathonAuditTrail(
   hackathonId: string,
 ): Promise<AuditLog[]> {
-  const response = await apiClient.get<ApiResponse<AuditLog[]>>(
+  const response = await apiClient.get<AuditLog[]>(
     `/audit/hackathons/${hackathonId}/trail`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function getHackathonStatusSummary(
   hackathonId: string,
 ): Promise<AuditSummaryResponse> {
-  const response = await apiClient.get<ApiResponse<AuditSummaryResponse>>(
+  const response = await apiClient.get<AuditSummaryResponse>(
     `/audit/hackathons/${hackathonId}/summary`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function getAuditStatistics(): Promise<AuditStatisticsResponse> {
   const response =
-    await apiClient.get<ApiResponse<AuditStatisticsResponse>>(
-      "/audit/statistics",
-    );
-  return handleApiResponse(response);
+    await apiClient.get<AuditStatisticsResponse>("/audit/statistics");
+  return response;
 }
 
 // Winner Determination API Functions
 export async function calculateWinners(
   hackathonId: string,
 ): Promise<WinnerDeterminationResponse> {
-  const response = await apiClient.get<
-    ApiResponse<WinnerDeterminationResponse>
-  >(`/hackathons/${hackathonId}/winners/calculate`);
-  return handleApiResponse(response);
+  const response = await apiClient.get<WinnerDeterminationResponse>(
+    `/hackathons/${hackathonId}/winners/calculate`,
+  );
+  return response;
 }
 
 export async function finalizeWinners(
   hackathonId: string,
 ): Promise<WinnerDeterminationResponse> {
-  const response = await apiClient.post<
-    ApiResponse<WinnerDeterminationResponse>
-  >(`/hackathons/${hackathonId}/winners/finalize`, {});
-  return handleApiResponse(response);
+  const response = await apiClient.post<WinnerDeterminationResponse>(
+    `/hackathons/${hackathonId}/winners/finalize`,
+    {},
+  );
+  return response;
 }
 
 export async function getWinners(
   hackathonId: string,
 ): Promise<WinnerDeterminationResponse | null> {
-  const response = await apiClient.get<
-    ApiResponse<WinnerDeterminationResponse | null>
-  >(`/hackathons/${hackathonId}/winners`);
-  return handleApiResponse(response);
+  const response = await apiClient.get<WinnerDeterminationResponse | null>(
+    `/hackathons/${hackathonId}/winners`,
+  );
+  return response;
 }
 
 export async function getTop3Winners(
   hackathonId: string,
 ): Promise<Top3WinnersResponse> {
-  const response = await apiClient.get<ApiResponse<Top3WinnersResponse>>(
+  const response = await apiClient.get<Top3WinnersResponse>(
     `/hackathons/${hackathonId}/winners/top3`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function areWinnersFinalized(
   hackathonId: string,
 ): Promise<WinnerStatusResponse> {
-  const response = await apiClient.get<ApiResponse<WinnerStatusResponse>>(
+  const response = await apiClient.get<WinnerStatusResponse>(
     `/hackathons/${hackathonId}/winners/status`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function getVotingPeriodInfo(
   hackathonId: string,
 ): Promise<VotingPeriodInfo> {
-  const response = await apiClient.get<ApiResponse<VotingPeriodInfo>>(
+  const response = await apiClient.get<VotingPeriodInfo>(
     `/hackathons/${hackathonId}/voting/info`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function getVotingPhaseHackathons(): Promise<
   VotingPhaseHackathon[]
 > {
-  const response = await apiClient.get<ApiResponse<VotingPhaseHackathon[]>>(
+  const response = await apiClient.get<VotingPhaseHackathon[]>(
     "/hackathons/voting/active",
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function forcePhaseTransition(
@@ -468,18 +451,16 @@ export async function forcePhaseTransition(
   newStatus: string;
   reason: string;
 }> {
-  const response = await apiClient.post<
-    ApiResponse<{
-      message: string;
-      hackathonId: string;
-      newStatus: string;
-      reason: string;
-    }>
-  >(`/hackathons/${hackathonId}/phases/force-transition`, {
+  const response = await apiClient.post<{
+    message: string;
+    hackathonId: string;
+    newStatus: string;
+    reason: string;
+  }>(`/hackathons/${hackathonId}/phases/force-transition`, {
     targetStatus,
     reason,
   });
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function triggerStatusCheck(): Promise<{
@@ -487,14 +468,12 @@ export async function triggerStatusCheck(): Promise<{
   updatedCount: number;
   processedCount: number;
 }> {
-  const response = await apiClient.post<
-    ApiResponse<{
-      message: string;
-      updatedCount: number;
-      processedCount: number;
-    }>
-  >("/hackathons/status/check", {});
-  return handleApiResponse(response);
+  const response = await apiClient.post<{
+    message: string;
+    updatedCount: number;
+    processedCount: number;
+  }>("/hackathons/status/check", {});
+  return response;
 }
 
 // Judge Dashboard API Functions
@@ -554,10 +533,10 @@ export interface HackathonParticipantsPreview {
 export async function fetchJudgeAssignedHackathons(
   judgeAddress: string,
 ): Promise<JudgeDashboardData> {
-  const response = await apiClient.get<ApiResponse<JudgeDashboardData>>(
+  const response = await apiClient.get<JudgeDashboardData>(
     `/hackathons/judges/dashboard/${judgeAddress}`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function fetchJudgeVotingProgress(
@@ -565,28 +544,28 @@ export async function fetchJudgeVotingProgress(
   hackathonId: string,
 ): Promise<JudgeHackathonAssignment["votingProgress"]> {
   const response = await apiClient.get<
-    ApiResponse<JudgeHackathonAssignment["votingProgress"]>
+    JudgeHackathonAssignment["votingProgress"]
   >(`/hackathons/judges/${judgeAddress}/voting-progress/${hackathonId}`);
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function fetchJudgeVotingStatistics(
   judgeAddress: string,
 ): Promise<JudgeVotingStatistics> {
-  const response = await apiClient.get<ApiResponse<JudgeVotingStatistics>>(
+  const response = await apiClient.get<JudgeVotingStatistics>(
     `/hackathons/judges/${judgeAddress}/statistics`,
   );
-  return handleApiResponse(response);
+  return response;
 }
 
 export async function fetchHackathonParticipantsPreview(
   hackathonId: string,
   judgeAddress: string,
 ): Promise<HackathonParticipantsPreview> {
-  const response = await apiClient.get<
-    ApiResponse<HackathonParticipantsPreview>
-  >(`/hackathons/${hackathonId}/participants/preview/${judgeAddress}`);
-  return handleApiResponse(response);
+  const response = await apiClient.get<HackathonParticipantsPreview>(
+    `/hackathons/${hackathonId}/participants/preview/${judgeAddress}`,
+  );
+  return response;
 }
 
 // Results Export API Functions
@@ -594,9 +573,9 @@ export async function exportResults(
   hackathonId: string,
   format: "json" | "csv" = "json",
 ): Promise<ExportResultsResponse> {
-  const response = await apiClient.get<ApiResponse<ExportResultsResponse>>(
+  const response = await apiClient.get<ExportResultsResponse>(
     `/hackathons/${hackathonId}/winners/export`,
     { format },
   );
-  return handleApiResponse(response);
+  return response;
 }
