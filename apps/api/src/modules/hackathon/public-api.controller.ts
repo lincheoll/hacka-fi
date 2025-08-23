@@ -10,11 +10,7 @@ import { PublicApiService } from './public-api.service';
 import { Public } from '../auth/decorators/public.decorator';
 import {
   PublicHackathonQueryDto,
-  PublicHackathonResponseDto,
-  PublicWinnerResponseDto,
-  PublicPlatformStatsResponseDto,
   PublicHallOfFameQueryDto,
-  PublicHallOfFameResponseDto,
 } from './dto/public-api.dto';
 
 @ApiTags('Public API')
@@ -45,10 +41,15 @@ export class PublicApiController {
                 $ref: '#/components/schemas/PublicHackathonResponseDto',
               },
             },
-            total: { type: 'number', example: 25 },
-            page: { type: 'number', example: 1 },
-            limit: { type: 'number', example: 10 },
-            totalPages: { type: 'number', example: 3 },
+            pagination: {
+              type: 'object',
+              properties: {
+                page: { type: 'number', example: 1 },
+                limit: { type: 'number', example: 10 },
+                total: { type: 'number', example: 25 },
+                totalPages: { type: 'number', example: 3 },
+              },
+            },
           },
         },
       },
@@ -134,7 +135,24 @@ export class PublicApiController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        data: { $ref: '#/components/schemas/PublicHallOfFameResponseDto' },
+        data: {
+          type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/PublicTopWinnerDto' },
+            },
+            pagination: {
+              type: 'object',
+              properties: {
+                page: { type: 'number', example: 1 },
+                limit: { type: 'number', example: 20 },
+                total: { type: 'number', example: 100 },
+                totalPages: { type: 'number', example: 5 },
+              },
+            },
+          },
+        },
       },
     },
   })
@@ -156,7 +174,24 @@ export class PublicApiController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        data: { $ref: '#/components/schemas/PublicHallOfFameResponseDto' },
+        data: {
+          type: 'object',
+          properties: {
+            data: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/PublicTopWinnerDto' },
+            },
+            pagination: {
+              type: 'object',
+              properties: {
+                page: { type: 'number', example: 1 },
+                limit: { type: 'number', example: 20 },
+                total: { type: 'number', example: 100 },
+                totalPages: { type: 'number', example: 5 },
+              },
+            },
+          },
+        },
       },
     },
   })

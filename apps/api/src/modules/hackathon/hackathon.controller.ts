@@ -9,7 +9,6 @@ import {
   Query,
   UseGuards,
   Request,
-  ParseIntPipe,
   HttpStatus,
   HttpCode,
 } from '@nestjs/common';
@@ -24,6 +23,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Public } from '../auth/decorators/public.decorator';
 import { HackathonService } from './hackathon.service';
+
 import {
   CreateHackathonDto,
   UpdateHackathonDto,
@@ -137,10 +137,15 @@ export class HackathonController {
           type: 'array',
           items: { $ref: '#/components/schemas/HackathonResponseDto' },
         },
-        total: { type: 'number', example: 50 },
-        page: { type: 'number', example: 1 },
-        limit: { type: 'number', example: 10 },
-        totalPages: { type: 'number', example: 5 },
+        pagination: {
+          type: 'object',
+          properties: {
+            page: { type: 'number', example: 1 },
+            limit: { type: 'number', example: 10 },
+            total: { type: 'number', example: 50 },
+            totalPages: { type: 'number', example: 5 },
+          },
+        },
       },
     },
   })

@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../../common/database/prisma.service';
+import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
 import { HackathonStatus, Prisma } from '@prisma/client';
 import {
   PublicHackathonQueryDto,
@@ -8,7 +9,6 @@ import {
   PublicPlatformStatsResponseDto,
   PublicTopWinnerDto,
   PublicHallOfFameQueryDto,
-  PublicHallOfFameResponseDto,
   PublicFilterBy,
   PublicSortOrder,
 } from './dto/public-api.dto';
@@ -19,13 +19,9 @@ export class PublicApiService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async getCompletedHackathons(query: PublicHackathonQueryDto): Promise<{
-    data: PublicHackathonResponseDto[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  }> {
+  async getCompletedHackathons(
+    query: PublicHackathonQueryDto,
+  ): Promise<PaginatedResponseDto<PublicHackathonResponseDto>> {
     const {
       page = 1,
       limit = 10,
@@ -129,13 +125,7 @@ export class PublicApiService {
       }),
     }));
 
-    return {
-      data,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
+    return new PaginatedResponseDto(data, page, limit, total);
   }
 
   async getHackathonWinners(
@@ -233,7 +223,7 @@ export class PublicApiService {
 
   async getHallOfFame(
     query: PublicHallOfFameQueryDto,
-  ): Promise<PublicHallOfFameResponseDto> {
+  ): Promise<PaginatedResponseDto<PublicTopWinnerDto>> {
     const { page = 1, limit = 20, sortOrder = PublicSortOrder.DESC } = query;
     const skip = (page - 1) * limit;
 
@@ -251,13 +241,7 @@ export class PublicApiService {
     const paginatedWinners = sortedWinners.slice(skip, skip + limit);
     const total = sortedWinners.length;
 
-    return {
-      data: paginatedWinners,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
-    };
+    return new PaginatedResponseDto(paginatedWinners, page, limit, total);
   }
 
   private async getTopWinners(limit: number): Promise<PublicTopWinnerDto[]> {

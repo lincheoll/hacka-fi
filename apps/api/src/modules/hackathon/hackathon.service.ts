@@ -22,6 +22,7 @@ import {
   TriggerType,
 } from '@prisma/client';
 import { PrismaService } from '../../common/database/prisma.service';
+import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
 import {
   CreateHackathonDto,
   UpdateHackathonDto,
@@ -95,13 +96,9 @@ export class HackathonService {
     return this.mapToResponseDto(hackathon);
   }
 
-  async findAll(queryDto: QueryHackathonDto): Promise<{
-    data: HackathonResponseDto[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  }> {
+  async findAll(
+    queryDto: QueryHackathonDto,
+  ): Promise<PaginatedResponseDto<HackathonResponseDto>> {
     const {
       page = 1,
       limit = 10,
@@ -150,15 +147,8 @@ export class HackathonService {
     const data = hackathons.map((hackathon) =>
       this.mapToResponseDto(hackathon),
     );
-    const totalPages = Math.ceil(total / limit);
 
-    return {
-      data,
-      total,
-      page,
-      limit,
-      totalPages,
-    };
+    return new PaginatedResponseDto(data, page, limit, total);
   }
 
   async findOne(
