@@ -206,7 +206,7 @@ export class PublicHallOfFameQueryDto {
 
 export class PublicHallOfFameResponseDto {
   @ApiProperty()
-  winners!: PublicTopWinnerDto[];
+  data!: PublicTopWinnerDto[];
 
   @ApiProperty()
   total!: number;

@@ -70,14 +70,14 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
       }),
     initialData: initialHackathons
       ? {
-          data: initialHackathons,
-          pagination: {
-            page: 1,
-            limit: 100,
-            total: initialHackathons.length,
-            totalPages: 1,
-          },
-        }
+        data: initialHackathons,
+        pagination: {
+          page: 1,
+          limit: 100,
+          total: initialHackathons.length,
+          totalPages: 1,
+        },
+      }
       : undefined,
   });
 
@@ -163,7 +163,7 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
     return (
       <div className="space-y-6">
         {/* Loading skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="h-48 bg-gray-200 rounded-lg"></div>
@@ -187,10 +187,10 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
   return (
     <div className="space-y-6">
       {/* Search and Filter Controls */}
-      <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+      <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
         {/* Search */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Search className="absolute w-4 h-4 text-gray-400 transform -translate-y-1/2 left-3 top-1/2" />
           <Input
             placeholder="Search hackathons..."
             value={searchQuery}
@@ -204,7 +204,7 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
           {/* Status Filter */}
           <Select value={statusFilter} onValueChange={handleFilterChange}>
             <SelectTrigger className="w-48">
-              <Filter className="h-4 w-4 mr-2" />
+              <Filter className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
@@ -222,9 +222,9 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
           <Select value={sortBy} onValueChange={handleSortChange}>
             <SelectTrigger className="w-48">
               {sortBy.includes("desc") ? (
-                <SortDesc className="h-4 w-4 mr-2" />
+                <SortDesc className="w-4 h-4 mr-2" />
               ) : (
-                <SortAsc className="h-4 w-4 mr-2" />
+                <SortAsc className="w-4 h-4 mr-2" />
               )}
               <SelectValue placeholder="Sort by" />
             </SelectTrigger>
@@ -249,8 +249,8 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
 
       {/* Hackathon Grid */}
       {paginatedHackathons.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-gray-500 mb-4">
+        <div className="py-12 text-center">
+          <p className="mb-4 text-gray-500">
             No hackathons found matching your criteria.
           </p>
           <Button asChild>
@@ -258,11 +258,11 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {paginatedHackathons.map((hackathon) => (
             <Card
               key={hackathon.id}
-              className="hover:shadow-lg transition-shadow duration-200 overflow-hidden"
+              className="overflow-hidden transition-shadow duration-200 hover:shadow-lg"
             >
               {/* Cover Image */}
               <div className="aspect-[2/1] relative overflow-hidden">
@@ -271,13 +271,13 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
                   alt={hackathon.title}
                   className="w-full h-full"
                 />
-                <div className="absolute top-3 left-3 right-3 flex items-start justify-between">
+                <div className="absolute flex items-start justify-between top-3 left-3 right-3">
                   <HackathonStatusBadge
                     status={hackathon.status}
                     size="sm"
                     className="bg-white/90 backdrop-blur-sm"
                   />
-                  <div className="text-white bg-black/50 px-2 py-1 rounded text-sm">
+                  <div className="px-2 py-1 text-sm text-white rounded bg-black/50">
                     <HackathonCountdown
                       hackathon={hackathon}
                       compact={true}
@@ -292,7 +292,7 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
                 <CardTitle className="line-clamp-2">
                   <Link
                     href={`/hackathons/${hackathon.id}`}
-                    className="hover:text-blue-600 transition-colors"
+                    className="transition-colors hover:text-blue-600"
                   >
                     {hackathon.title}
                   </Link>
@@ -308,7 +308,7 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
                     {hackathon.prizeAmount ? (
                       <div>
                         <span className="text-gray-600">Prize:</span>
-                        <span className="font-semibold text-green-600 ml-1">
+                        <span className="ml-1 font-semibold text-green-600">
                           {hackathon.prizeAmount} KAIA
                         </span>
                       </div>
@@ -318,7 +318,7 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
                     {hackathon.entryFee && (
                       <div>
                         <span className="text-gray-600">Entry:</span>
-                        <span className="font-medium ml-1">
+                        <span className="ml-1 font-medium">
                           {hackathon.entryFee} KAIA
                         </span>
                       </div>
@@ -343,8 +343,14 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
 
                   {/* Organizer */}
                   <div className="text-xs text-gray-500">
-                    by {hackathon.organizerAddress.slice(0, 6)}...
-                    {hackathon.organizerAddress.slice(-4)}
+                    {hackathon.organizerAddress ? (
+                      <>
+                        by {hackathon.organizerAddress.slice(0, 6)}...
+                        {hackathon.organizerAddress.slice(-4)}
+                      </>
+                    ) : (
+                      "Unknown Organizer"
+                    )}
                   </div>
 
                   {/* Action Button */}

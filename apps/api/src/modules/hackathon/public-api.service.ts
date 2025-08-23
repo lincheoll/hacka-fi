@@ -252,7 +252,7 @@ export class PublicApiService {
     const total = sortedWinners.length;
 
     return {
-      winners: paginatedWinners,
+      data: paginatedWinners,
       total,
       page,
       limit,
