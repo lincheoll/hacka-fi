@@ -90,10 +90,10 @@ export class HackathonResponseDto {
   contractAddress?: string;
 
   @ApiProperty({
-    description: 'Creator wallet address',
+    description: 'Organizer wallet address',
     example: '0x0987654321098765432109876543210987654321',
   })
-  creatorAddress!: string;
+  organizerAddress!: string;
 
   @ApiProperty({
     description: 'Number of participants',

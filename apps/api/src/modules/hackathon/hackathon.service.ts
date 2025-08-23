@@ -1029,7 +1029,7 @@ export class HackathonService {
       status: hackathon.status,
       lotteryPercentage: 0, // Fix: Set default value or remove from schema
       contractAddress: hackathon.contractAddress,
-      creatorAddress: hackathon.organizerAddress, // Fix: use organizerAddress
+      organizerAddress: hackathon.organizerAddress,
       participantCount: hackathon._count?.participants || 0,
       createdAt: hackathon.createdAt.toISOString(),
       updatedAt: hackathon.updatedAt.toISOString(),
@@ -1237,6 +1237,77 @@ export class HackathonService {
       commentPercentage,
       lastVotingActivity,
       scoreDistribution,
+    };
+  }
+
+  /**
+   * Get all participants for a specific hackathon
+   */
+  async getHackathonParticipants(
+    hackathonId: string,
+  ): Promise<ParticipantResponseDto[]> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    const participants = await this.prisma.participant.findMany({
+      where: { hackathonId },
+      orderBy: { createdAt: 'asc' },
+    });
+
+    return participants.map((participant) => ({
+      id: participant.id,
+      walletAddress: participant.walletAddress,
+      submissionUrl: participant.submissionUrl ?? undefined,
+      entryFee: participant.entryFee ?? undefined,
+      rank: participant.rank ?? undefined,
+      prizeAmount: participant.prizeAmount ?? undefined,
+      createdAt: participant.createdAt.toISOString(),
+    }));
+  }
+
+  /**
+   * Get specific participant details
+   */
+  async getParticipantDetails(
+    hackathonId: string,
+    participantAddress: string,
+  ): Promise<ParticipantResponseDto> {
+    const hackathon = await this.prisma.hackathon.findUnique({
+      where: { id: hackathonId },
+    });
+
+    if (!hackathon) {
+      throw new NotFoundException(`Hackathon with ID ${hackathonId} not found`);
+    }
+
+    const participant = await this.prisma.participant.findUnique({
+      where: {
+        hackathonId_walletAddress: {
+          hackathonId,
+          walletAddress: participantAddress,
+        },
+      },
+    });
+
+    if (!participant) {
+      throw new NotFoundException(
+        `Participant with address ${participantAddress} not found in hackathon ${hackathonId}`,
+      );
+    }
+
+    return {
+      id: participant.id,
+      walletAddress: participant.walletAddress,
+      submissionUrl: participant.submissionUrl ?? undefined,
+      entryFee: participant.entryFee ?? undefined,
+      rank: participant.rank ?? undefined,
+      prizeAmount: participant.prizeAmount ?? undefined,
+      createdAt: participant.createdAt.toISOString(),
     };
   }
 

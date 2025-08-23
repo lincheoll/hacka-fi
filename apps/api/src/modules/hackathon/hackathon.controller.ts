@@ -993,6 +993,69 @@ export class HackathonController {
     return this.hackathonService.getJudgeVotingStatistics(judgeAddress);
   }
 
+  @Get(':id/participants')
+  @Public()
+  @ApiOperation({
+    summary: 'Get hackathon participants',
+    description: 'Get all participants for a specific hackathon.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Participants retrieved successfully',
+    type: [ParticipantResponseDto],
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon not found',
+  })
+  async getHackathonParticipants(
+    @Param('id') hackathonId: string,
+  ): Promise<ParticipantResponseDto[]> {
+    return this.hackathonService.getHackathonParticipants(hackathonId);
+  }
+
+  @Get(':id/participants/:address')
+  @Public()
+  @ApiOperation({
+    summary: 'Get specific participant details',
+    description:
+      'Get detailed information about a specific participant in a hackathon.',
+  })
+  @ApiParam({
+    name: 'id',
+    description: 'Hackathon ID',
+    example: 'hack_123',
+  })
+  @ApiParam({
+    name: 'address',
+    description: 'Participant wallet address',
+    example: '0xd3C919CA652c4C7e00C6a897125A8B61903353c0',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Participant details retrieved successfully',
+    type: ParticipantResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Hackathon or participant not found',
+  })
+  async getParticipantDetails(
+    @Param('id') hackathonId: string,
+    @Param('address') participantAddress: string,
+  ): Promise<ParticipantResponseDto> {
+    console.log('sss');
+    return this.hackathonService.getParticipantDetails(
+      hackathonId,
+      participantAddress,
+    );
+  }
+
   @Get(':id/participants/preview/:judgeAddress')
   @ApiBearerAuth()
   @ApiOperation({
