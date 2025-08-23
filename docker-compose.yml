@@ -25,12 +25,14 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     container_name: hacka-fi-api
+    env_file:
+      - .env  # Root environment variables
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - DATABASE_URL=${DATABASE_URL:-file:./dev.db}
-      - JWT_SECRET=${JWT_SECRET:-your-jwt-secret}
-      - RPC_URL=${RPC_URL:-https://public-en-kairos.node.kaia.io}
+      # Override root variables with container-specific values
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
+      - DATABASE_PROVIDER=postgresql
       - PORT=3001
+      - CHAIN_ID=${KAIA_CHAIN_ID:-1001}
     ports:
       - "${API_PORT:-3001}:3001"
     volumes:
@@ -51,10 +53,14 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
     container_name: hacka-fi-web
+    env_file:
+      - .env  # Root environment variables
     environment:
-      - NODE_ENV=${NODE_ENV:-development}
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
-      - NEXT_PUBLIC_KAIA_CHAIN_ID=${NEXT_PUBLIC_KAIA_CHAIN_ID:-1001}
+      # Override root variables with container-specific values
+      - NEXT_PUBLIC_API_URL=http://api:3001
+      - NEXT_PUBLIC_KAIA_CHAIN_ID=${KAIA_CHAIN_ID:-1001}
+      - NEXT_PUBLIC_HACKATHON_REGISTRY_ADDRESS=${HACKATHON_REGISTRY_ADDRESS}
+      - NEXT_PUBLIC_PRIZE_POOL_ADDRESS=${PRIZE_POOL_ADDRESS}
     ports:
       - "${WEB_PORT:-3000}:3000"
     volumes:

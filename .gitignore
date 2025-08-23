@@ -40,6 +40,14 @@ coverage/
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
+
+# Workspace-specific environment files
+apps/*/.env
+apps/*/.env.local
+apps/*/.env.production
+contracts/.env
+contracts/.env.production
 
 # Logs
 logs

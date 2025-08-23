@@ -3,10 +3,12 @@ import * as Joi from 'joi';
 
 export const databaseConfig = registerAs('database', () => ({
   url: process.env.DATABASE_URL,
-  provider: process.env.DB_PROVIDER || 'sqlite',
+  provider: process.env.DATABASE_PROVIDER || 'sqlite',
 }));
 
 export const databaseConfigValidation = {
   DATABASE_URL: Joi.string().required(),
-  DB_PROVIDER: Joi.string().valid('sqlite', 'postgresql').default('sqlite'),
+  DATABASE_PROVIDER: Joi.string()
+    .valid('sqlite', 'postgresql')
+    .default('sqlite'),
 };

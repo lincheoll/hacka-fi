@@ -40,4 +40,4 @@ pnpm db:migrate            # Run migrations
 
 ## Environment
 
-Copy `.env.example` to `.env` and configure your settings.
+Copy `docker.env.example` to `.env` and configure your settings.

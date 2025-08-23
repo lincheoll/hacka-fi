@@ -9,21 +9,21 @@ export const KAIA_NETWORKS = {
   testnet: klaytnBaobab,
 } as const;
 
-// RPC Endpoints
+// RPC Endpoints (with environment override capability)
 export const RPC_URLS = {
-  [klaytn.id]: "https://public-en-cypress.klaytn.net",
-  [klaytnBaobab.id]: "https://public-en-baobab.klaytn.net",
+  [klaytn.id]: process.env.NEXT_PUBLIC_RPC_URL || "https://public-en-cypress.klaytn.net",
+  [klaytnBaobab.id]: process.env.NEXT_PUBLIC_RPC_URL || "https://public-en-baobab.klaytn.net",
 } as const;
 
-// Contract Addresses (from smart contracts deployment)
+// Contract Addresses (from environment variables)
 export const CONTRACT_ADDRESSES = {
   [klaytn.id]: {
-    hackathonRegistry: "0x0000000000000000000000000000000000000000", // Replace with actual mainnet address
-    prizePool: "0x0000000000000000000000000000000000000000", // Replace with actual mainnet address
+    hackathonRegistry: process.env.NEXT_PUBLIC_HACKATHON_REGISTRY_ADDRESS || "0x0000000000000000000000000000000000000000",
+    prizePool: process.env.NEXT_PUBLIC_PRIZE_POOL_ADDRESS || "0x0000000000000000000000000000000000000000",
   },
   [klaytnBaobab.id]: {
-    hackathonRegistry: "0x0000000000000000000000000000000000000000", // Replace with actual testnet address
-    prizePool: "0x0000000000000000000000000000000000000000", // Replace with actual testnet address
+    hackathonRegistry: process.env.NEXT_PUBLIC_HACKATHON_REGISTRY_ADDRESS || "0x0000000000000000000000000000000000000000",
+    prizePool: process.env.NEXT_PUBLIC_PRIZE_POOL_ADDRESS || "0x0000000000000000000000000000000000000000",
   },
 } as const;
 
