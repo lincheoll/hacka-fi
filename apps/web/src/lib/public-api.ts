@@ -9,11 +9,11 @@ import {
   ApiResponse,
 } from "@/types/public-api";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3010";
 
 class PublicApiClient {
   private async fetchApi<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${API_BASE_URL}/api/public${endpoint}`, {
+    const response = await fetch(`${API_BASE_URL}/public${endpoint}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

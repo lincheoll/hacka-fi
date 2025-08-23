@@ -16,7 +16,7 @@ async function bootstrap(): Promise<void> {
 
   // Get configuration values directly from ConfigService
   const nodeEnv = configService.get<string>('NODE_ENV', 'development');
-  const port = configService.get<number>('PORT', 3001);
+  const port = configService.get<number>('PORT', 3010);
   const corsOrigin = configService.get<string>('CORS_ORIGIN', '*');
 
   // Global validation pipe

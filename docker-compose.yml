@@ -26,15 +26,15 @@ services:
       dockerfile: apps/api/Dockerfile
     container_name: hacka-fi-api
     env_file:
-      - .env  # Root environment variables
+      - .env # Root environment variables
     environment:
       # Override root variables with container-specific values
       - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
       - DATABASE_PROVIDER=postgresql
-      - PORT=3001
+      - PORT=3010
       - CHAIN_ID=${KAIA_CHAIN_ID:-1001}
     ports:
-      - "${API_PORT:-3001}:3001"
+      - "${API_PORT:-3010}:3010"
     volumes:
       - ./apps/api:/app
       - /app/node_modules
@@ -54,10 +54,10 @@ services:
       dockerfile: apps/web/Dockerfile
     container_name: hacka-fi-web
     env_file:
-      - .env  # Root environment variables
+      - .env # Root environment variables
     environment:
       # Override root variables with container-specific values
-      - NEXT_PUBLIC_API_URL=http://api:3001
+      - NEXT_PUBLIC_API_URL=http://api:3010
       - NEXT_PUBLIC_KAIA_CHAIN_ID=${KAIA_CHAIN_ID:-1001}
       - NEXT_PUBLIC_HACKATHON_REGISTRY_ADDRESS=${HACKATHON_REGISTRY_ADDRESS}
       - NEXT_PUBLIC_PRIZE_POOL_ADDRESS=${PRIZE_POOL_ADDRESS}
@@ -98,7 +98,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/ssl:ro  # Mount SSL certificates directory
+      - ./ssl:/etc/ssl:ro # Mount SSL certificates directory
     depends_on:
       - api
       - web

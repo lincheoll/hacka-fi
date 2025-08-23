@@ -25,7 +25,7 @@ pnpm dev
 ## Services
 
 - Frontend: http://localhost:3000
-- Backend: http://localhost:3001
+- Backend: http://localhost:3010
 - Database: PostgreSQL (Docker)
 
 ## Commands

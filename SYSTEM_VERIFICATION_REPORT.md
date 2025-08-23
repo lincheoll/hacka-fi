@@ -219,10 +219,10 @@
 
 ✅ **Ready**: Full local development stack operational
 
-- API: http://localhost:3001 (port configurable)
+- API: http://localhost:3010 (port configurable)
 - Web: http://localhost:3000 (port configurable)
 - Database: SQLite (zero-configuration)
-- Documentation: http://localhost:3001/api/docs
+- Documentation: http://localhost:3010/api/docs
 
 ### Production Environment
 
@@ -240,14 +240,14 @@
 
 ```bash
 # API Health
-curl http://localhost:3001/health/database
-curl http://localhost:3001/health/web3
+curl http://localhost:3010/health/database
+curl http://localhost:3010/health/web3
 
 # Web Application
 curl http://localhost:3000
 
 # Public API
-curl http://localhost:3001/public/statistics
+curl http://localhost:3010/public/statistics
 ```
 
 ### Build Verification

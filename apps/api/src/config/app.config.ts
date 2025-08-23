@@ -4,7 +4,7 @@ export const configValidationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'production', 'test')
     .default('development'),
-  PORT: Joi.number().default(3001),
+  PORT: Joi.number().default(3010),
 
   // Database
   DATABASE_URL: Joi.string().required(),
@@ -78,7 +78,7 @@ export const getAppConfig = (): AppConfig => {
 
   return {
     nodeEnv: process.env.NODE_ENV || 'development',
-    port: parseInt(process.env.PORT || '3001', 10),
+    port: parseInt(process.env.PORT || '3010', 10),
     database: {
       url: getRequiredEnv('DATABASE_URL'),
       provider: (process.env.DATABASE_PROVIDER || 'sqlite') as

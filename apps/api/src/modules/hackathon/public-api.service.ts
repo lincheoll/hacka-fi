@@ -19,9 +19,7 @@ export class PublicApiService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async getCompletedHackathons(
-    query: PublicHackathonQueryDto,
-  ): Promise<{
+  async getCompletedHackathons(query: PublicHackathonQueryDto): Promise<{
     data: PublicHackathonResponseDto[];
     total: number;
     page: number;

@@ -1,47 +1,66 @@
 import { createConfig } from "wagmi";
-import { klaytn, klaytnBaobab } from "wagmi/chains";
+import * as chains from "wagmi/chains";
 import { http } from "viem";
 import { injected, walletConnect } from "wagmi/connectors";
+import type { Chain } from "viem";
 
-// Kaia Network Configurations
-export const KAIA_NETWORKS = {
-  mainnet: klaytn,
-  testnet: klaytnBaobab,
-} as const;
+// Simple chain IDs array from environment - supports future multi-chain
+const CHAIN_IDS = [parseInt(process.env.NEXT_PUBLIC_KAIA_CHAIN_ID || "1001")];
 
-// RPC Endpoints (with environment override capability)
-export const RPC_URLS = {
-  [klaytn.id]: process.env.NEXT_PUBLIC_RPC_URL || "https://public-en-cypress.klaytn.net",
-  [klaytnBaobab.id]: process.env.NEXT_PUBLIC_RPC_URL || "https://public-en-baobab.klaytn.net",
-} as const;
+// Dynamic chain mapping using wagmi chains by chainId
+const getChainById = (chainId: number): Chain => {
+  const chainMap = Object.fromEntries(
+    Object.values(chains).map((chain) => [chain.id, chain]),
+  );
+  const chain = chainMap[chainId as keyof typeof chainMap];
+  if (!chain) {
+    throw new Error(`Unsupported chain ID: ${chainId}`);
+  }
+  return chain;
+};
 
-// Contract Addresses (from environment variables)
-export const CONTRACT_ADDRESSES = {
-  [klaytn.id]: {
-    hackathonRegistry: process.env.NEXT_PUBLIC_HACKATHON_REGISTRY_ADDRESS || "0x0000000000000000000000000000000000000000",
-    prizePool: process.env.NEXT_PUBLIC_PRIZE_POOL_ADDRESS || "0x0000000000000000000000000000000000000000",
-  },
-  [klaytnBaobab.id]: {
-    hackathonRegistry: process.env.NEXT_PUBLIC_HACKATHON_REGISTRY_ADDRESS || "0x0000000000000000000000000000000000000000",
-    prizePool: process.env.NEXT_PUBLIC_PRIZE_POOL_ADDRESS || "0x0000000000000000000000000000000000000000",
-  },
-} as const;
+// Get chains array for wagmi config
+const SUPPORTED_CHAINS = CHAIN_IDS.map(getChainById);
 
-// Supported chain IDs
-export const SUPPORTED_CHAIN_IDS = [klaytn.id, klaytnBaobab.id] as const;
-export const DEFAULT_CHAIN_ID = klaytnBaobab.id; // Use testnet as default
+// Ensure we have at least one chain for wagmi's tuple type
+if (SUPPORTED_CHAINS.length === 0) {
+  throw new Error("No chain IDs configured");
+}
 
-// WalletConnect Project ID (should be set in environment variables)
+// Contract addresses (simple fallback to env vars)
+const CONTRACT_ADDRESSES = {
+  hackathonRegistry:
+    process.env.NEXT_PUBLIC_HACKATHON_REGISTRY_ADDRESS ||
+    "0x0000000000000000000000000000000000000000",
+  prizePool:
+    process.env.NEXT_PUBLIC_PRIZE_POOL_ADDRESS ||
+    "0x0000000000000000000000000000000000000000",
+};
+
+export const DEFAULT_CHAIN_ID = CHAIN_IDS[0];
+
+// WalletConnect Project ID
 const WALLETCONNECT_PROJECT_ID =
   process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "";
 
-// Wagmi Configuration
+// Get transports - uses viem default RPC with optional override
+const getTransports = () => {
+  const transports: Record<number, any> = {};
+
+  CHAIN_IDS.forEach((chainId) => {
+    const customRpc = process.env.NEXT_PUBLIC_RPC_URL;
+    // Use custom RPC if provided, otherwise viem uses default RPC for the chain
+    transports[chainId] = customRpc ? http(customRpc) : http();
+  });
+
+  return transports;
+};
+
+// Wagmi Configuration - simple and clean
 export const wagmiConfig = createConfig({
-  chains: [klaytnBaobab, klaytn],
+  chains: [SUPPORTED_CHAINS[0], ...SUPPORTED_CHAINS.slice(1)] as const,
   connectors: [
-    injected({
-      target: "metaMask",
-    }),
+    injected({ target: "metaMask" }),
     walletConnect({
       projectId: WALLETCONNECT_PROJECT_ID,
       metadata: {
@@ -52,39 +71,29 @@ export const wagmiConfig = createConfig({
       },
     }),
   ],
-  transports: {
-    [klaytn.id]: http(RPC_URLS[klaytn.id]),
-    [klaytnBaobab.id]: http(RPC_URLS[klaytnBaobab.id]),
-  },
+  transports: getTransports(),
 });
 
-// Helper function to get contract address for current network
+// Helper functions
 export function getContractAddress(
-  chainId: number,
   contract: "hackathonRegistry" | "prizePool",
-) {
-  const addresses =
-    CONTRACT_ADDRESSES[chainId as keyof typeof CONTRACT_ADDRESSES];
-  return addresses?.[contract];
+): string {
+  return CONTRACT_ADDRESSES[contract];
 }
 
-// Helper function to check if chain is supported
 export function isSupportedChain(chainId: number): boolean {
-  return SUPPORTED_CHAIN_IDS.includes(
-    chainId as (typeof SUPPORTED_CHAIN_IDS)[number],
-  );
+  return CHAIN_IDS.includes(chainId);
 }
 
-// Network display names
-export const NETWORK_NAMES = {
-  [klaytn.id]: "Kaia Mainnet",
-  [klaytnBaobab.id]: "Kaia Testnet (Baobab)",
-} as const;
-
-// Get network name by chain ID
 export function getNetworkName(chainId: number): string {
-  return (
-    NETWORK_NAMES[chainId as keyof typeof NETWORK_NAMES] ||
-    `Unknown Network (${chainId})`
-  );
+  try {
+    return getChainById(chainId).name;
+  } catch {
+    return `Chain ${chainId}`;
+  }
 }
+
+// Exports for easy access
+export { CHAIN_IDS as SUPPORTED_CHAIN_IDS };
+export { SUPPORTED_CHAINS };
+export { getChainById };

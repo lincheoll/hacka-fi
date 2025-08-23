@@ -127,7 +127,7 @@ health_check() {
     local attempt=1
     
     while [ $attempt -le $max_attempts ]; do
-        if curl -s -f http://localhost:3001/health/database > /dev/null; then
+        if curl -s -f http://localhost:3010/health/database > /dev/null; then
             log_success "API health check passed"
             break
         fi
@@ -159,8 +159,8 @@ show_status() {
     echo "===================="
     log_info "Services are running on:"
     echo "  - Web Application: http://localhost:3000"
-    echo "  - API Server: http://localhost:3001"
-    echo "  - API Documentation: http://localhost:3001/api/docs"
+    echo "  - API Server: http://localhost:3010"
+    echo "  - API Documentation: http://localhost:3010/api/docs"
     
     if [ "$ENVIRONMENT" = "production" ]; then
         echo "  - Database: PostgreSQL on port 5432"

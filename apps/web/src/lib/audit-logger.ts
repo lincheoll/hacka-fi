@@ -30,7 +30,7 @@ export interface AuditLogFilter {
  */
 export class AuditLogger {
   private static readonly API_BASE_URL =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3010";
 
   /**
    * Log a status change event

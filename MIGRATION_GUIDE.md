@@ -7,6 +7,7 @@ We've refactored the environment variable management to improve organization and
 ## What Changed
 
 ### Before (Old Structure)
+
 - Single root `docker.env.example` with all variables mixed together
 - Environment variables not properly injected into NestJS containers
 - Inconsistent naming conventions (`DB_PROVIDER` vs `DATABASE_PROVIDER`)
@@ -14,6 +15,7 @@ We've refactored the environment variable management to improve organization and
 - Port conflicts between configurations
 
 ### After (New Structure)
+
 - Workspace-specific environment files with clear separation
 - Proper Docker environment injection
 - Consistent naming conventions
@@ -41,6 +43,7 @@ pnpm run setup:env
 Transfer your values from the backup to the appropriate new files:
 
 #### Root `.env` (Docker orchestration)
+
 ```bash
 # Copy these from your backup:
 NODE_ENV=
@@ -57,6 +60,7 @@ CORS_ORIGIN=
 ```
 
 #### `apps/web/.env.local` (Next.js frontend)
+
 ```bash
 # Copy and prefix with NEXT_PUBLIC_:
 NEXT_PUBLIC_API_URL=
@@ -67,6 +71,7 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=
 ```
 
 #### `apps/api/.env` (NestJS backend)
+
 ```bash
 # Copy these values:
 NODE_ENV=
@@ -84,6 +89,7 @@ CORS_ORIGIN=
 ```
 
 #### `contracts/.env` (Foundry deployment)
+
 ```bash
 # Copy deployment-related variables:
 PRIVATE_KEY=
@@ -98,14 +104,15 @@ SCAN_API_KEY=
 
 Update these variable names if you're using them:
 
-| Old Name | New Name |
-|----------|----------|
-| `DB_PROVIDER` | `DATABASE_PROVIDER` |
-| `NEXT_PUBLIC_API_URL` with port 3004 | `NEXT_PUBLIC_API_URL` with port 3001 |
+| Old Name                             | New Name                             |
+| ------------------------------------ | ------------------------------------ |
+| `DB_PROVIDER`                        | `DATABASE_PROVIDER`                  |
+| `NEXT_PUBLIC_API_URL` with port 3004 | `NEXT_PUBLIC_API_URL` with port 3010 |
 
 ### 5. Contract Address Updates
 
 If you have deployed contracts, update addresses in both:
+
 - Root `.env` (for Docker)
 - Workspace-specific `.env` files
 
@@ -127,11 +134,11 @@ cd contracts && forge test
 ### Issue 1: API not accessible from frontend
 
 **Problem**: Frontend trying to reach API on wrong port
-**Solution**: Update `NEXT_PUBLIC_API_URL` to use port 3001
+**Solution**: Update `NEXT_PUBLIC_API_URL` to use port 3010
 
 ```bash
 # In apps/web/.env.local
-NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:3010
 ```
 
 ### Issue 2: Database connection fails
@@ -159,18 +166,21 @@ DATABASE_PROVIDER=sqlite  # Not DB_PROVIDER
 After migration, verify everything works:
 
 1. **Local Development**:
+
    ```bash
    pnpm dev
-   # Check that web (3000) and api (3001) start successfully
+   # Check that web (3000) and api (3010) start successfully
    ```
 
 2. **Docker Development**:
+
    ```bash
    pnpm run docker:dev
    # Check that all services start and can communicate
    ```
 
 3. **Contract Deployment**:
+
    ```bash
    cd contracts
    forge test

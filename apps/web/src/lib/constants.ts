@@ -4,11 +4,10 @@ export const APP_DESCRIPTION = "Blockchain hackathon platform";
 
 // API endpoints
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3010";
 
-// Blockchain constants
-export const SUPPORTED_CHAIN_IDS = [1001, 8217] as const; // Kaia Testnet, Kaia Mainnet
-export const DEFAULT_CHAIN_ID = parseInt(process.env.NEXT_PUBLIC_KAIA_CHAIN_ID || "1001");
+// Re-export blockchain constants from web3.ts to avoid duplication
+export { SUPPORTED_CHAIN_IDS, DEFAULT_CHAIN_ID } from "./web3";
 
 // Contract addresses
 export const HACKATHON_REGISTRY_ADDRESS =

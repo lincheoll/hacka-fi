@@ -64,7 +64,7 @@ export function useWeb3() {
   };
 
   const getContract = (contractName: "hackathonRegistry" | "prizePool") => {
-    return getContractAddress(chainId, contractName);
+    return getContractAddress(contractName);
   };
 
   const formatAddress = (addr?: string) => {

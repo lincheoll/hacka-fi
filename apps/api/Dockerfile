@@ -29,7 +29,7 @@ COPY apps/api/ ./apps/api/
 RUN cd apps/api && pnpm prisma generate
 
 # Expose port
-EXPOSE 3001
+EXPOSE 3010
 
 # Default command for development
 CMD ["pnpm", "--filter", "api", "run", "dev"]
@@ -86,7 +86,7 @@ RUN mkdir -p ./apps/api/uploads && chown nestjs:nodejs ./apps/api/uploads
 USER nestjs
 
 # Expose port
-EXPOSE 3001
+EXPOSE 3010
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

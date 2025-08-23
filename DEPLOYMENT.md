@@ -29,14 +29,14 @@ This guide provides comprehensive instructions for deploying the HackaFi platfor
 
 - RAM: 4GB minimum, 8GB recommended
 - Storage: 10GB free space
-- Ports: 3000, 3001, 5432, 6379
+- Ports: 3000, 3010, 5432, 6379
 
 **Production:**
 
 - RAM: 8GB minimum, 16GB recommended
 - Storage: 50GB free space (with room for database growth)
 - CPU: 2+ cores
-- Ports: 80, 443, 3000, 3001, 5432, 6379
+- Ports: 80, 443, 3000, 3010, 5432, 6379
 
 ### Installation Commands
 
@@ -99,7 +99,7 @@ ADMIN_WALLET_ADDRESS=0xYourAdminWalletAddress
 
 # Frontend URLs (update for production)
 NEXT_PUBLIC_API_URL=https://your-domain.com/api  # Production
-# NEXT_PUBLIC_API_URL=http://localhost:3001     # Development
+# NEXT_PUBLIC_API_URL=http://localhost:3010     # Development
 ```
 
 ## Development Deployment
@@ -142,8 +142,8 @@ Use the automated deployment script:
 
 4. **Access Services:**
    - Web Application: http://localhost:3000
-   - API Server: http://localhost:3001
-   - API Documentation: http://localhost:3001/api/docs
+   - API Server: http://localhost:3010
+   - API Documentation: http://localhost:3010/api/docs
 
 ### Development Features
 
@@ -193,7 +193,7 @@ cp .env.production.example .env.production
 4. **Health Check:**
    ```bash
    # Check service status
-   curl http://localhost:3001/health/database
+   curl http://localhost:3010/health/database
    curl http://localhost:3000
    ```
 
@@ -212,7 +212,7 @@ cp .env.production.example .env.production
 
 | Service   | Description         | Port | Profile   |
 | --------- | ------------------- | ---- | --------- |
-| **api**   | NestJS Backend API  | 3001 | dev, prod |
+| **api**   | NestJS Backend API  | 3010 | dev, prod |
 | **web**   | Next.js Frontend    | 3000 | dev, prod |
 | **db**    | PostgreSQL Database | 5432 | prod only |
 | **redis** | Redis Cache         | 6379 | prod only |
@@ -402,7 +402,7 @@ Consider integrating with monitoring solutions:
 ```bash
 # Check which process is using the port
 lsof -i :3000
-lsof -i :3001
+lsof -i :3010
 
 # Kill the process or change ports in .env
 ```

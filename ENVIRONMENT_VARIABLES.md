@@ -57,7 +57,7 @@ These variables are used by Docker Compose and shared across workspaces:
 ```bash
 # Service orchestration
 NODE_ENV=development
-API_PORT=3001
+API_PORT=3010
 WEB_PORT=3000
 DATABASE_PORT=5432
 
@@ -82,7 +82,7 @@ Frontend-specific variables (must be prefixed with `NEXT_PUBLIC_` to be exposed 
 
 ```bash
 # API connection
-NEXT_PUBLIC_API_URL=http://localhost:3001
+NEXT_PUBLIC_API_URL=http://localhost:3010
 
 # Blockchain (public)
 NEXT_PUBLIC_KAIA_CHAIN_ID=1001
@@ -101,7 +101,7 @@ Backend-specific variables:
 ```bash
 # Application
 NODE_ENV=development
-PORT=3001
+PORT=3010
 
 # Database
 DATABASE_URL=file:./dev.db
@@ -184,7 +184,7 @@ The previous structure had all variables mixed in the root `docker.env.example`.
 
 1. **Contract addresses**: Now environment-driven in web3.ts instead of hardcoded
 2. **Database configuration**: Consistent naming (`DATABASE_PROVIDER` vs `DB_PROVIDER`)
-3. **Port defaults**: Aligned across all configurations (API=3001, Web=3000)
+3. **Port defaults**: Aligned across all configurations (API=3010, Web=3000)
 4. **RPC URLs**: Environment-configurable instead of hardcoded
 
 ## Common Issues & Solutions
@@ -206,7 +206,7 @@ api:
 **Solution**: Ensure variables are prefixed with `NEXT_PUBLIC_` for browser access:
 
 ```bash
-NEXT_PUBLIC_API_URL=http://localhost:3001  # ✅ Accessible in browser
+NEXT_PUBLIC_API_URL=http://localhost:3010  # ✅ Accessible in browser
 API_SECRET=secret                          # ❌ Server-side only
 ```
 
@@ -246,7 +246,7 @@ The NestJS application validates required environment variables on startup:
 ```typescript
 // apps/api/src/config/app.config.ts
 export const configValidationSchema = Joi.object({
-  NODE_ENV: Joi.string().valid('development', 'production', 'test'),
+  NODE_ENV: Joi.string().valid("development", "production", "test"),
   DATABASE_URL: Joi.string().required(),
   JWT_SECRET: Joi.string().required(),
   // ... other validations

@@ -96,7 +96,7 @@ interface EmergencyControlsProps {
 }
 
 // API configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3010";
 
 // Helper function for API calls with auth
 const apiCall = async (endpoint: string, options: RequestInit = {}) => {
