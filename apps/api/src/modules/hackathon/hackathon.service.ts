@@ -66,10 +66,38 @@ export class HackathonService {
   ): Promise<HackathonResponseDto> {
     this.logger.log(`Creating hackathon by ${creatorAddress}`);
 
-    // Validate deadline is in the future
-    const deadline = new Date(createHackathonDto.deadline);
-    if (deadline <= new Date()) {
-      throw new BadRequestException('Deadline must be in the future');
+    // Validate deadlines are in the future
+    const registrationDeadline = new Date(
+      createHackathonDto.registrationDeadline,
+    );
+    const submissionDeadline = new Date(createHackathonDto.submissionDeadline);
+    const votingDeadline = new Date(createHackathonDto.votingDeadline);
+    const now = new Date();
+
+    if (registrationDeadline <= now) {
+      throw new BadRequestException(
+        'Registration deadline must be in the future',
+      );
+    }
+    if (submissionDeadline <= now) {
+      throw new BadRequestException(
+        'Submission deadline must be in the future',
+      );
+    }
+    if (votingDeadline <= now) {
+      throw new BadRequestException('Voting deadline must be in the future');
+    }
+
+    // Validate deadline sequence
+    if (registrationDeadline >= submissionDeadline) {
+      throw new BadRequestException(
+        'Registration deadline must be before submission deadline',
+      );
+    }
+    if (submissionDeadline >= votingDeadline) {
+      throw new BadRequestException(
+        'Submission deadline must be before voting deadline',
+      );
     }
 
     // Ensure user profile exists
@@ -79,9 +107,13 @@ export class HackathonService {
       data: {
         title: createHackathonDto.title,
         description: createHackathonDto.description,
-        registrationDeadline: deadline,
-        submissionDeadline: deadline, // For now, use same deadline for backwards compatibility
-        votingDeadline: new Date(deadline.getTime() + 7 * 24 * 60 * 60 * 1000), // Add 7 days
+        registrationDeadline,
+        submissionDeadline,
+        votingDeadline,
+        prizeAmount: createHackathonDto.prizeAmount?.toString() ?? null,
+        entryFee: createHackathonDto.entryFee?.toString() ?? null,
+        maxParticipants: createHackathonDto.maxParticipants ?? null,
+
         organizerAddress: creatorAddress,
         status: HackathonStatus.DRAFT,
       },
@@ -215,11 +247,27 @@ export class HackathonService {
       statusChanged = true;
     }
 
-    // Validate deadline if being updated
-    if (updateHackathonDto.deadline) {
-      const newDeadline = new Date(updateHackathonDto.deadline);
+    // Validate deadlines if being updated
+    if (updateHackathonDto.registrationDeadline) {
+      const newDeadline = new Date(updateHackathonDto.registrationDeadline);
       if (newDeadline <= new Date()) {
-        throw new BadRequestException('Deadline must be in the future');
+        throw new BadRequestException(
+          'Registration deadline must be in the future',
+        );
+      }
+    }
+    if (updateHackathonDto.submissionDeadline) {
+      const newDeadline = new Date(updateHackathonDto.submissionDeadline);
+      if (newDeadline <= new Date()) {
+        throw new BadRequestException(
+          'Submission deadline must be in the future',
+        );
+      }
+    }
+    if (updateHackathonDto.votingDeadline) {
+      const newDeadline = new Date(updateHackathonDto.votingDeadline);
+      if (newDeadline <= new Date()) {
+        throw new BadRequestException('Voting deadline must be in the future');
       }
     }
 
@@ -228,8 +276,23 @@ export class HackathonService {
     if (updateHackathonDto.title) updateData.title = updateHackathonDto.title;
     if (updateHackathonDto.description)
       updateData.description = updateHackathonDto.description;
-    if (updateHackathonDto.deadline)
-      updateData.submissionDeadline = new Date(updateHackathonDto.deadline);
+    if (updateHackathonDto.registrationDeadline)
+      updateData.registrationDeadline = new Date(
+        updateHackathonDto.registrationDeadline,
+      );
+    if (updateHackathonDto.submissionDeadline)
+      updateData.submissionDeadline = new Date(
+        updateHackathonDto.submissionDeadline,
+      );
+    if (updateHackathonDto.votingDeadline)
+      updateData.votingDeadline = new Date(updateHackathonDto.votingDeadline);
+    if (updateHackathonDto.prizeAmount !== undefined)
+      updateData.prizeAmount =
+        updateHackathonDto.prizeAmount?.toString() ?? null;
+    if (updateHackathonDto.entryFee !== undefined)
+      updateData.entryFee = updateHackathonDto.entryFee?.toString() ?? null;
+    if (updateHackathonDto.maxParticipants !== undefined)
+      updateData.maxParticipants = updateHackathonDto.maxParticipants ?? null;
     // Note: lotteryPercentage removed from new schema
     if (updateHackathonDto.status)
       updateData.status = updateHackathonDto.status;

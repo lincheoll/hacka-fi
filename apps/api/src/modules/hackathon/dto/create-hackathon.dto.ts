@@ -4,6 +4,8 @@ import {
   IsNotEmpty,
   IsDateString,
   IsInt,
+  IsNumber,
+  IsOptional,
   Min,
   Max,
   MaxLength,
@@ -36,20 +38,56 @@ export class CreateHackathonDto {
   description!: string;
 
   @ApiProperty({
+    description: 'Registration deadline in ISO 8601 format',
+    example: '2024-12-15T23:59:59.000Z',
+  })
+  @IsDateString()
+  registrationDeadline!: string;
+
+  @ApiProperty({
     description: 'Submission deadline in ISO 8601 format',
     example: '2024-12-31T23:59:59.000Z',
   })
   @IsDateString()
-  deadline!: string;
+  submissionDeadline!: string;
 
   @ApiProperty({
-    description: 'Lottery percentage for prize distribution (0-100)',
-    example: 20,
-    minimum: 0,
-    maximum: 100,
+    description: 'Voting deadline in ISO 8601 format',
+    example: '2025-01-07T23:59:59.000Z',
   })
-  @IsInt()
+  @IsDateString()
+  votingDeadline!: string;
+
+  @ApiProperty({
+    description: 'Prize amount in KAIA',
+    example: 1000,
+    minimum: 0,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
   @Min(0)
-  @Max(100)
-  lotteryPercentage!: number;
+  prizeAmount?: number;
+
+  @ApiProperty({
+    description: 'Entry fee in KAIA',
+    example: 10,
+    minimum: 0,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  entryFee?: number;
+
+  @ApiProperty({
+    description: 'Maximum number of participants',
+    example: 100,
+    minimum: 1,
+    required: false,
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  maxParticipants?: number;
 }
