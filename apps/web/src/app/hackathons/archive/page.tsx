@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Header } from "@/components/layout/header";
 import {
   PublicHackathon,
   PaginatedResponse,
@@ -101,27 +102,32 @@ export default function HackathonArchivePage() {
 
   if (selectedHackathon) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Button
-            variant="outline"
-            onClick={() => setSelectedHackathon(null)}
-            className="mb-4"
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Back to Archive
-          </Button>
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <Header />
+        <div className="container mx-auto px-4 py-8">
+          <div className="mb-6">
+            <Button
+              variant="outline"
+              onClick={() => setSelectedHackathon(null)}
+              className="mb-4"
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Back to Archive
+            </Button>
+          </div>
+          <HackathonShowcase
+            hackathon={selectedHackathon}
+            showAllWinners={true}
+          />
         </div>
-        <HackathonShowcase
-          hackathon={selectedHackathon}
-          showAllWinners={true}
-        />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      <Header />
+      <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-2">
@@ -422,6 +428,7 @@ export default function HackathonArchivePage() {
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

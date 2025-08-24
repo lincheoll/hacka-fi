@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Header } from "@/components/layout/header";
 import { PlatformStats } from "@/components/features/winner/platform-stats";
 import { HallOfFame } from "@/components/features/winner/hall-of-fame";
 
@@ -23,9 +24,12 @@ export const metadata: Metadata = {
 
 export default function WinnersPage() {
   return (
-    <div className="container mx-auto px-4 py-8 space-y-12">
-      <PlatformStats />
-      <HallOfFame />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+      <Header />
+      <div className="container mx-auto px-4 py-8 space-y-12">
+        <PlatformStats />
+        <HallOfFame />
+      </div>
     </div>
   );
 }
