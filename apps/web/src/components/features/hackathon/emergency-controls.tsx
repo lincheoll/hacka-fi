@@ -46,8 +46,8 @@ import {
   FileText,
   RotateCcw,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import React from "react";
+import { toast } from "sonner";
 
 // Types for emergency controls
 interface EmergencyStopStatus {
@@ -223,8 +223,6 @@ export function EmergencyControls({ isAdmin }: EmergencyControlsProps) {
     customGasLimit: "",
   });
 
-  const { toast } = useToast();
-
   // Load data
   const loadData = useCallback(async () => {
     setIsLoading(true);
@@ -236,43 +234,35 @@ export function EmergencyControls({ isAdmin }: EmergencyControlsProps) {
       setEmergencyStopStatus(stopStatus);
       setAuditTrail(audit);
     } catch (error) {
-      toast({
-        title: "Failed to Load Data",
+      toast.error("Failed to Load Data", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   // Emergency stop handlers
   const handleActivateEmergencyStop = async () => {
     if (!emergencyReason.trim()) {
-      toast({
-        title: "Reason Required",
+      toast.error("Reason Required", {
         description: "Please provide a reason for the emergency stop",
-        variant: "destructive",
       });
       return;
     }
 
     try {
       await activateEmergencyStop(emergencyReason);
-      toast({
-        title: "Emergency Stop Activated",
+      toast.success("Emergency Stop Activated", {
         description: "All distribution activities have been halted",
-        variant: "destructive",
       });
       setEmergencyReason("");
       await loadData();
     } catch (error) {
-      toast({
-        title: "Failed to Activate Emergency Stop",
+      toast.error("Failed to Activate Emergency Stop", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     }
   };
@@ -280,17 +270,14 @@ export function EmergencyControls({ isAdmin }: EmergencyControlsProps) {
   const handleDeactivateEmergencyStop = async () => {
     try {
       await deactivateEmergencyStop();
-      toast({
-        title: "Emergency Stop Deactivated",
+      toast.success("Emergency Stop Deactivated", {
         description: "Normal operations have been resumed",
       });
       await loadData();
     } catch (error) {
-      toast({
-        title: "Failed to Deactivate Emergency Stop",
+      toast.error("Failed to Deactivate Emergency Stop", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     }
   };
@@ -298,18 +285,15 @@ export function EmergencyControls({ isAdmin }: EmergencyControlsProps) {
   // Manual distribution handler
   const handleManualDistribution = async () => {
     if (!manualDistributionForm.hackathonId || !manualDistributionForm.reason) {
-      toast({
-        title: "Form Incomplete",
+      toast.error("Form Incomplete", {
         description: "Please fill in all required fields",
-        variant: "destructive",
       });
       return;
     }
 
     try {
       await triggerManualDistribution(manualDistributionForm);
-      toast({
-        title: "Manual Distribution Triggered",
+      toast.success("Manual Distribution Triggered", {
         description: `Distribution started for hackathon ${manualDistributionForm.hackathonId}`,
       });
       setManualDistributionForm({
@@ -319,11 +303,9 @@ export function EmergencyControls({ isAdmin }: EmergencyControlsProps) {
       });
       await loadData();
     } catch (error) {
-      toast({
-        title: "Failed to Trigger Distribution",
+      toast.error("Failed to Trigger Distribution", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     }
   };
@@ -336,18 +318,15 @@ export function EmergencyControls({ isAdmin }: EmergencyControlsProps) {
       !statusOverrideForm.toStatus ||
       !statusOverrideForm.reason
     ) {
-      toast({
-        title: "Form Incomplete",
+      toast.error("Form Incomplete", {
         description: "Please fill in all required fields",
-        variant: "destructive",
       });
       return;
     }
 
     try {
       await overrideHackathonStatus(statusOverrideForm);
-      toast({
-        title: "Status Override Complete",
+      toast.success("Status Override Complete", {
         description: `Hackathon status changed to ${statusOverrideForm.toStatus}`,
       });
       setStatusOverrideForm({
@@ -359,11 +338,9 @@ export function EmergencyControls({ isAdmin }: EmergencyControlsProps) {
       });
       await loadData();
     } catch (error) {
-      toast({
-        title: "Failed to Override Status",
+      toast.error("Failed to Override Status", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     }
   };
@@ -371,20 +348,16 @@ export function EmergencyControls({ isAdmin }: EmergencyControlsProps) {
   // Distribution cancellation handler
   const handleCancelDistribution = async () => {
     if (!cancellationForm.hackathonId || !cancellationForm.reason) {
-      toast({
-        title: "Form Incomplete",
+      toast.error("Form Incomplete", {
         description: "Please fill in all required fields",
-        variant: "destructive",
       });
       return;
     }
 
     try {
       await cancelDistribution(cancellationForm);
-      toast({
-        title: "Distribution Cancelled",
+      toast.success("Distribution Cancelled", {
         description: `Distribution cancelled for hackathon ${cancellationForm.hackathonId}`,
-        variant: "destructive",
       });
       setCancellationForm({
         hackathonId: "",
@@ -393,11 +366,9 @@ export function EmergencyControls({ isAdmin }: EmergencyControlsProps) {
       });
       await loadData();
     } catch (error) {
-      toast({
-        title: "Failed to Cancel Distribution",
+      toast.error("Failed to Cancel Distribution", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     }
   };
@@ -405,28 +376,23 @@ export function EmergencyControls({ isAdmin }: EmergencyControlsProps) {
   // Force retry handler
   const handleForceRetry = async () => {
     if (!retryForm.hackathonId) {
-      toast({
-        title: "Form Incomplete",
+      toast.error("Form Incomplete", {
         description: "Please provide a hackathon ID",
-        variant: "destructive",
       });
       return;
     }
 
     try {
       await forceRetryDistribution(retryForm);
-      toast({
-        title: "Force Retry Initiated",
+      toast.success("Force Retry Initiated", {
         description: `Retry started for hackathon ${retryForm.hackathonId}`,
       });
       setRetryForm({ hackathonId: "", customGasPrice: "", customGasLimit: "" });
       await loadData();
     } catch (error) {
-      toast({
-        title: "Failed to Force Retry",
+      toast.error("Failed to Force Retry", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     }
   };

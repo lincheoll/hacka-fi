@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSignMessage, useAccount, useDisconnect } from "wagmi";
 import { useAuthStore } from "@/store/auth";
-import { useToast } from "@/hooks/use-toast";
 import { apiClient } from "@/lib/api-client";
+import { toast } from "sonner";
 
 export function useAuth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,8 +17,12 @@ export function useAuth() {
     isAuthenticated,
     user,
     token,
+    isAuthenticating: globalIsAuthenticating,
+    setIsAuthenticating,
   } = useAuthStore();
-  const { toast } = useToast();
+
+  // Prevent duplicate authentication calls in React Strict Mode
+  const hasAutoAuthCalled = useRef(false);
 
   /**
    * Get nonce from backend for wallet authentication
@@ -42,37 +46,40 @@ export function useAuth() {
    */
   const authenticate = useCallback(async (): Promise<void> => {
     if (!address || !isConnected) {
-      toast({
-        title: "Wallet Not Connected",
+      toast.error("Wallet Not Connected", {
         description: "Please connect your wallet first",
-        variant: "destructive",
       });
       return;
     }
 
+    // Prevent duplicate authentication calls using global state
+    if (globalIsAuthenticating) {
+      console.log("Authentication already in progress globally, skipping...");
+      return;
+    }
+
+    console.log("Starting authentication process");
+    setIsAuthenticating(true);
     setIsLoading(true);
 
     try {
       // Step 1: Get nonce from backend
-      toast({
-        title: "Generating Authentication Request",
+      toast.info("Generating Authentication Request", {
         description: "Getting nonce from server...",
       });
 
       const { nonce, message } = await getNonce(address);
 
       // Step 2: Sign message with wallet
-      toast({
-        title: "Sign Message",
+      toast.info("Sign Message", {
         description: "Please sign the message in your wallet",
       });
 
       const signature = await signMessageAsync({ message });
 
       // Step 3: Submit signature to backend
-      toast({
-        title: "Verifying Signature",
-        description: "Authenticating with server...",
+      toast.info("Verifying Signature", {
+        description: "Verifying signature with server...",
       });
 
       const loginResponse = await submitSignature(address, signature, message);
@@ -88,22 +95,19 @@ export function useAuth() {
 
       setAuthState(userData, loginResponse.accessToken);
 
-      toast({
-        title: "Authentication Successful",
+      toast.success("Authentication Successful", {
         description: "You are now logged in!",
-        variant: "default",
       });
     } catch (error) {
       console.error("Authentication failed:", error);
 
-      toast({
-        title: "Authentication Failed",
+      toast.error("Authentication Failed", {
         description:
           error instanceof Error ? error.message : "Failed to authenticate",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
+      setIsAuthenticating(false);
     }
   }, [
     address,
@@ -112,7 +116,8 @@ export function useAuth() {
     getNonce,
     submitSignature,
     setAuthState,
-    toast,
+    setIsAuthenticating,
+    globalIsAuthenticating,
   ]);
 
   /**
@@ -122,11 +127,10 @@ export function useAuth() {
     clearAuthState();
     disconnect();
 
-    toast({
-      title: "Logged Out",
+    toast.success("Logged Out", {
       description: "You have been successfully logged out",
     });
-  }, [clearAuthState, disconnect, toast]);
+  }, [clearAuthState, disconnect]);
 
   /**
    * Get current authenticated user profile from backend
@@ -140,6 +144,121 @@ export function useAuth() {
   }, [token]);
 
   /**
+   * Check if token is expired by decoding JWT
+   */
+  const isTokenExpired = useCallback((token: string): boolean => {
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      return payload.exp * 1000 < Date.now();
+    } catch {
+      return true;
+    }
+  }, []);
+
+  /**
+   * Validate current authentication state
+   */
+  const validateAuthState = useCallback(async (): Promise<boolean> => {
+    if (!address || !isConnected) return false;
+
+    // Check if we have a token
+    if (!token) return false;
+
+    // Check if token is expired
+    if (isTokenExpired(token)) {
+      clearAuthState();
+      return false;
+    }
+
+    // Check if token wallet address matches connected address
+    if (user?.walletAddress.toLowerCase() !== address.toLowerCase()) {
+      clearAuthState();
+      toast.error("Wallet Changed", {
+        description: "Please authenticate with the new wallet",
+      });
+      return false;
+    }
+
+    return true;
+  }, [address, isConnected, token, user, isTokenExpired, clearAuthState]);
+
+  /**
+   * Ensure user is authenticated - auto-authenticate if needed
+   */
+  const ensureAuthenticated = useCallback(async (): Promise<boolean> => {
+    if (!address || !isConnected) {
+      toast.error("Wallet Not Connected", {
+        description: "Please connect your wallet first",
+      });
+      return false;
+    }
+
+    // Check current auth state
+    const isValid = await validateAuthState();
+    if (isValid) return true;
+
+    // Auto-authenticate
+    try {
+      await authenticate();
+      return true;
+    } catch (error) {
+      console.error("Auto-authentication failed:", error);
+      return false;
+    }
+  }, [address, isConnected, validateAuthState, authenticate]);
+
+  /**
+   * Auto-validate auth state when wallet changes
+   */
+  useEffect(() => {
+    if (isConnected && address && token) {
+      validateAuthState();
+    }
+  }, [address, isConnected, token, validateAuthState]);
+
+  /**
+   * Auto-authenticate on first wallet connection
+   */
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    if (
+      isConnected &&
+      address &&
+      !token &&
+      !isLoading &&
+      !globalIsAuthenticating &&
+      !hasAutoAuthCalled.current
+    ) {
+      hasAutoAuthCalled.current = true;
+
+      // Wait a bit for the component to stabilize, then auto-authenticate
+      timeoutId = setTimeout(() => {
+        authenticate().catch((error) => {
+          console.error("Auto-authentication failed:", error);
+          hasAutoAuthCalled.current = false; // Reset on error for retry
+        });
+      }, 1000);
+    }
+
+    // Reset flag when conditions change
+    if (!isConnected || !address || token) {
+      hasAutoAuthCalled.current = false;
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [
+    isConnected,
+    address,
+    token,
+    isLoading,
+    globalIsAuthenticating,
+    authenticate,
+  ]);
+
+  /**
    * Check if user needs to authenticate
    * (wallet connected but not authenticated with backend)
    */
@@ -147,7 +266,7 @@ export function useAuth() {
 
   return {
     // State
-    isLoading,
+    isLoading: isLoading || globalIsAuthenticating,
     isAuthenticated,
     user,
     token,
@@ -157,5 +276,7 @@ export function useAuth() {
     authenticate,
     logout,
     getProfile,
+    ensureAuthenticated,
+    validateAuthState,
   };
 }

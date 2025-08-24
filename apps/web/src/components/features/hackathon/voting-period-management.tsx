@@ -29,8 +29,8 @@ import {
   triggerStatusCheck,
 } from "@/lib/api-functions";
 import type { VotingPeriodInfo, VotingPhaseHackathon } from "@/types/api";
-import { useToast } from "@/hooks/use-toast";
 import React from "react";
+import { toast } from "sonner";
 
 interface VotingPeriodManagementProps {
   hackathonId?: string;
@@ -47,7 +47,6 @@ export function VotingPeriodManagement({
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { toast } = useToast();
 
   // Load voting period info for specific hackathon
   const loadVotingInfo = useCallback(async () => {
@@ -58,11 +57,9 @@ export function VotingPeriodManagement({
       const info = await getVotingPeriodInfo(hackathonId);
       setVotingInfo(info);
     } catch (error) {
-      toast({
-        title: "Failed to Load Voting Info",
+      toast.error("Failed to Load Voting Info", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -76,24 +73,20 @@ export function VotingPeriodManagement({
       const hackathons = await getVotingPhaseHackathons();
       setAllVotingHackathons(hackathons);
     } catch (error) {
-      toast({
-        title: "Failed to Load Voting Hackathons",
+      toast.error("Failed to Load Voting Hackathons", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   // Trigger manual status check
   const handleStatusCheck = async () => {
     if (!isAdmin) {
-      toast({
-        title: "Unauthorized",
+      toast.error("Unauthorized", {
         description: "Only administrators can trigger status checks.",
-        variant: "destructive",
       });
       return;
     }
@@ -101,8 +94,7 @@ export function VotingPeriodManagement({
     setIsRefreshing(true);
     try {
       const result = await triggerStatusCheck();
-      toast({
-        title: "Status Check Complete",
+      toast.success("Status Check Complete", {
         description: `Processed ${result.processedCount} hackathons, updated ${result.updatedCount}`,
       });
 
@@ -113,11 +105,9 @@ export function VotingPeriodManagement({
         await loadAllVotingHackathons();
       }
     } catch (error) {
-      toast({
-        title: "Failed to Check Status",
+      toast.error("Failed to Check Status", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     } finally {
       setIsRefreshing(false);

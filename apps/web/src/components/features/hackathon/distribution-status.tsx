@@ -45,8 +45,8 @@ import {
   Hash,
   ArrowRight,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import React from "react";
+import { toast } from "sonner";
 
 // Types for distribution status
 interface PrizePoolInfo {
@@ -193,7 +193,6 @@ export function DistributionStatus({
     useState<DistributionStatusInfo | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { toast } = useToast();
 
   // Load distribution status
   const loadDistributionStatus = useCallback(async () => {
@@ -203,17 +202,15 @@ export function DistributionStatus({
       const info = await getDistributionStatus(hackathonId);
       setDistributionInfo(info);
     } catch (error) {
-      toast({
-        title: "Failed to Load Distribution Status",
+      toast.error("Failed to Load Distribution Status", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [hackathonId, toast, isRefreshing]);
+  }, [hackathonId, isRefreshing]);
 
   // Manual refresh
   const handleRefresh = async () => {
@@ -380,7 +377,7 @@ export function DistributionStatus({
         </CardHeader>
         <CardContent>
           {/* Prize Pool Information */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+          <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4">
             <div className="p-4 text-center border rounded-lg">
               <DollarSign className="w-8 h-8 mx-auto mb-2 text-green-500" />
               <div className="text-2xl font-bold">
@@ -422,7 +419,7 @@ export function DistributionStatus({
           {/* Distribution Progress */}
           {distributionInfo.distributionProgress.totalWinners > 0 && (
             <div className="space-y-3">
-              <div className="flex justify-between items-center">
+              <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">
                   Distribution Progress
                 </span>
@@ -469,7 +466,7 @@ export function DistributionStatus({
                   {distributionInfo.nextAction.description}
                 </div>
                 {distributionInfo.nextAction.estimatedTime && (
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="mt-1 text-xs text-gray-500">
                     Estimated time: {distributionInfo.nextAction.estimatedTime}
                   </div>
                 )}
@@ -497,7 +494,7 @@ export function DistributionStatus({
                 <div key={winner.position} className="p-4 border rounded-lg">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 bg-yellow-100 text-yellow-800 rounded-full font-bold">
+                      <div className="flex items-center justify-center w-8 h-8 font-bold text-yellow-800 bg-yellow-100 rounded-full">
                         #{winner.position}
                       </div>
                       <div>
@@ -505,13 +502,13 @@ export function DistributionStatus({
                           {winner.participantName ||
                             formatAddress(winner.participantAddress)}
                         </div>
-                        <div className="text-sm text-gray-500 font-mono">
+                        <div className="font-mono text-sm text-gray-500">
                           {formatAddress(winner.participantAddress)}
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-lg">
+                      <div className="text-lg font-bold">
                         {formatEthAmount(winner.amount)}
                       </div>
                       <div className="text-sm text-gray-500">
@@ -543,7 +540,7 @@ export function DistributionStatus({
                         <Dialog>
                           <DialogTrigger asChild>
                             <Button variant="ghost" size="sm">
-                              <Eye className="h-4 w-4" />
+                              <Eye className="w-4 h-4" />
                             </Button>
                           </DialogTrigger>
                           <DialogContent>
@@ -559,7 +556,7 @@ export function DistributionStatus({
                                 <div className="font-medium">
                                   Transaction Hash
                                 </div>
-                                <div className="font-mono text-sm break-all bg-gray-100 p-2 rounded">
+                                <div className="p-2 font-mono text-sm break-all bg-gray-100 rounded">
                                   {winner.txHash}
                                 </div>
                               </div>
@@ -593,7 +590,7 @@ export function DistributionStatus({
                                   target="_blank"
                                   rel="noopener noreferrer"
                                 >
-                                  <ExternalLink className="mr-2 h-4 w-4" />
+                                  <ExternalLink className="w-4 h-4 mr-2" />
                                   View on Etherscan
                                 </a>
                               </Button>

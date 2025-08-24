@@ -28,10 +28,10 @@ import {
   getWinners,
   areWinnersFinalized,
 } from "@/lib/api-functions";
-import { useToast } from "@/hooks/use-toast";
 import { formatEther } from "viem";
 import React from "react";
 import type { WinnerDeterminationResponse } from "@/types/api";
+import { toast } from "sonner";
 
 interface WinnerManagementProps {
   hackathonId: string;
@@ -50,7 +50,6 @@ export function WinnerManagement({
   const [isCalculating, setIsCalculating] = useState(false);
   const [isFinalizing, setIsFinalizing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
 
   // Check if hackathon is completed
   const isCompleted = hackathonStatus === "COMPLETED";
@@ -80,10 +79,8 @@ export function WinnerManagement({
   // Calculate winners without finalizing
   const handleCalculateWinners = async () => {
     if (!isCompleted) {
-      toast({
-        title: "Cannot Calculate Winners",
+      toast.error("Cannot Calculate Winners", {
         description: "Winners can only be calculated for completed hackathons.",
-        variant: "destructive",
       });
       return;
     }
@@ -93,16 +90,13 @@ export function WinnerManagement({
       const result = await calculateWinners(hackathonId);
       setWinnerResult(result);
 
-      toast({
-        title: "Winners Calculated",
+      toast.success("Winners Calculated", {
         description: "Winners have been calculated based on voting results.",
       });
     } catch (error) {
-      toast({
-        title: "Failed to Calculate Winners",
+      toast.error("Failed to Calculate Winners", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     } finally {
       setIsCalculating(false);
@@ -112,19 +106,15 @@ export function WinnerManagement({
   // Finalize winners (permanent database update)
   const handleFinalizeWinners = async () => {
     if (!isOrganizer) {
-      toast({
-        title: "Unauthorized",
+      toast.error("Unauthorized", {
         description: "Only the hackathon organizer can finalize winners.",
-        variant: "destructive",
       });
       return;
     }
 
     if (isFinalized) {
-      toast({
-        title: "Already Finalized",
+      toast.error("Already Finalized", {
         description: "Winners have already been finalized for this hackathon.",
-        variant: "destructive",
       });
       return;
     }
@@ -135,16 +125,13 @@ export function WinnerManagement({
       setWinnerResult(result);
       setIsFinalized(true);
 
-      toast({
-        title: "Winners Finalized",
+      toast.success("Winners Finalized", {
         description: "Winners have been permanently saved to the database.",
       });
     } catch (error) {
-      toast({
-        title: "Failed to Finalize Winners",
+      toast.error("Failed to Finalize Winners", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     } finally {
       setIsFinalizing(false);
@@ -154,13 +141,13 @@ export function WinnerManagement({
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Trophy className="h-6 w-6 text-yellow-500" />;
+        return <Trophy className="w-6 h-6 text-yellow-500" />;
       case 2:
-        return <Medal className="h-6 w-6 text-gray-400" />;
+        return <Medal className="w-6 h-6 text-gray-400" />;
       case 3:
-        return <Award className="h-6 w-6 text-orange-600" />;
+        return <Award className="w-6 h-6 text-orange-600" />;
       default:
-        return <Target className="h-6 w-6 text-blue-500" />;
+        return <Target className="w-6 h-6 text-blue-500" />;
     }
   };
 
@@ -187,7 +174,7 @@ export function WinnerManagement({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
+            <Trophy className="w-5 h-5" />
             Winner Determination
           </CardTitle>
           <CardDescription>
@@ -196,7 +183,7 @@ export function WinnerManagement({
         </CardHeader>
         <CardContent>
           <Alert>
-            <AlertCircle className="h-4 w-4" />
+            <AlertCircle className="w-4 h-4" />
             <AlertDescription>
               The hackathon must be in COMPLETED status before winners can be
               calculated.
@@ -213,11 +200,11 @@ export function WinnerManagement({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-5 w-5" />
+            <Trophy className="w-5 h-5" />
             Winner Management
             {isFinalized && (
               <Badge variant="secondary" className="ml-2">
-                <CheckCircle2 className="h-3 w-3 mr-1" />
+                <CheckCircle2 className="w-3 h-3 mr-1" />
                 Finalized
               </Badge>
             )}
@@ -227,7 +214,7 @@ export function WinnerManagement({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <Button
               onClick={handleCalculateWinners}
               disabled={isCalculating || isLoading}
@@ -254,7 +241,7 @@ export function WinnerManagement({
 
           {isFinalized && (
             <Alert className="mt-4">
-              <CheckCircle2 className="h-4 w-4" />
+              <CheckCircle2 className="w-4 h-4" />
               <AlertDescription>
                 Winners have been finalized and saved to the database. Prize
                 distribution can now proceed.
@@ -271,12 +258,12 @@ export function WinnerManagement({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5" />
+                <DollarSign className="w-5 h-5" />
                 Prize Pool Distribution
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="text-center">
                   <div className="text-2xl font-bold">
                     {formatEther(BigInt(winnerResult.totalPrizePool))} ETH
@@ -303,7 +290,7 @@ export function WinnerManagement({
                 {winnerResult.prizeDistribution.map((prize) => (
                   <div
                     key={prize.position}
-                    className="flex items-center justify-between p-3 rounded-lg border"
+                    className="flex items-center justify-between p-3 border rounded-lg"
                   >
                     <div className="flex items-center gap-3">
                       {getRankIcon(prize.position)}
@@ -343,7 +330,7 @@ export function WinnerManagement({
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
+                <Users className="w-5 h-5" />
                 Winner Details
               </CardTitle>
             </CardHeader>
@@ -379,7 +366,7 @@ export function WinnerManagement({
                       </div>
                     </div>
 
-                    <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-2 gap-4 mt-3 text-sm">
                       <div>
                         <span className="font-medium">Average Score:</span>{" "}
                         {winner.averageScore.toFixed(2)}
@@ -405,7 +392,7 @@ export function WinnerManagement({
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                <div className="grid grid-cols-2 gap-4 text-center sm:grid-cols-4">
                   <div>
                     <div className="text-2xl font-bold">
                       {winnerResult.rankingMetrics.totalParticipants}

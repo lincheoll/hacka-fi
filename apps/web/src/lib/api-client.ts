@@ -10,6 +10,8 @@ interface ApiRequestInit extends RequestInit {
 
 class ApiClient {
   private baseUrl: string;
+  private isRefreshing = false;
+  private refreshPromise: Promise<boolean> | null = null;
 
   constructor() {
     // Use environment variable for API base URL, fallback to relative path
@@ -21,6 +23,66 @@ class ApiClient {
    */
   private getAuthToken(): string | null {
     return useAuthStore.getState().token;
+  }
+
+  /**
+   * Auto-refresh authentication when token expires
+   */
+  private async autoRefreshAuth(): Promise<boolean> {
+    if (this.isRefreshing) {
+      // If already refreshing, wait for the existing refresh to complete
+      return this.refreshPromise || Promise.resolve(false);
+    }
+
+    this.isRefreshing = true;
+    this.refreshPromise = this.performAuthRefresh();
+
+    try {
+      const result = await this.refreshPromise;
+      return result;
+    } finally {
+      this.isRefreshing = false;
+      this.refreshPromise = null;
+    }
+  }
+
+  /**
+   * Perform the actual authentication refresh
+   */
+  private async performAuthRefresh(): Promise<boolean> {
+    try {
+      // Dynamic import to avoid circular dependency
+      const { useAuth } = await import("@/hooks/use-auth");
+
+      // Get the current React context (this is tricky in a class)
+      // We'll use a different approach - trigger re-auth through store
+      const authStore = useAuthStore.getState();
+
+      // Clear current auth state to trigger re-authentication
+      authStore.logout();
+
+      // For automatic re-auth, we need to check if wallet is still connected
+      if (typeof window !== "undefined" && window.ethereum) {
+        try {
+          // Try to get current accounts
+          const accounts = await window.ethereum.request({
+            method: "eth_accounts",
+          });
+          if (accounts.length > 0) {
+            // Wallet is still connected, trigger re-authentication
+            // This will be handled by the useAuth effect
+            return true;
+          }
+        } catch (error) {
+          console.error("Failed to check wallet connection:", error);
+        }
+      }
+
+      return false;
+    } catch (error) {
+      console.error("Auto-refresh authentication failed:", error);
+      return false;
+    }
   }
 
   /**
@@ -85,11 +147,12 @@ class ApiClient {
   }
 
   /**
-   * Generic request method
+   * Generic request method with auto-retry on 401
    */
   private async request<T>(
     endpoint: string,
     { skipAuth, ...options }: ApiRequestInit = {},
+    isRetry = false,
   ): Promise<T> {
     const url = endpoint.startsWith("http")
       ? endpoint
@@ -102,6 +165,20 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
+
+      // Handle 401 with automatic retry
+      if (response.status === 401 && !skipAuth && !isRetry) {
+        // Try to refresh authentication
+        const refreshed = await this.autoRefreshAuth();
+        if (refreshed) {
+          // Wait a bit for the new token to be available
+          await new Promise((resolve) => setTimeout(resolve, 500));
+
+          // Retry the request with new token
+          return this.request<T>(endpoint, { skipAuth, ...options }, true);
+        }
+      }
+
       return await this.handleResponse<T>(response);
     } catch (error) {
       console.error(

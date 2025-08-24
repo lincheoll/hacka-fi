@@ -27,20 +27,35 @@ export class AuthService {
 
   /**
    * Generate a unique nonce for wallet authentication
+   * Prevents duplicate requests from React Strict Mode
    */
   generateNonce(address: string): { nonce: string; message: string } {
+    const addressKey = address.toLowerCase();
+
+    // Check if we already have a valid nonce for this address (within last 30 seconds)
+    const existingNonce = this.nonceStore.get(addressKey);
+    const now = Date.now();
+    if (existingNonce && now - existingNonce.timestamp < 30000) {
+      const message = `Welcome to Hacka-Fi!\n\nClick to sign in and accept the Terms of Service.\n\nThis request will not trigger a blockchain transaction or cost any gas fees.\n\nWallet address:\n${address}\n\nNonce:\n${existingNonce.nonce}`;
+      this.logger.debug(
+        `Returning existing valid nonce for address ${address}`,
+      );
+      return { nonce: existingNonce.nonce, message };
+    }
+
+    // Generate new nonce
     const nonce = randomBytes(16).toString('hex');
     const timestamp = Date.now();
 
     // Store nonce with 5-minute expiration
-    this.nonceStore.set(address.toLowerCase(), { nonce, timestamp });
+    this.nonceStore.set(addressKey, { nonce, timestamp });
 
     // Clean expired nonces
     this.cleanExpiredNonces();
 
     const message = `Welcome to Hacka-Fi!\n\nClick to sign in and accept the Terms of Service.\n\nThis request will not trigger a blockchain transaction or cost any gas fees.\n\nWallet address:\n${address}\n\nNonce:\n${nonce}`;
 
-    this.logger.debug(`Generated nonce for address ${address}: ${nonce}`);
+    this.logger.debug(`Generated new nonce for address ${address}: ${nonce}`);
 
     return { nonce, message };
   }
@@ -56,21 +71,34 @@ export class AuthService {
 
     // Check if nonce is expired (5 minutes)
     const now = Date.now();
+
+    console.log({
+      now,
+      storedData,
+    });
+    console.log(1);
     if (now - storedData.timestamp > 5 * 60 * 1000) {
       this.nonceStore.delete(address.toLowerCase());
       throw new UnauthorizedException('Nonce has expired');
     }
 
+    console.log(2);
+
     // Verify the message contains the correct nonce
     if (!message.includes(storedData.nonce)) {
+      console.log('why?');
       throw new UnauthorizedException('Invalid nonce in message');
     }
+
+    console.log(3);
 
     // Verify wallet signature
     const isValid = await this.verifySignature(address, message, signature);
     if (!isValid) {
       throw new UnauthorizedException('Invalid signature');
     }
+
+    console.log(4);
 
     // Remove used nonce
     this.nonceStore.delete(address.toLowerCase());

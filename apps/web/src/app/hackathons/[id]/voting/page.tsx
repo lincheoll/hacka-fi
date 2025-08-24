@@ -53,7 +53,6 @@ export default function VotingPage({ params }: VotingPageProps) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [mounted, setMounted] = useState(false);
-  const { toast } = useToast();
 
   useEffect(() => {
     setMounted(true);
@@ -99,10 +98,8 @@ export default function VotingPage({ params }: VotingPageProps) {
       queryClient.invalidateQueries({ queryKey: ["voting-results", id] });
 
       // Show success toast
-      toast({
-        title: "Vote Submitted Successfully",
+      toast.success("Vote Submitted Successfully", {
         description: `Your vote of ${data.score}/10 has been recorded.`,
-        variant: "default",
       });
     },
     onError: (error) => {
@@ -114,10 +111,8 @@ export default function VotingPage({ params }: VotingPageProps) {
           ? error.message
           : "Failed to submit vote. Please try again.";
 
-      toast({
-        title: "Vote Submission Failed",
+      toast.error("Vote Submission Failed", {
         description: errorMessage,
-        variant: "destructive",
       });
     },
   });

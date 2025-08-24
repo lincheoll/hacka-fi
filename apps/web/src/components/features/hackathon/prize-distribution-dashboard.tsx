@@ -58,8 +58,8 @@ import {
   FileText,
   Shield,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import React from "react";
+import { toast } from "sonner";
 
 // Types for our distribution system
 interface DistributionJob {
@@ -215,7 +215,6 @@ export function PrizeDistributionDashboard({
   );
   const [transactionDetails, setTransactionDetails] =
     useState<TransactionDetails | null>(null);
-  const { toast } = useToast();
 
   // Load all data
   const loadDashboardData = useCallback(async () => {
@@ -231,42 +230,34 @@ export function PrizeDistributionDashboard({
       setDistributionHistory(history);
       setSystemHealth(health);
     } catch (error) {
-      toast({
-        title: "Failed to Load Dashboard",
+      toast.error("Failed to Load Dashboard", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, []);
 
   // Load transaction details
-  const loadTransactionDetails = useCallback(
-    async (txHash: string) => {
-      try {
-        const details = await getTransactionDetails(txHash);
-        setTransactionDetails(details);
-      } catch (error) {
-        toast({
-          title: "Failed to Load Transaction",
-          description:
-            error instanceof Error ? error.message : "An error occurred",
-          variant: "destructive",
-        });
-      }
-    },
-    [toast],
-  );
+  const loadTransactionDetails = useCallback(async (txHash: string) => {
+    try {
+      const details = await getTransactionDetails(txHash);
+      setTransactionDetails(details);
+    } catch (error) {
+      toast.error("Failed to Load Transaction", {
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+      });
+    }
+  }, []);
 
   // Manual refresh
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await loadDashboardData();
     setIsRefreshing(false);
-    toast({
-      title: "Dashboard Refreshed",
+    toast.success("Dashboard Refreshed", {
       description: "All data has been updated",
     });
   };
@@ -282,18 +273,14 @@ export function PrizeDistributionDashboard({
           reason: "Emergency stop activated from dashboard",
         }),
       });
-      toast({
-        title: "Emergency Stop Activated",
+      toast.success("Emergency Stop Activated", {
         description: "All distribution activities have been halted",
-        variant: "destructive",
       });
       await loadDashboardData();
     } catch (error) {
-      toast({
-        title: "Failed to Activate Emergency Stop",
+      toast.error("Failed to Activate Emergency Stop", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     }
   };
@@ -309,17 +296,14 @@ export function PrizeDistributionDashboard({
           reason: "Manual trigger from dashboard",
         }),
       });
-      toast({
-        title: "Manual Distribution Triggered",
+      toast.success("Manual Distribution Triggered", {
         description: `Distribution started for hackathon ${hackathonId}`,
       });
       await loadDashboardData();
     } catch (error) {
-      toast({
-        title: "Failed to Trigger Distribution",
+      toast.error("Failed to Trigger Distribution", {
         description:
           error instanceof Error ? error.message : "An error occurred",
-        variant: "destructive",
       });
     }
   };

@@ -152,7 +152,7 @@ export function ResultsExport({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Download className="h-5 w-5" />
+          <Download className="w-5 h-5" />
           Export & Share Results
         </CardTitle>
         <CardDescription>
@@ -169,25 +169,25 @@ export function ResultsExport({
           </Alert>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Export Section */}
           <div className="space-y-3">
-            <h4 className="font-medium flex items-center gap-2">
-              <FileText className="h-4 w-4" />
+            <h4 className="flex items-center gap-2 font-medium">
+              <FileText className="w-4 h-4" />
               Download Data
             </h4>
 
             <div className="space-y-2">
               <Button
                 variant="outline"
-                className="w-full justify-start"
+                className="justify-start w-full"
                 onClick={() => handleExport("json")}
                 disabled={!isCompleted || isExporting}
               >
                 {isExporting && exportFormat === "json" ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
-                  <FileText className="h-4 w-4 mr-2" />
+                  <FileText className="w-4 h-4 mr-2" />
                 )}
                 Export as JSON
                 <Badge variant="secondary" className="ml-auto">
@@ -197,14 +197,14 @@ export function ResultsExport({
 
               <Button
                 variant="outline"
-                className="w-full justify-start"
+                className="justify-start w-full"
                 onClick={() => handleExport("csv")}
                 disabled={!isCompleted || isExporting}
               >
                 {isExporting && exportFormat === "csv" ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
-                  <Table className="h-4 w-4 mr-2" />
+                  <Table className="w-4 h-4 mr-2" />
                 )}
                 Export as CSV
                 <Badge variant="secondary" className="ml-auto">
@@ -213,7 +213,7 @@ export function ResultsExport({
               </Button>
             </div>
 
-            <div className="text-xs text-gray-600 space-y-1">
+            <div className="space-y-1 text-xs text-gray-600">
               <p>
                 <strong>JSON:</strong> Complete data with votes, comments, and
                 metrics
@@ -227,37 +227,37 @@ export function ResultsExport({
 
           {/* Share Section */}
           <div className="space-y-3">
-            <h4 className="font-medium flex items-center gap-2">
-              <Share2 className="h-4 w-4" />
+            <h4 className="flex items-center gap-2 font-medium">
+              <Share2 className="w-4 h-4" />
               Share Results
             </h4>
 
             <div className="space-y-2">
               <Button
                 variant="outline"
-                className="w-full justify-start"
+                className="justify-start w-full"
                 onClick={handleCopyLink}
               >
                 {copied ? (
-                  <Check className="h-4 w-4 mr-2 text-green-600" />
+                  <Check className="w-4 h-4 mr-2 text-green-600" />
                 ) : (
-                  <Copy className="h-4 w-4 mr-2" />
+                  <Copy className="w-4 h-4 mr-2" />
                 )}
                 Copy Results Link
               </Button>
 
               <Button
                 variant="outline"
-                className="w-full justify-start"
+                className="justify-start w-full"
                 onClick={handleShareResults}
               >
-                <Share2 className="h-4 w-4 mr-2" />
+                <Share2 className="w-4 h-4 mr-2" />
                 Share Results
               </Button>
 
               <Button
                 variant="outline"
-                className="w-full justify-start"
+                className="justify-start w-full"
                 asChild
               >
                 <a
@@ -265,7 +265,7 @@ export function ResultsExport({
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <ExternalLink className="h-4 w-4 mr-2" />
+                  <ExternalLink className="w-4 h-4 mr-2" />
                   Open in New Tab
                 </a>
               </Button>
@@ -278,9 +278,9 @@ export function ResultsExport({
         </div>
 
         {/* Export Information */}
-        <div className="border-t pt-4 mt-6">
-          <h5 className="text-sm font-medium mb-2">Export Information</h5>
-          <div className="text-xs text-gray-600 space-y-1">
+        <div className="pt-4 mt-6 border-t">
+          <h5 className="mb-2 text-sm font-medium">Export Information</h5>
+          <div className="space-y-1 text-xs text-gray-600">
             <p>
               • Exported files include participant rankings, scores, and prize
               distribution

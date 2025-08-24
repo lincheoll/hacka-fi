@@ -8,9 +8,11 @@ interface AuthState {
   user: User | null;
   token: string | null;
   isAuthenticated: boolean;
+  isAuthenticating: boolean;
   login: (user: User, token: string) => void;
   logout: () => void;
   updateUser: (user: Partial<User>) => void;
+  setIsAuthenticating: (isAuthenticating: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -19,12 +21,14 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       isAuthenticated: false,
+      isAuthenticating: false,
 
       login: (user: User, token: string) => {
         set({
           user,
           token,
           isAuthenticated: true,
+          isAuthenticating: false,
         });
       },
 
@@ -33,6 +37,7 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           token: null,
           isAuthenticated: false,
+          isAuthenticating: false,
         });
       },
 
@@ -43,6 +48,10 @@ export const useAuthStore = create<AuthState>()(
             user: { ...user, ...userData },
           });
         }
+      },
+
+      setIsAuthenticating: (isAuthenticating: boolean) => {
+        set({ isAuthenticating });
       },
     }),
     {
