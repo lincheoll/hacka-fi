@@ -302,9 +302,7 @@ export default function VotingPage({ params }: VotingPageProps) {
               <h1 className="mb-2 text-3xl font-bold text-gray-900">
                 Judge Voting Dashboard
               </h1>
-              <h2 className="mb-2 text-xl text-gray-700">
-                {hackathon.title}
-              </h2>
+              <h2 className="mb-2 text-xl text-gray-700">{hackathon.title}</h2>
               <p className="text-gray-600">
                 Vote on participant submissions (1-10 scale)
               </p>
@@ -657,10 +655,11 @@ function VotingCard({
                 {/* Real-time comment validation */}
                 {realtimeValidation.commentError && (
                   <div
-                    className={`mt-2 flex items-center text-sm ${realtimeValidation.commentError.severity === "error"
-                      ? "text-red-600"
-                      : "text-yellow-600"
-                      }`}
+                    className={`mt-2 flex items-center text-sm ${
+                      realtimeValidation.commentError.severity === "error"
+                        ? "text-red-600"
+                        : "text-yellow-600"
+                    }`}
                   >
                     {realtimeValidation.commentError.severity === "error" ? (
                       <AlertCircle className="w-4 h-4 mr-1" />

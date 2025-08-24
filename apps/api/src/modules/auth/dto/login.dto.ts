@@ -19,9 +19,9 @@ export class LoginDto {
 
   @ApiProperty({
     description: 'Original message that was signed',
-    example: 'Login to Hacka-Fi with nonce: 12345',
+    example: 'Welcome to Hacka-Fi!\n\nClick to sign in and accept the Terms of Service...',
   })
   @IsString()
-  @Length(1, 200)
+  @Length(1, 500)
   message!: string;
 }

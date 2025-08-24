@@ -14,7 +14,12 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginDto, LoginResponseDto } from './dto';
+import {
+  LoginDto,
+  LoginResponseDto,
+  NonceRequestDto,
+  NonceResponseDto,
+} from './dto';
 import { Public, CurrentUser } from './decorators';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
@@ -22,6 +27,36 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
+  @Public()
+  @Post('nonce')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Generate authentication nonce',
+    description: 'Generate a unique nonce for wallet signature verification',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Nonce generated successfully',
+    type: NonceResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid wallet address',
+  })
+  async generateNonce(
+    @Body() nonceRequest: NonceRequestDto,
+  ): Promise<NonceResponseDto> {
+    const { nonce, message } = this.authService.generateNonce(
+      nonceRequest.address,
+    );
+
+    return {
+      nonce,
+      message,
+      expiresIn: 300, // 5 minutes
+    };
+  }
 
   @Public()
   @Post('login')

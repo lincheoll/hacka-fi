@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { verifyMessage } from 'viem';
 import { LoginDto, LoginResponseDto } from './dto';
+import { randomBytes } from 'crypto';
 
 export interface JwtPayload {
   sub: string; // wallet address
@@ -14,20 +15,65 @@ export interface JwtPayload {
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly nonceStore = new Map<
+    string,
+    { nonce: string; timestamp: number }
+  >();
 
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {}
 
+  /**
+   * Generate a unique nonce for wallet authentication
+   */
+  generateNonce(address: string): { nonce: string; message: string } {
+    const nonce = randomBytes(16).toString('hex');
+    const timestamp = Date.now();
+
+    // Store nonce with 5-minute expiration
+    this.nonceStore.set(address.toLowerCase(), { nonce, timestamp });
+
+    // Clean expired nonces
+    this.cleanExpiredNonces();
+
+    const message = `Welcome to Hacka-Fi!\n\nClick to sign in and accept the Terms of Service.\n\nThis request will not trigger a blockchain transaction or cost any gas fees.\n\nWallet address:\n${address}\n\nNonce:\n${nonce}`;
+
+    this.logger.debug(`Generated nonce for address ${address}: ${nonce}`);
+
+    return { nonce, message };
+  }
+
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     const { address, signature, message } = loginDto;
+
+    // Verify the message contains a valid nonce
+    const storedData = this.nonceStore.get(address.toLowerCase());
+    if (!storedData) {
+      throw new UnauthorizedException('No nonce found for this address');
+    }
+
+    // Check if nonce is expired (5 minutes)
+    const now = Date.now();
+    if (now - storedData.timestamp > 5 * 60 * 1000) {
+      this.nonceStore.delete(address.toLowerCase());
+      throw new UnauthorizedException('Nonce has expired');
+    }
+
+    // Verify the message contains the correct nonce
+    if (!message.includes(storedData.nonce)) {
+      throw new UnauthorizedException('Invalid nonce in message');
+    }
 
     // Verify wallet signature
     const isValid = await this.verifySignature(address, message, signature);
     if (!isValid) {
       throw new UnauthorizedException('Invalid signature');
     }
+
+    // Remove used nonce
+    this.nonceStore.delete(address.toLowerCase());
 
     // Generate JWT token
     const payload: JwtPayload = {
@@ -76,6 +122,29 @@ export class AuthService {
       };
     }
     return null;
+  }
+
+  /**
+   * Clean expired nonces from the store
+   */
+  private cleanExpiredNonces(): void {
+    const now = Date.now();
+    const expiredAddresses: string[] = [];
+
+    this.nonceStore.forEach((data, address) => {
+      if (now - data.timestamp > 5 * 60 * 1000) {
+        // 5 minutes
+        expiredAddresses.push(address);
+      }
+    });
+
+    expiredAddresses.forEach((address) => {
+      this.nonceStore.delete(address);
+    });
+
+    if (expiredAddresses.length > 0) {
+      this.logger.debug(`Cleaned ${expiredAddresses.length} expired nonces`);
+    }
   }
 
   private parseExpirationTime(expiresIn: string): number {

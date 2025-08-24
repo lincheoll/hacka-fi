@@ -80,9 +80,7 @@ function DashboardContent() {
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
-          <h1 className="mb-8 text-3xl font-bold text-gray-900">
-            Dashboard
-          </h1>
+          <h1 className="mb-8 text-3xl font-bold text-gray-900">Dashboard</h1>
           <Alert>
             <AlertDescription>
               Please connect your wallet to view your dashboard.
@@ -121,9 +119,7 @@ function DashboardContent() {
 
       <div className="container px-4 py-8 mx-auto">
         <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-gray-900">
-            Dashboard
-          </h1>
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">Dashboard</h1>
           <p className="text-gray-600">
             Manage your hackathon participations and submissions
           </p>

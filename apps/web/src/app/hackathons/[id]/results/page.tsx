@@ -230,9 +230,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
               <h1 className="mb-2 text-3xl font-bold text-gray-900">
                 Results & Rankings
               </h1>
-              <h2 className="mb-2 text-xl text-gray-700">
-                {hackathon.title}
-              </h2>
+              <h2 className="mb-2 text-xl text-gray-700">{hackathon.title}</h2>
               <p className="text-gray-600">
                 Final voting results and winner announcements
               </p>
@@ -465,12 +463,13 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                               ? "default"
                               : "outline"
                           }
-                          className={`text-xs mb-1 ${participant.rankTier === "winner"
-                            ? "bg-yellow-500 text-white"
-                            : participant.rankTier === "runner-up"
-                              ? "bg-gray-400 text-white"
-                              : ""
-                            }`}
+                          className={`text-xs mb-1 ${
+                            participant.rankTier === "winner"
+                              ? "bg-yellow-500 text-white"
+                              : participant.rankTier === "runner-up"
+                                ? "bg-gray-400 text-white"
+                                : ""
+                          }`}
                         >
                           {participant.rankTier === "winner"
                             ? "🏆 Winner"

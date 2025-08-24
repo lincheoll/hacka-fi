@@ -196,7 +196,7 @@ export function ImageUpload({
               {/* Remove button */}
               <Button
                 type="button"
-                variant="destructive"
+                variant="secondary"
                 size="icon"
                 className="absolute w-8 h-8 transition-opacity opacity-0 top-2 right-2 group-hover:opacity-100"
                 onClick={handleRemove}
