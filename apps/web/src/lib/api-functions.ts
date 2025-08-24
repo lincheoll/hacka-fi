@@ -1,4 +1,5 @@
 import { apiClient, handlePaginatedResponse } from "./api";
+import { useAuthStore } from "@/store/auth";
 import type {
   ApiResponse,
   PaginatedResponse,
@@ -36,6 +37,7 @@ import type {
   UserHackathon,
 } from "@/types/api";
 import type { Hackathon, User, Participant } from "@/types/global";
+import { createAuthHeaders } from "./api";
 
 // Auth API Functions
 export async function loginWithWallet(
@@ -254,14 +256,14 @@ export async function uploadFile(
     formData.append("entityId", data.entityId);
   }
 
-  const response = await fetch(`${apiClient.baseUrl || ""}/upload`, {
-    method: "POST",
-    body: formData,
-    headers: {
-      // Don't set Content-Type, let browser set it with boundary for multipart/form-data
-      Authorization: `Bearer ${localStorage.getItem("auth_token") || ""}`,
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL || "/api"}/upload`,
+    {
+      method: "POST",
+      body: formData,
+      headers: createAuthHeaders(),
     },
-  });
+  );
 
   if (!response.ok) {
     throw new Error(`Upload failed: ${response.statusText}`);
@@ -290,13 +292,14 @@ export async function uploadImage(
     formData.append("quality", data.quality.toString());
   }
 
-  const response = await fetch(`${apiClient.baseUrl || ""}/upload/image`, {
-    method: "POST",
-    body: formData,
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("auth_token") || ""}`,
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL || "/api"}/upload/image`,
+    {
+      method: "POST",
+      body: formData,
+      headers: createAuthHeaders(),
     },
-  });
+  );
 
   if (!response.ok) {
     throw new Error(`Image upload failed: ${response.statusText}`);

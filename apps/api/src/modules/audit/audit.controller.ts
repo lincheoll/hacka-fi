@@ -59,25 +59,30 @@ export class AuditController {
   ) {}
 
   @Post('logs')
-  @Public()
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Create audit log entry',
     description:
-      'Create a new audit log entry for tracking hackathon status changes.',
+      'Create a new audit log entry for tracking hackathon status changes. Requires authentication.',
   })
   @ApiResponse({
     status: 201,
     description: 'Audit log entry created successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - authentication required',
   })
   async createAuditLog(@Body() createAuditLogDto: CreateAuditLogRequestDto) {
     return this.auditService.logStatusChange(createAuditLogDto);
   }
 
   @Get('logs')
-  @Public()
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get audit logs',
-    description: 'Retrieve audit logs with optional filtering.',
+    description:
+      'Retrieve audit logs with optional filtering. Requires authentication.',
   })
   @ApiQuery({
     name: 'hackathonId',
@@ -137,10 +142,11 @@ export class AuditController {
   }
 
   @Get('hackathons/:id/trail')
-  @Public()
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get hackathon audit trail',
-    description: 'Get complete audit trail for a specific hackathon.',
+    description:
+      'Get complete audit trail for a specific hackathon. Requires authentication.',
   })
   @ApiParam({
     name: 'id',
@@ -156,10 +162,11 @@ export class AuditController {
   }
 
   @Get('hackathons/:id/summary')
-  @Public()
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Get hackathon status change summary',
-    description: 'Get status change statistics for a specific hackathon.',
+    description:
+      'Get status change statistics for a specific hackathon. Requires authentication.',
   })
   @ApiParam({
     name: 'id',

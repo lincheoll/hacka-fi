@@ -1,3 +1,4 @@
+import { useAuthStore } from "@/store/auth";
 import { API_BASE_URL } from "./constants";
 import { ApiResponse, ApiError, PaginatedResponse } from "@/types/api";
 
@@ -14,6 +15,22 @@ export class ApiClientError extends Error {
   }
 }
 
+/**
+ * Create headers with optional authentication
+ */
+export function createAuthHeaders(includeAuth = true): HeadersInit {
+  const headers: HeadersInit = {};
+
+  if (includeAuth) {
+    const token = useAuthStore.getState().token;
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+  }
+
+  return headers;
+}
+
 class ApiClient {
   public baseUrl: string;
   private defaultHeaders: HeadersInit;
@@ -25,20 +42,13 @@ class ApiClient {
     };
   }
 
-  // Get authorization token from localStorage
-  private getAuthToken(): string | null {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem("auth_token");
-  }
-
   // Build headers with auth token if available
   private buildHeaders(customHeaders?: HeadersInit): HeadersInit {
-    const headers = { ...this.defaultHeaders, ...customHeaders };
-    const token = this.getAuthToken();
-
-    if (token) {
-      (headers as Record<string, string>).Authorization = `Bearer ${token}`;
-    }
+    const headers = {
+      ...this.defaultHeaders,
+      ...customHeaders,
+      ...createAuthHeaders(),
+    };
 
     return headers;
   }

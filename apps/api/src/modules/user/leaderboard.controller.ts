@@ -22,15 +22,18 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
+import { Public } from '../auth/decorators/public.decorator';
 import { LeaderboardService } from './leaderboard.service';
 import type { LeaderboardCategory } from './leaderboard.service';
 
 @ApiTags('Leaderboards')
 @Controller('leaderboard')
+@UseGuards(JwtAuthGuard)
 export class LeaderboardController {
   constructor(private readonly leaderboardService: LeaderboardService) {}
 
   @Get(':category')
+  @Public()
   @ApiOperation({
     summary: 'Get leaderboard by category',
   })

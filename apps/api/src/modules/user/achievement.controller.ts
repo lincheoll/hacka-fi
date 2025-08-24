@@ -23,6 +23,7 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
+import { Public } from '../auth/decorators/public.decorator';
 import { AchievementService } from './achievement.service';
 import { AchievementType } from '@prisma/client';
 import {
@@ -70,10 +71,12 @@ export class TriggerAchievementCheckDto {
 
 @ApiTags('Achievements')
 @Controller('achievements')
+@UseGuards(JwtAuthGuard)
 export class AchievementController {
   constructor(private readonly achievementService: AchievementService) {}
 
   @Get('user/:address')
+  @Public()
   @ApiOperation({
     summary: 'Get all achievements for a specific user',
   })
@@ -158,6 +161,7 @@ export class AchievementController {
   }
 
   @Get('progress/:address')
+  @Public()
   @ApiOperation({
     summary: 'Get detailed achievement progress for a user',
   })
