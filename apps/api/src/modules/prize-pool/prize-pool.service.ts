@@ -16,6 +16,7 @@ import {
   DistributionStatus,
   HackathonStatus,
 } from '@prisma/client';
+
 import { parseEther, formatEther, Address, Hash } from 'viem';
 
 export interface CreatePrizePoolDto {

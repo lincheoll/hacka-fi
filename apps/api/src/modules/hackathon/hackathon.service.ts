@@ -23,6 +23,7 @@ import {
 } from '@prisma/client';
 import { PrismaService } from '../../common/database/prisma.service';
 import { PaginatedResponseDto } from '../../common/dto/paginated-response.dto';
+import { HackathonTransformer } from '../../common/transformers/hackathon.transformer';
 import {
   CreateHackathonDto,
   UpdateHackathonDto,
@@ -58,6 +59,7 @@ export class HackathonService {
     private readonly voteValidationService: VoteValidationService,
     private readonly auditService: AuditService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly hackathonTransformer: HackathonTransformer,
   ) {}
 
   async createHackathon(
@@ -125,7 +127,7 @@ export class HackathonService {
     });
 
     this.logger.log(`Created hackathon ${hackathon.id}`);
-    return this.mapToResponseDto(hackathon);
+    return this.hackathonTransformer.toResponseDto(hackathon);
   }
 
   async findAll(
@@ -177,7 +179,7 @@ export class HackathonService {
     });
 
     const data = hackathons.map((hackathon) =>
-      this.mapToResponseDto(hackathon),
+      this.hackathonTransformer.toResponseDto(hackathon),
     );
 
     return new PaginatedResponseDto(data, page, limit, total);
@@ -214,7 +216,9 @@ export class HackathonService {
       throw new NotFoundException(`Hackathon with ID ${id} not found`);
     }
 
-    return this.mapToResponseDto(hackathon, includeParticipants);
+    return includeParticipants
+      ? this.hackathonTransformer.toResponseDtoWithParticipants(hackathon)
+      : this.hackathonTransformer.toResponseDto(hackathon);
   }
 
   async updateHackathon(
@@ -348,7 +352,7 @@ export class HackathonService {
     }
 
     this.logger.log(`Updated hackathon ${id} by ${updaterAddress}`);
-    return this.mapToResponseDto(updatedHackathon);
+    return this.hackathonTransformer.toResponseDto(updatedHackathon);
   }
 
   async deleteHackathon(id: string, deleterAddress: string): Promise<void> {
@@ -1070,39 +1074,6 @@ export class HackathonService {
     }
   }
 
-  private mapToResponseDto(
-    hackathon: any,
-    includeParticipants = false,
-  ): HackathonResponseDto {
-    const response: HackathonResponseDto = {
-      id: hackathon.id,
-      title: hackathon.title,
-      description: hackathon.description,
-      deadline: hackathon.submissionDeadline.toISOString(), // Fix: use submissionDeadline
-      status: hackathon.status,
-      lotteryPercentage: 0, // Fix: Set default value or remove from schema
-      contractAddress: hackathon.contractAddress,
-      organizerAddress: hackathon.organizerAddress,
-      participantCount: hackathon._count?.participants || 0,
-      createdAt: hackathon.createdAt.toISOString(),
-      updatedAt: hackathon.updatedAt.toISOString(),
-    };
-
-    if (includeParticipants && hackathon.participants) {
-      response.participants = hackathon.participants.map((p: any) => ({
-        id: p.id,
-        walletAddress: p.walletAddress,
-        submissionUrl: p.submissionUrl ?? undefined,
-        entryFee: p.entryFee ?? undefined,
-        rank: p.rank ?? undefined,
-        prizeAmount: p.prizeAmount ?? undefined,
-        createdAt: p.createdAt.toISOString(),
-      }));
-    }
-
-    return response;
-  }
-
   // Judge Dashboard Methods
 
   /**
@@ -1167,7 +1138,7 @@ export class HackathonService {
       }
 
       const hackathonAssignment: JudgeHackathonAssignmentDto = {
-        hackathon: this.mapToResponseDto(hackathon),
+        hackathon: this.hackathonTransformer.toResponseDto(hackathon),
         votingProgress,
         deadline: hackathon.votingDeadline.toISOString(),
         priority,

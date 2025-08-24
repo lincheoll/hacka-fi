@@ -4,7 +4,7 @@ import { HackathonStatus } from '@prisma/client';
 export class ParticipantResponseDto {
   @ApiProperty({
     description: 'Participant ID',
-    example: 1,
+    example: 123,
   })
   id!: number;
 
@@ -48,9 +48,9 @@ export class ParticipantResponseDto {
 export class HackathonResponseDto {
   @ApiProperty({
     description: 'Hackathon ID',
-    example: 1,
+    example: 'clxxx...',
   })
-  id!: number;
+  id!: string;
 
   @ApiProperty({
     description: 'Hackathon title',
@@ -65,10 +65,22 @@ export class HackathonResponseDto {
   description!: string;
 
   @ApiProperty({
+    description: 'Registration deadline',
+    example: '2024-12-15T23:59:59.000Z',
+  })
+  registrationDeadline!: string;
+
+  @ApiProperty({
     description: 'Submission deadline',
     example: '2024-12-31T23:59:59.000Z',
   })
-  deadline!: string;
+  submissionDeadline!: string;
+
+  @ApiProperty({
+    description: 'Voting deadline',
+    example: '2025-01-15T23:59:59.000Z',
+  })
+  votingDeadline!: string;
 
   @ApiProperty({
     description: 'Current status',
@@ -77,17 +89,11 @@ export class HackathonResponseDto {
   })
   status!: HackathonStatus;
 
-  @ApiProperty({
-    description: 'Lottery percentage for prize distribution',
-    example: 20,
-  })
-  lotteryPercentage!: number;
-
   @ApiPropertyOptional({
     description: 'Smart contract address',
     example: '0x1234567890123456789012345678901234567890',
   })
-  contractAddress?: string;
+  contractAddress?: string | null = null;
 
   @ApiProperty({
     description: 'Organizer wallet address',

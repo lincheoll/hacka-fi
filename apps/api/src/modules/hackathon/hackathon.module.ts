@@ -10,6 +10,7 @@ import { AnalyticsController } from './analytics.controller';
 import { AnalyticsService } from './analytics.service';
 import { AuditModule } from '../audit/audit.module';
 import { VotingModule } from '../voting/voting.module';
+import { HackathonTransformer } from '../../common/transformers/hackathon.transformer';
 
 @Module({
   imports: [AuditModule, VotingModule],
@@ -21,6 +22,7 @@ import { VotingModule } from '../voting/voting.module';
     WinnerDeterminationService,
     PublicApiService,
     AnalyticsService,
+    HackathonTransformer,
   ],
   exports: [
     HackathonService,

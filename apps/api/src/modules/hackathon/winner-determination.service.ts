@@ -180,7 +180,7 @@ export class WinnerDeterminationService {
       // Update winners with their ranks and prize amounts
       for (const winner of result.winners) {
         await tx.participant.update({
-          where: { id: winner.participantId },
+          where: { id: Number(winner.participantId) },
           data: {
             rank: winner.rank,
             prizeAmount: winner.prizeAmount || null,
