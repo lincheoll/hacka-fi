@@ -525,8 +525,8 @@ function VotingCard({
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <CardTitle className="text-lg">
-              {participant.userAddress.slice(0, 6)}...
-              {participant.userAddress.slice(-4)}
+              {participant.walletAddress.slice(0, 6)}...
+              {participant.walletAddress.slice(-4)}
             </CardTitle>
             <CardDescription>
               Registered:{" "}
@@ -657,11 +657,10 @@ function VotingCard({
                 {/* Real-time comment validation */}
                 {realtimeValidation.commentError && (
                   <div
-                    className={`mt-2 flex items-center text-sm ${
-                      realtimeValidation.commentError.severity === "error"
+                    className={`mt-2 flex items-center text-sm ${realtimeValidation.commentError.severity === "error"
                         ? "text-red-600"
                         : "text-yellow-600"
-                    }`}
+                      }`}
                   >
                     {realtimeValidation.commentError.severity === "error" ? (
                       <AlertCircle className="w-4 h-4 mr-1" />

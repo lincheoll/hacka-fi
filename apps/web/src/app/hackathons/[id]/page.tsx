@@ -276,8 +276,8 @@ export default function HackathonDetailPage({
                       >
                         <div>
                           <div className="text-sm font-medium">
-                            {participant.userAddress.slice(0, 6)}...
-                            {participant.userAddress.slice(-4)}
+                            {participant.walletAddress.slice(0, 6)}...
+                            {participant.walletAddress.slice(-4)}
                           </div>
                           <div className="text-xs text-gray-500">
                             Registered:{" "}
