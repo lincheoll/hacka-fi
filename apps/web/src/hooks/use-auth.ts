@@ -86,7 +86,6 @@ export function useAuth() {
 
       // Step 4: Store authentication state
       const userData = {
-        id: address,
         walletAddress: address,
         avatarUrl: undefined,
         createdAt: new Date().toISOString(),

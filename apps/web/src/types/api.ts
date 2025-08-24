@@ -109,7 +109,7 @@ export interface RemoveJudgeRequest {
 }
 
 export interface Judge {
-  id: number;
+  id: string;
   hackathonId: string;
   judgeAddress: string;
   addedBy: string;
@@ -135,7 +135,7 @@ export interface CastVoteRequest {
 }
 
 export interface Vote {
-  id: number;
+  id: string;
   hackathonId: string;
   judgeAddress: string;
   participantId: number;

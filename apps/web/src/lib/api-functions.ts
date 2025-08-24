@@ -110,7 +110,7 @@ export async function registerParticipant(
 }
 
 export async function updateSubmission(
-  participantId: string,
+  participantId: number,
   data: UpdateSubmissionRequest,
 ): Promise<Participant> {
   const response = await apiClient.put<UpdateSubmissionResponse>(

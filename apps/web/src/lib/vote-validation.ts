@@ -19,7 +19,7 @@ export interface VoteValidationContext {
   judges: Judge[];
   participants: Participant[];
   currentUserAddress: string;
-  participantId: string;
+  participantId: number;
   score: number;
   comment?: string;
 }
@@ -206,7 +206,7 @@ export class VoteValidator {
    */
   private static validateParticipant(
     participants: Participant[],
-    participantId: string,
+    participantId: number,
   ): VoteValidationError[] {
     const errors: VoteValidationError[] = [];
 

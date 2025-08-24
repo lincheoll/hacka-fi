@@ -39,9 +39,9 @@ import {
   useVoteValidation,
   getRealtimeValidation,
 } from "@/lib/vote-validation";
-import { useToast } from "@/hooks/use-toast";
 import type { CastVoteRequest, Vote, Judge } from "@/types/api";
 import type { Participant, Hackathon } from "@/types/global";
+import { toast } from "sonner";
 
 interface VotingPageProps {
   params: Promise<{ id: string }>;
@@ -244,10 +244,12 @@ export default function VotingPage({ params }: VotingPageProps) {
     );
   }
 
+
   // Get current user's votes
   const myVotes =
     votingResults?.participants?.reduce(
       (acc, participant) => {
+
         const myVote = participant.votes?.find(
           (vote) =>
             vote.judgeAddress.toLowerCase() === walletAddress?.toLowerCase(),
@@ -257,7 +259,7 @@ export default function VotingPage({ params }: VotingPageProps) {
         }
         return acc;
       },
-      {} as Record<number, Vote>,
+      {} as Record<string, Vote>,
     ) || {};
 
   const handleVoteSubmit = async (
@@ -458,7 +460,7 @@ function VotingCard({
       judges,
       participants: [participant],
       currentUserAddress,
-      participantId: participant.id.toString(),
+      participantId: participant.id,
       score: selectedScore,
       comment,
     });
@@ -523,7 +525,7 @@ function VotingCard({
             </CardTitle>
             <CardDescription>
               Registered:{" "}
-              {new Date(participant.registeredAt).toLocaleDateString()}
+              {new Date(participant.createdAt).toLocaleDateString()}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -650,11 +652,10 @@ function VotingCard({
                 {/* Real-time comment validation */}
                 {realtimeValidation.commentError && (
                   <div
-                    className={`mt-2 flex items-center text-sm ${
-                      realtimeValidation.commentError.severity === "error"
-                        ? "text-red-600"
-                        : "text-yellow-600"
-                    }`}
+                    className={`mt-2 flex items-center text-sm ${realtimeValidation.commentError.severity === "error"
+                      ? "text-red-600"
+                      : "text-yellow-600"
+                      }`}
                   >
                     {realtimeValidation.commentError.severity === "error" ? (
                       <AlertCircle className="w-4 h-4 mr-1" />

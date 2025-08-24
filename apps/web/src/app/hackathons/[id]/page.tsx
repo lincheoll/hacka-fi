@@ -282,7 +282,7 @@ export default function HackathonDetailPage({
                           <div className="text-xs text-gray-500">
                             Registered:{" "}
                             {new Date(
-                              participant.registeredAt,
+                              participant.createdAt,
                             ).toLocaleDateString()}
                           </div>
                         </div>
@@ -362,12 +362,12 @@ export default function HackathonDetailPage({
             {/* Winner Management - Show for completed hackathons */}
             {(hackathon.status === "COMPLETED" ||
               hackathon.status === "VOTING_CLOSED") && (
-              <WinnerManagement
-                hackathonId={hackathon.id}
-                isOrganizer={isOrganizer}
-                hackathonStatus={hackathon.status}
-              />
-            )}
+                <WinnerManagement
+                  hackathonId={hackathon.id}
+                  isOrganizer={isOrganizer}
+                  hackathonStatus={hackathon.status}
+                />
+              )}
 
             {/* Timeline Details */}
             <Card>

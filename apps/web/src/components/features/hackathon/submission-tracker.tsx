@@ -180,7 +180,7 @@ export function SubmissionTracker({
               </a>
               <p className="text-xs text-gray-500 mt-1">
                 Submitted on:{" "}
-                {new Date(participant.registeredAt).toLocaleDateString()}
+                {new Date(participant.createdAt).toLocaleDateString()}
               </p>
             </div>
           )}

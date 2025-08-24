@@ -1,6 +1,5 @@
 // Global type definitions
 export interface User {
-  id: string;
   walletAddress: string;
   avatarUrl?: string;
   createdAt: string;
@@ -20,6 +19,7 @@ export interface Hackathon {
   entryFee?: string;
   maxParticipants?: number;
   coverImageUrl?: string;
+  contractAddress?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,15 +36,18 @@ export enum HackathonStatus {
 }
 
 export interface Participant {
-  id: string;
+  id: number;
   hackathonId: string;
   walletAddress: string;
   submissionUrl?: string;
-  registeredAt: string;
+  entryFee?: string;
+  rank?: number;
+  prizeAmount?: string;
+  createdAt: string;
 }
 
 export interface Vote {
-  id: string;
+  id: number;
   hackathonId: string;
   judgeAddress: string;
   participantAddress: string;
