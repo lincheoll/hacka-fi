@@ -311,7 +311,7 @@ export class VoteValidator {
 
     if (
       participant &&
-      participant.userAddress.toLowerCase() ===
+      participant.walletAddress.toLowerCase() ===
         context.currentUserAddress.toLowerCase()
     ) {
       errors.push({

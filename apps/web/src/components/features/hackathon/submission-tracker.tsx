@@ -66,7 +66,7 @@ export function SubmissionTracker({
 
       // Update the query cache
       queryClient.invalidateQueries({
-        queryKey: ["participant-status", hackathon.id, participant.userAddress],
+        queryKey: ["participant-status", hackathon.id, participant.walletAddress],
       });
 
       onSubmissionUpdate?.(updatedParticipant);
