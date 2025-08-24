@@ -140,7 +140,7 @@ export function HackathonForm({ onSuccess, onCancel }: HackathonFormProps) {
           )}
 
           {submitSuccess && (
-            <Alert className="text-green-700 border-green-500 dark:border-green-400 dark:text-green-400">
+            <Alert className="text-green-700 border-green-500">
               <CheckCircle className="w-4 h-4" />
               <AlertDescription>{submitSuccess}</AlertDescription>
             </Alert>

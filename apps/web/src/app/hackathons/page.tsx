@@ -16,16 +16,16 @@ export default function HackathonsPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse space-y-6">
-            <div className="flex justify-between items-center">
-              <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-10 bg-gray-200 rounded w-32"></div>
+        <div className="container px-4 py-8 mx-auto">
+          <div className="space-y-6 animate-pulse">
+            <div className="flex items-center justify-between">
+              <div className="w-1/3 h-8 bg-gray-200 rounded"></div>
+              <div className="w-32 h-10 bg-gray-200 rounded"></div>
             </div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="w-1/2 h-4 bg-gray-200 rounded"></div>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
               {[...Array(6)].map((_, i) => (
                 <div key={i} className="h-64 bg-gray-200 rounded-lg"></div>
               ))}
@@ -37,17 +37,17 @@ export default function HackathonsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container px-4 py-8 mx-auto">
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8">
+        <div className="flex flex-col items-start justify-between mb-8 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            <h1 className="mb-2 text-3xl font-bold text-gray-900">
               Hackathons
             </h1>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-gray-600">
               Discover and join blockchain hackathons with transparent voting
               and automated prizes
             </p>

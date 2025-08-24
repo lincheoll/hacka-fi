@@ -277,6 +277,9 @@ importers:
       tailwindcss:
         specifier: ^4
         version: 4.1.12
+      tw-animate-css:
+        specifier: ^1.3.7
+        version: 1.3.7
       typescript:
         specifier: ^5
         version: 5.9.2
@@ -5643,6 +5646,9 @@ packages:
   turbo@2.5.5:
     resolution: {integrity: sha512-eZ7wI6KjtT1eBqCnh2JPXWNUAxtoxxfi6VdBdZFvil0ychCOTxbm7YLRBi1JSt7U3c+u3CLxpoPxLdvr/Npr3A==}
     hasBin: true
+
+  tw-animate-css@1.3.7:
+    resolution: {integrity: sha512-lvLb3hTIpB5oGsk8JmLoAjeCHV58nKa2zHYn8yWOoG5JJusH3bhJlF2DLAZ/5NmJ+jyH3ssiAx/2KmbhavJy/A==}
 
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
@@ -13002,6 +13008,8 @@ snapshots:
       turbo-linux-arm64: 2.5.5
       turbo-windows-64: 2.5.5
       turbo-windows-arm64: 2.5.5
+
+  tw-animate-css@1.3.7: {}
 
   type-check@0.4.0:
     dependencies:

@@ -31,7 +31,7 @@ export default function DashboardPage() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
           <div className="animate-pulse">
@@ -77,10 +77,10 @@ function DashboardContent() {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
-          <h1 className="mb-8 text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="mb-8 text-3xl font-bold text-gray-900">
             Dashboard
           </h1>
           <Alert>
@@ -116,15 +116,15 @@ function DashboardContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       <Header />
 
       <div className="container px-4 py-8 mx-auto">
         <div className="mb-8">
-          <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="mb-2 text-3xl font-bold text-gray-900">
             Dashboard
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <p className="text-gray-600">
             Manage your hackathon participations and submissions
           </p>
         </div>
@@ -133,7 +133,7 @@ function DashboardContent() {
           {/* Participations Section */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-gray-900">
                 My Participations
               </h2>
               <Button asChild variant="outline" size="sm">
@@ -252,7 +252,7 @@ function DashboardContent() {
           {/* Created Hackathons Section */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+              <h2 className="text-xl font-semibold text-gray-900">
                 My Hackathons
               </h2>
               <Button asChild variant="outline" size="sm">

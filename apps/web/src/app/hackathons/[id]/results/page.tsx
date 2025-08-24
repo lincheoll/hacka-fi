@@ -90,12 +90,12 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+        <div className="container px-4 py-8 mx-auto">
+          <div className="space-y-4 animate-pulse">
+            <div className="w-1/2 h-8 bg-gray-200 rounded"></div>
+            <div className="w-1/4 h-4 bg-gray-200 rounded"></div>
             <div className="h-32 bg-gray-200 rounded"></div>
           </div>
         </div>
@@ -110,12 +110,12 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     isLoadingWinnerStatus
   ) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+        <div className="container px-4 py-8 mx-auto">
+          <div className="space-y-4 animate-pulse">
+            <div className="w-1/2 h-8 bg-gray-200 rounded"></div>
+            <div className="w-1/4 h-4 bg-gray-200 rounded"></div>
             <div className="h-32 bg-gray-200 rounded"></div>
           </div>
         </div>
@@ -125,9 +125,9 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
   if (hackathonError || !hackathon) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container px-4 py-8 mx-auto">
           <Alert className="border-red-500 bg-red-50">
             <AlertDescription className="text-red-700">
               {hackathonError?.message || "Hackathon not found"}
@@ -140,15 +140,15 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
   if (resultsError || !results) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container px-4 py-8 mx-auto">
           <Button
             variant="outline"
             onClick={() => router.back()}
             className="mb-4"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Hackathon
           </Button>
 
@@ -182,14 +182,14 @@ export default function ResultsPage({ params }: ResultsPageProps) {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Trophy className="h-6 w-6 text-yellow-500" />;
+        return <Trophy className="w-6 h-6 text-yellow-500" />;
       case 2:
-        return <Medal className="h-6 w-6 text-gray-400" />;
+        return <Medal className="w-6 h-6 text-gray-400" />;
       case 3:
-        return <Award className="h-6 w-6 text-amber-600" />;
+        return <Award className="w-6 h-6 text-amber-600" />;
       default:
         return (
-          <div className="h-6 w-6 flex items-center justify-center text-gray-500 font-bold">
+          <div className="flex items-center justify-center w-6 h-6 font-bold text-gray-500">
             {rank}
           </div>
         );
@@ -199,21 +199,21 @@ export default function ResultsPage({ params }: ResultsPageProps) {
   const getRankBadge = (rank: number) => {
     switch (rank) {
       case 1:
-        return <Badge className="bg-yellow-500 text-white">🥇 1st Place</Badge>;
+        return <Badge className="text-white bg-yellow-500">🥇 1st Place</Badge>;
       case 2:
-        return <Badge className="bg-gray-400 text-white">🥈 2nd Place</Badge>;
+        return <Badge className="text-white bg-gray-400">🥈 2nd Place</Badge>;
       case 3:
-        return <Badge className="bg-amber-600 text-white">🥉 3rd Place</Badge>;
+        return <Badge className="text-white bg-amber-600">🥉 3rd Place</Badge>;
       default:
         return <Badge variant="outline">#{rank}</Badge>;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container px-4 py-8 mx-auto">
         {/* Header Section */}
         <div className="mb-8">
           <Button
@@ -221,19 +221,19 @@ export default function ResultsPage({ params }: ResultsPageProps) {
             onClick={() => router.back()}
             className="mb-4"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Hackathon
           </Button>
 
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              <h1 className="mb-2 text-3xl font-bold text-gray-900">
                 Results & Rankings
               </h1>
-              <h2 className="text-xl text-gray-700 dark:text-gray-300 mb-2">
+              <h2 className="mb-2 text-xl text-gray-700">
                 {hackathon.title}
               </h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600">
                 Final voting results and winner announcements
               </p>
             </div>
@@ -242,7 +242,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
         </div>
 
         {/* Statistics Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 gap-4 mb-8 md:grid-cols-4">
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
@@ -316,10 +316,10 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           </div>
         ) : (
           winners.length > 0 && (
-            <Card className="mb-8 bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200">
+            <Card className="mb-8 border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Trophy className="h-6 w-6 text-yellow-500" />
+                  <Trophy className="w-6 h-6 text-yellow-500" />
                   Winners
                 </CardTitle>
                 <CardDescription>
@@ -327,21 +327,21 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   {winners.map((participant, index) => (
                     <div
                       key={participant.participantId}
                       className="text-center"
                     >
                       <div className="mb-4">{getRankIcon(index + 1)}</div>
-                      <div className="font-medium text-lg mb-2">
+                      <div className="mb-2 text-lg font-medium">
                         {participant.walletAddress.slice(0, 6)}...
                         {participant.walletAddress.slice(-4)}
                       </div>
                       {getRankBadge(index + 1)}
                       <div className="mt-2 space-y-1">
                         <div className="flex items-center justify-center gap-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                          <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
                           <span className="font-bold">
                             {participant.weightedScore !== undefined
                               ? participant.weightedScore.toFixed(1)
@@ -364,10 +364,10 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                           href={participant.submissionUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center text-blue-600 hover:underline text-sm mt-2"
+                          className="inline-flex items-center mt-2 text-sm text-blue-600 hover:underline"
                         >
                           View Project
-                          <ExternalLink className="h-3 w-3 ml-1" />
+                          <ExternalLink className="w-3 h-3 ml-1" />
                         </a>
                       )}
                     </div>
@@ -404,7 +404,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
+              <BarChart3 className="w-5 h-5" />
               Complete Results
             </CardTitle>
             <CardDescription>
@@ -416,11 +416,11 @@ export default function ResultsPage({ params }: ResultsPageProps) {
               {sortedParticipants.map((participant, index) => (
                 <div
                   key={participant.participantId}
-                  className="border rounded-lg p-4"
+                  className="p-4 border rounded-lg"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100">
+                      <div className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full">
                         {index < 3 ? (
                           getRankIcon(index + 1)
                         ) : (
@@ -439,10 +439,10 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                             href={participant.submissionUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline text-sm flex items-center gap-1"
+                            className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
                           >
                             View Submission
-                            <ExternalLink className="h-3 w-3" />
+                            <ExternalLink className="w-3 h-3" />
                           </a>
                         )}
                       </div>
@@ -450,8 +450,8 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
                     <div className="text-right">
                       <div className="flex items-center gap-2 mb-1">
-                        <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                        <span className="font-bold text-lg">
+                        <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
+                        <span className="text-lg font-bold">
                           {participant.weightedScore !== undefined
                             ? participant.weightedScore.toFixed(1)
                             : participant.averageScore.toFixed(1)}
@@ -465,13 +465,12 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                               ? "default"
                               : "outline"
                           }
-                          className={`text-xs mb-1 ${
-                            participant.rankTier === "winner"
-                              ? "bg-yellow-500 text-white"
-                              : participant.rankTier === "runner-up"
-                                ? "bg-gray-400 text-white"
-                                : ""
-                          }`}
+                          className={`text-xs mb-1 ${participant.rankTier === "winner"
+                            ? "bg-yellow-500 text-white"
+                            : participant.rankTier === "runner-up"
+                              ? "bg-gray-400 text-white"
+                              : ""
+                            }`}
                         >
                           {participant.rankTier === "winner"
                             ? "🏆 Winner"
@@ -493,30 +492,30 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
                   {/* Advanced Score Breakdown */}
                   {participant.scoreBreakdown && (
-                    <div className="border-t pt-3 mb-3">
-                      <div className="text-sm font-medium mb-2">
+                    <div className="pt-3 mb-3 border-t">
+                      <div className="mb-2 text-sm font-medium">
                         Score Breakdown:
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
-                        <div className="bg-blue-50 p-2 rounded text-center">
+                      <div className="grid grid-cols-2 gap-2 text-xs md:grid-cols-4">
+                        <div className="p-2 text-center rounded bg-blue-50">
                           <div className="font-medium">
                             {participant.scoreBreakdown.simple.toFixed(1)}
                           </div>
                           <div className="text-gray-600">Simple Avg</div>
                         </div>
-                        <div className="bg-green-50 p-2 rounded text-center">
+                        <div className="p-2 text-center rounded bg-green-50">
                           <div className="font-medium">
                             {participant.scoreBreakdown.weighted.toFixed(1)}
                           </div>
                           <div className="text-gray-600">Weighted</div>
                         </div>
-                        <div className="bg-purple-50 p-2 rounded text-center">
+                        <div className="p-2 text-center rounded bg-purple-50">
                           <div className="font-medium">
                             {participant.scoreBreakdown.normalized.toFixed(1)}
                           </div>
                           <div className="text-gray-600">Normalized</div>
                         </div>
-                        <div className="bg-orange-50 p-2 rounded text-center">
+                        <div className="p-2 text-center rounded bg-orange-50">
                           <div className="font-medium">
                             {participant.scoreBreakdown.consensus.toFixed(1)}
                           </div>
@@ -528,14 +527,14 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
                   {/* Individual Votes */}
                   {participant.votes.length > 0 && (
-                    <div className="border-t pt-3">
-                      <div className="text-sm font-medium mb-2 flex items-center gap-1">
-                        <MessageSquare className="h-3 w-3" />
+                    <div className="pt-3 border-t">
+                      <div className="flex items-center gap-1 mb-2 text-sm font-medium">
+                        <MessageSquare className="w-3 h-3" />
                         Judge Votes:
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                      <div className="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
                         {participant.votes.map((vote) => (
-                          <div key={vote.id} className="bg-gray-50 p-2 rounded">
+                          <div key={vote.id} className="p-2 rounded bg-gray-50">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-gray-600">
                                 {vote.judgeAddress.slice(0, 6)}...
@@ -546,7 +545,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                               </span>
                             </div>
                             {vote.comment && (
-                              <p className="text-gray-700 text-xs">
+                              <p className="text-xs text-gray-700">
                                 {vote.comment}
                               </p>
                             )}
@@ -566,7 +565,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           <Card className="mt-8">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BarChart3 className="h-5 w-5" />
+                <BarChart3 className="w-5 h-5" />
                 Ranking Statistics
               </CardTitle>
               <CardDescription>
@@ -574,8 +573,8 @@ export default function ResultsPage({ params }: ResultsPageProps) {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg text-center">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="p-4 text-center rounded-lg bg-blue-50">
                   <div className="text-2xl font-bold text-blue-600">
                     {results.rankingMetrics.averageParticipation.toFixed(1)}
                   </div>
@@ -584,21 +583,21 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                   </div>
                 </div>
 
-                <div className="bg-green-50 p-4 rounded-lg text-center">
+                <div className="p-4 text-center rounded-lg bg-green-50">
                   <div className="text-2xl font-bold text-green-600">
                     {results.rankingMetrics.scoreDistribution.mean.toFixed(1)}
                   </div>
                   <div className="text-sm text-gray-600">Mean Score</div>
                 </div>
 
-                <div className="bg-purple-50 p-4 rounded-lg text-center">
+                <div className="p-4 text-center rounded-lg bg-purple-50">
                   <div className="text-2xl font-bold text-purple-600">
                     {results.rankingMetrics.scoreDistribution.median.toFixed(1)}
                   </div>
                   <div className="text-sm text-gray-600">Median Score</div>
                 </div>
 
-                <div className="bg-orange-50 p-4 rounded-lg text-center">
+                <div className="p-4 text-center rounded-lg bg-orange-50">
                   <div className="text-2xl font-bold text-orange-600">
                     {results.rankingMetrics.scoreDistribution.standardDeviation.toFixed(
                       1,
@@ -608,9 +607,9 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                 </div>
               </div>
 
-              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-sm font-medium mb-1">Score Range</div>
+              <div className="grid grid-cols-1 gap-4 mt-4 md:grid-cols-2">
+                <div className="p-4 rounded-lg bg-gray-50">
+                  <div className="mb-1 text-sm font-medium">Score Range</div>
                   <div className="text-lg font-bold">
                     {results.rankingMetrics.scoreDistribution.min.toFixed(1)} -{" "}
                     {results.rankingMetrics.scoreDistribution.max.toFixed(1)}
@@ -620,8 +619,8 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-sm font-medium mb-1">Vote Coverage</div>
+                <div className="p-4 rounded-lg bg-gray-50">
+                  <div className="mb-1 text-sm font-medium">Vote Coverage</div>
                   <div className="text-lg font-bold">
                     {(
                       (results.rankingMetrics.averageParticipation /
@@ -642,7 +641,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
         {/* Instructions */}
         <div className="mt-8">
           <Alert className="border-blue-500 bg-blue-50">
-            <BarChart3 className="h-4 w-4" />
+            <BarChart3 className="w-4 h-4" />
             <AlertDescription className="text-blue-700">
               <strong>Advanced Ranking System:</strong> Scores use weighted
               algorithms considering voting participation, consensus among

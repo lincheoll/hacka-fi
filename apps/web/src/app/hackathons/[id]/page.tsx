@@ -80,7 +80,7 @@ export default function HackathonDetailPage({
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
           <div className="space-y-4 animate-pulse">
@@ -95,7 +95,7 @@ export default function HackathonDetailPage({
 
   if (isLoadingHackathon) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
           <div className="space-y-4 animate-pulse">
@@ -110,7 +110,7 @@ export default function HackathonDetailPage({
 
   if (hackathonError || !hackathon) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
           <Alert className="border-red-500 bg-red-50">
@@ -183,7 +183,7 @@ export default function HackathonDetailPage({
   // No client-side monitoring needed - status changes happen automatically on server
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       <Header />
 
       <div className="container px-4 py-8 mx-auto">
@@ -200,10 +200,10 @@ export default function HackathonDetailPage({
         <div className="mb-8">
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 className="mb-2 text-3xl font-bold text-gray-900">
                 {hackathon.title}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600">
                 {hackathon.organizerAddress ? (
                   <>
                     Organized by {hackathon.organizerAddress.slice(0, 6)}...
@@ -227,7 +227,7 @@ export default function HackathonDetailPage({
                 <CardTitle>About This Hackathon</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-700 whitespace-pre-wrap dark:text-gray-300">
+                <p className="text-gray-700 whitespace-pre-wrap">
                   {hackathon.description}
                 </p>
               </CardContent>
@@ -362,12 +362,12 @@ export default function HackathonDetailPage({
             {/* Winner Management - Show for completed hackathons */}
             {(hackathon.status === "COMPLETED" ||
               hackathon.status === "VOTING_CLOSED") && (
-              <WinnerManagement
-                hackathonId={hackathon.id}
-                isOrganizer={isOrganizer}
-                hackathonStatus={hackathon.status}
-              />
-            )}
+                <WinnerManagement
+                  hackathonId={hackathon.id}
+                  isOrganizer={isOrganizer}
+                  hackathonStatus={hackathon.status}
+                />
+              )}
 
             {/* Timeline Details */}
             <Card>

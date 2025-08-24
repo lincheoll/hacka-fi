@@ -124,7 +124,7 @@ export default function VotingPage({ params }: VotingPageProps) {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
           <div className="space-y-4 animate-pulse">
@@ -139,7 +139,7 @@ export default function VotingPage({ params }: VotingPageProps) {
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
           <Alert className="border-yellow-500 bg-yellow-50">
@@ -155,7 +155,7 @@ export default function VotingPage({ params }: VotingPageProps) {
 
   if (isLoadingHackathon || isLoadingJudges) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
           <div className="space-y-4 animate-pulse">
@@ -170,7 +170,7 @@ export default function VotingPage({ params }: VotingPageProps) {
 
   if (hackathonError || !hackathon) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
           <Alert className="border-red-500 bg-red-50">
@@ -191,7 +191,7 @@ export default function VotingPage({ params }: VotingPageProps) {
 
   if (!isJudge) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
           <Alert className="border-red-500 bg-red-50">
@@ -221,7 +221,7 @@ export default function VotingPage({ params }: VotingPageProps) {
 
   if (!canVote) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="container px-4 py-8 mx-auto">
           <Alert className="border-yellow-500 bg-yellow-50">
@@ -282,7 +282,7 @@ export default function VotingPage({ params }: VotingPageProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50">
       <Header />
 
       <div className="container px-4 py-8 mx-auto">
@@ -299,13 +299,13 @@ export default function VotingPage({ params }: VotingPageProps) {
 
           <div className="flex items-start justify-between mb-4">
             <div>
-              <h1 className="mb-2 text-3xl font-bold text-gray-900 dark:text-white">
+              <h1 className="mb-2 text-3xl font-bold text-gray-900">
                 Judge Voting Dashboard
               </h1>
-              <h2 className="mb-2 text-xl text-gray-700 dark:text-gray-300">
+              <h2 className="mb-2 text-xl text-gray-700">
                 {hackathon.title}
               </h2>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-gray-600">
                 Vote on participant submissions (1-10 scale)
               </p>
             </div>
@@ -657,11 +657,10 @@ function VotingCard({
                 {/* Real-time comment validation */}
                 {realtimeValidation.commentError && (
                   <div
-                    className={`mt-2 flex items-center text-sm ${
-                      realtimeValidation.commentError.severity === "error"
-                        ? "text-red-600"
-                        : "text-yellow-600"
-                    }`}
+                    className={`mt-2 flex items-center text-sm ${realtimeValidation.commentError.severity === "error"
+                      ? "text-red-600"
+                      : "text-yellow-600"
+                      }`}
                   >
                     {realtimeValidation.commentError.severity === "error" ? (
                       <AlertCircle className="w-4 h-4 mr-1" />

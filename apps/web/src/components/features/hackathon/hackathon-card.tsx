@@ -47,15 +47,15 @@ export function HackathonCard({
   const getPhaseColor = (phase: string) => {
     switch (phase) {
       case "registration":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+        return "bg-green-100 text-green-800";
       case "development":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+        return "bg-blue-100 text-blue-800";
       case "voting":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+        return "bg-yellow-100 text-yellow-800";
       case "completed":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+        return "bg-gray-100 text-gray-800";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -76,7 +76,7 @@ export function HackathonCard({
   const canVote = phase === "voting" && showVoting;
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200">
+    <Card className="transition-shadow duration-200 hover:shadow-lg">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div className="space-y-2">
@@ -87,7 +87,7 @@ export function HackathonCard({
               {phase.charAt(0).toUpperCase() + phase.slice(1)}
             </Badge>
           </div>
-          <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+          <div className="flex items-center gap-1 text-green-600">
             <Trophy className="w-4 h-4" />
             <span className="font-semibold">Prize Pool</span>
           </div>
