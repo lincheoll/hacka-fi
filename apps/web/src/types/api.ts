@@ -384,3 +384,43 @@ export interface DetailedExportData {
   rankingMetrics: RankingMetrics | null;
   exportedAt: string;
 }
+
+// User API types
+export interface UserParticipation {
+  id: number;
+  hackathonId: string;
+  hackathonTitle: string;
+  hackathonStatus: string;
+  submissionUrl?: string;
+  rank?: number;
+  prizeAmount?: string;
+  registeredAt: string;
+  walletAddress: string;
+  isWinner: boolean;
+}
+
+export interface UserHackathon {
+  id: string;
+  title: string;
+  description: string;
+  status: string;
+  organizerAddress: string;
+  prizeAmount?: string;
+  entryFee?: string;
+  maxParticipants?: number;
+  registrationDeadline: string;
+  submissionDeadline: string;
+  votingDeadline: string;
+  coverImageUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+  participants: Array<{
+    id: number;
+    userAddress: string;
+    registeredAt: string;
+    submissionUrl?: string;
+  }>;
+  participantCount: number;
+  judgeCount: number;
+  voteCount: number;
+}

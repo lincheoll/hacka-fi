@@ -362,12 +362,12 @@ export default function HackathonDetailPage({
             {/* Winner Management - Show for completed hackathons */}
             {(hackathon.status === "COMPLETED" ||
               hackathon.status === "VOTING_CLOSED") && (
-                <WinnerManagement
-                  hackathonId={hackathon.id}
-                  isOrganizer={isOrganizer}
-                  hackathonStatus={hackathon.status}
-                />
-              )}
+              <WinnerManagement
+                hackathonId={hackathon.id}
+                isOrganizer={isOrganizer}
+                hackathonStatus={hackathon.status}
+              />
+            )}
 
             {/* Timeline Details */}
             <Card>

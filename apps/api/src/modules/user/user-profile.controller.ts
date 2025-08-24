@@ -421,4 +421,43 @@ export class UserProfileController {
       data: profile,
     };
   }
+
+  @Get(':address/participations')
+  @ApiOperation({
+    summary: 'Get user participations by wallet address',
+  })
+  @ApiParam({
+    name: 'address',
+    description: 'Wallet address',
+    example: '0x742d35Cc3C0532925a3b8F474A738B2a3f7B6D75',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User participations retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getUserParticipations(@Param('address') address: string) {
+    const participations =
+      await this.userProfileService.getUserParticipations(address);
+    return participations;
+  }
+
+  @Get(':address/hackathons')
+  @ApiOperation({
+    summary: 'Get hackathons created by user',
+  })
+  @ApiParam({
+    name: 'address',
+    description: 'Wallet address',
+    example: '0x742d35Cc3C0532925a3b8F474A738B2a3f7B6D75',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User hackathons retrieved successfully',
+  })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async getUserHackathons(@Param('address') address: string) {
+    const hackathons = await this.userProfileService.getUserHackathons(address);
+    return hackathons;
+  }
 }

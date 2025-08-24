@@ -32,6 +32,8 @@ import type {
   VotingPeriodInfo,
   VotingPhaseHackathon,
   ExportResultsResponse,
+  UserParticipation,
+  UserHackathon,
 } from "@/types/api";
 import type { Hackathon, User, Participant } from "@/types/global";
 
@@ -133,8 +135,8 @@ export async function fetchParticipantStatus(
 
 export async function fetchUserParticipations(
   walletAddress: string,
-): Promise<Participant[]> {
-  const response = await apiClient.get<Participant[]>(
+): Promise<UserParticipation[]> {
+  const response = await apiClient.get<UserParticipation[]>(
     `/users/${walletAddress}/participations`,
   );
   return response;
@@ -167,8 +169,8 @@ export async function updateUserProfile(data: Partial<User>): Promise<User> {
 
 export async function fetchUserHackathons(
   address: string,
-): Promise<Hackathon[]> {
-  const response = await apiClient.get<Hackathon[]>(
+): Promise<UserHackathon[]> {
+  const response = await apiClient.get<UserHackathon[]>(
     `/users/${address}/hackathons`,
   );
   return response;

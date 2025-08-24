@@ -433,4 +433,117 @@ export class UserProfileService {
       totalVotesCast,
     };
   }
+
+  async getUserParticipations(walletAddress: string) {
+    this.logger.debug(`Getting participations for user: ${walletAddress}`);
+
+    try {
+      const participations = await this.prisma.participant.findMany({
+        where: {
+          walletAddress: walletAddress,
+        },
+        include: {
+          hackathon: {
+            select: {
+              id: true,
+              title: true,
+              status: true,
+              prizeAmount: true,
+              createdAt: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      return participations.map((participation: any) => ({
+        id: participation.id,
+        hackathonId: participation.hackathonId,
+        hackathonTitle: participation.hackathon.title,
+        hackathonStatus: participation.hackathon.status,
+        submissionUrl: participation.submissionUrl,
+        rank: participation.rank,
+        prizeAmount: participation.prizeAmount,
+        registeredAt: participation.createdAt,
+        walletAddress: participation.walletAddress,
+        isWinner: participation.rank !== null && participation.rank <= 3,
+      }));
+    } catch (error: any) {
+      this.logger.error(
+        `Failed to get user participations: ${error?.message || 'Unknown error'}`,
+      );
+      throw new BadRequestException('Failed to retrieve user participations');
+    }
+  }
+
+  async getUserHackathons(walletAddress: string) {
+    this.logger.debug(`Getting hackathons created by user: ${walletAddress}`);
+
+    try {
+      const hackathons = await this.prisma.hackathon.findMany({
+        where: {
+          organizerAddress: walletAddress,
+        },
+        include: {
+          participants: {
+            select: {
+              id: true,
+              walletAddress: true,
+              createdAt: true,
+              submissionUrl: true,
+            },
+          },
+          judges: {
+            select: {
+              id: true,
+              judgeAddress: true,
+            },
+          },
+          _count: {
+            select: {
+              participants: true,
+              judges: true,
+              votes: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+      });
+
+      return hackathons.map((hackathon: any) => ({
+        id: hackathon.id,
+        title: hackathon.title,
+        description: hackathon.description,
+        status: hackathon.status,
+        organizerAddress: hackathon.organizerAddress,
+        prizeAmount: hackathon.prizeAmount,
+        entryFee: hackathon.entryFee,
+        maxParticipants: hackathon.maxParticipants,
+        registrationDeadline: hackathon.registrationDeadline,
+        submissionDeadline: hackathon.submissionDeadline,
+        votingDeadline: hackathon.votingDeadline,
+        coverImageUrl: hackathon.coverImageUrl,
+        createdAt: hackathon.createdAt,
+        updatedAt: hackathon.updatedAt,
+        participants: hackathon.participants.map((p: any) => ({
+          id: p.id,
+          userAddress: p.walletAddress,
+          registeredAt: p.createdAt,
+          submissionUrl: p.submissionUrl,
+        })),
+        participantCount: hackathon._count.participants,
+        judgeCount: hackathon._count.judges,
+        voteCount: hackathon._count.votes,
+      }));
+    } catch (error: any) {
+      this.logger.error(
+        `Failed to get user hackathons: ${error?.message || 'Unknown error'}`,
+      );
+      throw new BadRequestException('Failed to retrieve user hackathons');
+    }
+  }
 }

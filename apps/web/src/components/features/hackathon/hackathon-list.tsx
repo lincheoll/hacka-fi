@@ -70,14 +70,14 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
       }),
     initialData: initialHackathons
       ? {
-        data: initialHackathons,
-        pagination: {
-          page: 1,
-          limit: 100,
-          total: initialHackathons.length,
-          totalPages: 1,
-        },
-      }
+          data: initialHackathons,
+          pagination: {
+            page: 1,
+            limit: 100,
+            total: initialHackathons.length,
+            totalPages: 1,
+          },
+        }
       : undefined,
   });
 

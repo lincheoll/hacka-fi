@@ -657,10 +657,11 @@ function VotingCard({
                 {/* Real-time comment validation */}
                 {realtimeValidation.commentError && (
                   <div
-                    className={`mt-2 flex items-center text-sm ${realtimeValidation.commentError.severity === "error"
+                    className={`mt-2 flex items-center text-sm ${
+                      realtimeValidation.commentError.severity === "error"
                         ? "text-red-600"
                         : "text-yellow-600"
-                      }`}
+                    }`}
                   >
                     {realtimeValidation.commentError.severity === "error" ? (
                       <AlertCircle className="w-4 h-4 mr-1" />
