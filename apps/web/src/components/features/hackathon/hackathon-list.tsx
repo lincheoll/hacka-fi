@@ -25,6 +25,7 @@ import { fetchHackathons } from "@/lib/api-functions";
 import { HackathonCoverImage } from "@/components/common/optimized-image";
 import { HackathonStatusBadge } from "./hackathon-status-badge";
 import { HackathonCountdown } from "./hackathon-countdown";
+import { PlatformFeeBadge } from "./platform-fee-display";
 import type { Hackathon } from "@/types/global";
 
 interface HackathonListProps {
@@ -272,11 +273,18 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
                   className="w-full h-full"
                 />
                 <div className="absolute flex items-start justify-between top-3 left-3 right-3">
-                  <HackathonStatusBadge
-                    status={hackathon.status}
-                    size="sm"
-                    className="bg-white/90 backdrop-blur-sm"
-                  />
+                  <div className="flex flex-col gap-2">
+                    <HackathonStatusBadge
+                      status={hackathon.status}
+                      size="sm"
+                      className="bg-white/90 backdrop-blur-sm"
+                    />
+                    {hackathon.feeInfo && (
+                      <PlatformFeeBadge
+                        feeRate={hackathon.feeInfo.lockedFeeRate}
+                      />
+                    )}
+                  </div>
                   <div className="px-2 py-1 text-sm text-white rounded bg-black/50">
                     <HackathonCountdown
                       hackathon={hackathon}
@@ -307,10 +315,21 @@ export function HackathonList({ initialHackathons }: HackathonListProps) {
                   <div className="flex items-center justify-between text-sm">
                     {hackathon.prizeAmount ? (
                       <div>
-                        <span className="text-gray-600">Prize:</span>
-                        <span className="ml-1 font-semibold text-green-600">
-                          {hackathon.prizeAmount} KAIA
+                        <span className="text-gray-600">
+                          {hackathon.feeInfo ? "Winners get:" : "Prize:"}
                         </span>
+                        <span className="ml-1 font-semibold text-green-600">
+                          {hackathon.feeInfo
+                            ? hackathon.feeInfo.distributionAmountFormatted ||
+                              hackathon.prizeAmount
+                            : hackathon.prizeAmount}{" "}
+                          KAIA
+                        </span>
+                        {hackathon.feeInfo && (
+                          <div className="text-xs text-gray-500">
+                            (Total pool: {hackathon.prizeAmount} KAIA)
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="text-gray-500">No prize pool</div>

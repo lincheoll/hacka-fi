@@ -5,6 +5,7 @@ import { use, useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useAccount } from "wagmi";
 import { useVotingStatus } from "@/hooks/use-voting-status";
+import { useHackathonFee } from "@/hooks/use-platform-fee";
 import { Header } from "@/components/layout/header";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -24,6 +25,7 @@ import { StatusManagement } from "@/components/features/hackathon/status-managem
 import { ActionButtons } from "@/components/features/hackathon/action-buttons";
 import { JudgeManagement } from "@/components/features/hackathon/judge-management";
 import { WinnerManagement } from "@/components/features/hackathon/winner-management";
+import { PlatformFeeDisplay } from "@/components/features/hackathon/platform-fee-display";
 import {
   fetchHackathon,
   fetchParticipantStatus,
@@ -77,6 +79,9 @@ export default function HackathonDetailPage({
 
   // Get voting status for current user
   const { isJudge, hasVoted } = useVotingStatus(id);
+
+  // Get hackathon fee information
+  const { feeBreakdown, isLoading: isLoadingFee } = useHackathonFee(id);
 
   if (!mounted) {
     return (
@@ -233,6 +238,16 @@ export default function HackathonDetailPage({
               </CardContent>
             </Card>
 
+            {/* Platform Fee Breakdown - Detailed View */}
+            {hackathon.feeInfo && (
+              <PlatformFeeDisplay
+                feeInfo={hackathon.feeInfo}
+                isLoading={isLoadingFee}
+                showBreakdown={true}
+                variant="detailed"
+              />
+            )}
+
             {/* Registration / Submission Section */}
             <div id="register">
               {isConnected && !isLoadingParticipant && (
@@ -362,12 +377,12 @@ export default function HackathonDetailPage({
             {/* Winner Management - Show for completed hackathons */}
             {(hackathon.status === "COMPLETED" ||
               hackathon.status === "VOTING_CLOSED") && (
-                <WinnerManagement
-                  hackathonId={hackathon.id}
-                  isOrganizer={isOrganizer}
-                  hackathonStatus={hackathon.status}
-                />
-              )}
+              <WinnerManagement
+                hackathonId={hackathon.id}
+                isOrganizer={isOrganizer}
+                hackathonStatus={hackathon.status}
+              />
+            )}
 
             {/* Timeline Details */}
             <Card>
@@ -411,13 +426,45 @@ export default function HackathonDetailPage({
               </CardContent>
             </Card>
 
+            {/* Platform Fee Information */}
+            {hackathon.feeInfo && (
+              <PlatformFeeDisplay
+                feeInfo={hackathon.feeInfo}
+                isLoading={isLoadingFee}
+                variant="compact"
+              />
+            )}
+
             {/* Prize & Details */}
             <Card>
               <CardHeader>
-                <CardTitle>Details</CardTitle>
+                <CardTitle>Prize Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {hackathon.prizeAmount && (
+                {feeBreakdown && (
+                  <>
+                    <div>
+                      <div className="text-sm font-medium">
+                        Original Prize Pool
+                      </div>
+                      <div className="text-lg font-bold text-blue-600">
+                        {feeBreakdown.formatted.totalPrizePool}
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t">
+                      <div className="text-sm font-medium">
+                        Winner Distribution
+                      </div>
+                      <div className="text-lg font-bold text-green-600">
+                        {feeBreakdown.formatted.distributionAmount}
+                      </div>
+                      <div className="text-xs text-gray-500">
+                        After {feeBreakdown.feePercentage}% platform fee
+                      </div>
+                    </div>
+                  </>
+                )}
+                {!feeBreakdown && hackathon.prizeAmount && (
                   <div>
                     <div className="text-sm font-medium">Prize Pool</div>
                     <div className="text-lg font-bold text-green-600">

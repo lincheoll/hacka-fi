@@ -124,4 +124,54 @@ export class HackathonResponseDto {
     type: [ParticipantResponseDto],
   })
   participants?: ParticipantResponseDto[];
+
+  @ApiPropertyOptional({
+    description: 'Fee information for this hackathon',
+    type: () => HackathonFeeInfoDto,
+  })
+  feeInfo?: HackathonFeeInfoDto;
+}
+
+export class HackathonFeeInfoDto {
+  @ApiProperty({
+    description: 'Fee rate locked at creation (basis points)',
+    example: 250,
+  })
+  lockedFeeRate!: number;
+
+  @ApiProperty({
+    description: 'Original prize pool amount before fees',
+    example: '10000000000000000000',
+  })
+  totalPrizePool!: string;
+
+  @ApiProperty({
+    description: 'Platform fee amount',
+    example: '250000000000000000',
+  })
+  platformFee!: string;
+
+  @ApiProperty({
+    description: 'Amount distributed to winners (after fee)',
+    example: '9750000000000000000',
+  })
+  distributionAmount!: string;
+
+  @ApiProperty({
+    description: 'Formatted platform fee amount',
+    example: '0.25',
+  })
+  platformFeeFormatted!: string;
+
+  @ApiProperty({
+    description: 'Formatted distribution amount',
+    example: '9.75',
+  })
+  distributionAmountFormatted!: string;
+
+  @ApiPropertyOptional({
+    description: 'Token address for ERC20 prizes (null for native KAIA)',
+    example: '0x1234567890123456789012345678901234567890',
+  })
+  tokenAddress?: string | null;
 }

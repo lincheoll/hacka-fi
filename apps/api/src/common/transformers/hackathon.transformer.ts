@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import {
   HackathonResponseDto,
   ParticipantResponseDto,
+  HackathonFeeInfoDto,
 } from '../../modules/hackathon/dto/hackathon-response.dto';
 import {
   HackathonWithCounts,
@@ -37,12 +38,52 @@ export class HackathonTransformer {
   }
 
   /**
+   * Convert Prisma hackathon with counts to response DTO including fee information
+   */
+  toResponseDtoWithFeeInfo(
+    hackathon: HackathonWithCounts,
+    feeInfo?: HackathonFeeInfoDto,
+  ): HackathonResponseDto {
+    const baseDto = this.toResponseDto(hackathon);
+
+    if (feeInfo) {
+      baseDto.feeInfo = feeInfo;
+    }
+
+    return baseDto;
+  }
+
+  /**
    * Convert Prisma hackathon with participants to response DTO
    */
   toResponseDtoWithParticipants(
     hackathon: HackathonWithParticipants,
   ): HackathonResponseDto {
     const baseDto = this.toResponseDto(hackathon);
+
+    if (hackathon.participants) {
+      baseDto.participants = hackathon.participants.map((participant) => ({
+        id: participant.id,
+        walletAddress: participant.walletAddress,
+        submissionUrl: participant.submissionUrl || undefined,
+        entryFee: participant.entryFee || undefined,
+        rank: participant.rank || undefined,
+        prizeAmount: participant.prizeAmount || undefined,
+        createdAt: participant.createdAt.toISOString(),
+      }));
+    }
+
+    return baseDto;
+  }
+
+  /**
+   * Convert Prisma hackathon with participants to response DTO including fee information
+   */
+  toResponseDtoWithParticipantsAndFeeInfo(
+    hackathon: HackathonWithParticipants,
+    feeInfo?: HackathonFeeInfoDto,
+  ): HackathonResponseDto {
+    const baseDto = this.toResponseDtoWithFeeInfo(hackathon, feeInfo);
 
     if (hackathon.participants) {
       baseDto.participants = hackathon.participants.map((participant) => ({

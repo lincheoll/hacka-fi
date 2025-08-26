@@ -424,3 +424,59 @@ export interface UserHackathon {
   judgeCount: number;
   voteCount: number;
 }
+
+// Platform Fee API types
+export interface PlatformFeeInfo {
+  currentFeeRate: number;
+  feeRecipient: string;
+  lastUpdated?: string;
+}
+
+export interface SetPlatformFeeRateRequest {
+  feeRate: number; // Fee rate in basis points (e.g., 250 = 2.5%)
+  reason?: string; // Optional reason for the change
+}
+
+export interface SetPlatformFeeRecipientRequest {
+  recipient: string; // Wallet address to receive fees
+}
+
+export interface FeeDistributionResponse {
+  totalPrizePool: string;
+  feeRate: number;
+  feeAmount: string;
+  distributionAmount: string;
+  feeAmountFormatted: string;
+  distributionAmountFormatted: string;
+}
+
+export interface SetFeeRateResponse {
+  success: boolean;
+  txHash: string;
+  message: string;
+}
+
+export interface PlatformFeeHistoryInfo {
+  id: number;
+  oldFeeRate: number;
+  newFeeRate: number;
+  changedBy: string;
+  reason?: string | null;
+  createdAt: string;
+}
+
+export interface PlatformFeeCollectionInfo {
+  id: number;
+  hackathonId: string;
+  prizePoolId: number;
+  feeAmount: string;
+  feeAmountFormatted: string;
+  feeRate: number; // Fee rate used (basis points)
+  tokenAddress?: string | null;
+  recipientAddress: string;
+  txHash: string;
+  blockNumber?: number | null;
+  status: string;
+  collectedAt: string;
+  confirmedAt?: string | null;
+}

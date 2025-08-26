@@ -178,6 +178,100 @@ export class PrizePoolContractService {
   }
 
   /**
+   * Platform Fee Related Operations
+   */
+
+  async getPlatformFeeInfo(): Promise<{
+    feeRate: bigint;
+    recipient: Address;
+  }> {
+    const publicClient = this.web3Service.getPublicClient();
+
+    try {
+      const result = await publicClient.readContract({
+        address: this.prizePoolAddress,
+        abi: PRIZE_POOL_ABI,
+        functionName: 'getPlatformFeeInfo',
+      });
+
+      const [feeRate, recipient] = result as [bigint, Address];
+
+      return {
+        feeRate,
+        recipient,
+      };
+    } catch (error) {
+      this.logger.error('Failed to get platform fee info', error);
+      throw error;
+    }
+  }
+
+  async getPlatformFeeRate(): Promise<bigint> {
+    const publicClient = this.web3Service.getPublicClient();
+
+    try {
+      const result = await publicClient.readContract({
+        address: this.prizePoolAddress,
+        abi: PRIZE_POOL_ABI,
+        functionName: 'platformFeeRate',
+      });
+
+      return result as bigint;
+    } catch (error) {
+      this.logger.error('Failed to get platform fee rate', error);
+      throw error;
+    }
+  }
+
+  async getPlatformFeeRecipient(): Promise<Address> {
+    const publicClient = this.web3Service.getPublicClient();
+
+    try {
+      const result = await publicClient.readContract({
+        address: this.prizePoolAddress,
+        abi: PRIZE_POOL_ABI,
+        functionName: 'platformFeeRecipient',
+      });
+
+      return result as Address;
+    } catch (error) {
+      this.logger.error('Failed to get platform fee recipient', error);
+      throw error;
+    }
+  }
+
+  async getLockedFeeRate(hackathonId: bigint): Promise<bigint> {
+    const publicClient = this.web3Service.getPublicClient();
+
+    try {
+      const result = await publicClient.readContract({
+        address: this.prizePoolAddress,
+        abi: PRIZE_POOL_ABI,
+        functionName: 'prizeConfigurations',
+        args: [hackathonId],
+      });
+
+      // prizeConfigurations returns: (totalPrizePool, organizer, token, distributed, createdAt, lockedFeeRate)
+      const [, , , , , lockedFeeRate] = result as [
+        bigint,
+        Address,
+        Address,
+        boolean,
+        bigint,
+        bigint,
+      ];
+
+      return lockedFeeRate;
+    } catch (error) {
+      this.logger.error(
+        `Failed to get locked fee rate for hackathon ${hackathonId}`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  /**
    * Write Operations (require wallet)
    */
 
@@ -308,6 +402,62 @@ export class PrizePoolContractService {
     } catch (error) {
       this.logger.error(
         `Failed to emergency withdraw for hackathon ${hackathonId}`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Platform Fee Management Operations (Admin only)
+   */
+
+  async setPlatformFeeRate(newFeeRate: bigint): Promise<Hash> {
+    const walletClient = this.web3Service.getWalletClient();
+
+    try {
+      const hash = await walletClient.writeContract({
+        address: this.prizePoolAddress,
+        abi: PRIZE_POOL_ABI,
+        functionName: 'setPlatformFeeRate',
+        args: [newFeeRate],
+        chain: this.web3Service.getChain(),
+        account: this.web3Service.getWalletAccount(),
+      });
+
+      this.logger.log(
+        `Platform fee rate update transaction submitted: ${hash}`,
+      );
+      return hash;
+    } catch (error) {
+      this.logger.error(
+        `Failed to set platform fee rate to ${newFeeRate}`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  async setPlatformFeeRecipient(newRecipient: Address): Promise<Hash> {
+    const walletClient = this.web3Service.getWalletClient();
+
+    try {
+      const hash = await walletClient.writeContract({
+        address: this.prizePoolAddress,
+        abi: PRIZE_POOL_ABI,
+        functionName: 'setPlatformFeeRecipient',
+        args: [newRecipient],
+        chain: this.web3Service.getChain(),
+        account: this.web3Service.getWalletAccount(),
+      });
+
+      this.logger.log(
+        `Platform fee recipient update transaction submitted: ${hash}`,
+      );
+      return hash;
+    } catch (error) {
+      this.logger.error(
+        `Failed to set platform fee recipient to ${newRecipient}`,
         error,
       );
       throw error;

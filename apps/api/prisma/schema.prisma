@@ -171,6 +171,8 @@ model PrizePool {
   depositTxHash         String?  @map("deposit_tx_hash")
   isDistributed         Boolean  @default(false) @map("is_distributed")
   distributionTxHash    String?  @map("distribution_tx_hash")
+  lockedFeeRate         Int      @default(250) @map("locked_fee_rate") // Fee rate locked at creation (basis points)
+  tokenAddress          String?  @map("token_address") // ERC20 token address (null for native KAIA)
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
 
@@ -178,6 +180,7 @@ model PrizePool {
   deposits              PrizePoolDeposit[]
   distributions         PrizeDistribution[]
   distributionTransactions DistributionTransaction[]
+  feeCollections        PlatformFeeCollection[]
 
   @@map("prize_pools")
 }
@@ -297,5 +300,48 @@ enum AchievementType {
   PARTICIPANT
   JUDGE
   CREATOR
+}
+
+// Platform fee management models
+model PlatformFeeHistory {
+  id                    Int      @id @default(autoincrement())
+  oldFeeRate            Int      @map("old_fee_rate") // Previous fee rate in basis points
+  newFeeRate            Int      @map("new_fee_rate") // New fee rate in basis points
+  changedBy             String   @map("changed_by") // Admin wallet address who made the change
+  reason                String?  // Optional reason for the change
+  createdAt             DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("platform_fee_history")
+}
+
+model PlatformFeeCollection {
+  id                    Int      @id @default(autoincrement())
+  hackathonId           String   @map("hackathon_id")
+  prizePoolId           Int      @map("prize_pool_id")
+  feeAmount             String   @map("fee_amount") // Using String for BigInt compatibility
+  feeRate               Int      @map("fee_rate") // Fee rate used (basis points)
+  tokenAddress          String?  @map("token_address") // ERC20 token address (null for native KAIA)
+  recipientAddress      String   @map("recipient_address") // Address that received the fee
+  txHash                String   @map("tx_hash") // Transaction hash of fee collection
+  blockNumber           Int?     @map("block_number") // Block number where fee was collected
+  status                FeeCollectionStatus @default(PENDING)
+  collectedAt           DateTime @default(now()) @map("collected_at")
+  confirmedAt           DateTime? @map("confirmed_at")
+  
+  prizePool             PrizePool @relation(fields: [prizePoolId], references: [id], onDelete: Cascade)
+
+  @@index([hackathonId])
+  @@index([prizePoolId])
+  @@index([status])
+  @@index([collectedAt])
+  @@index([txHash])
+  @@map("platform_fee_collections")
+}
+
+enum FeeCollectionStatus {
+  PENDING
+  CONFIRMED
+  FAILED
 }
 

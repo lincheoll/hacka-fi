@@ -12,6 +12,8 @@ import { ReportGenerationService } from './report-generation.service';
 import { ReportGenerationController } from './report-generation.controller';
 import { EmergencyControlsService } from './emergency-controls.service';
 import { EmergencyControlsController } from './emergency-controls.controller';
+import { PlatformFeeController } from './platform-fee.controller';
+import { PlatformFeeListenerService } from './platform-fee-listener.service';
 import { PrismaModule } from '../../common/database/prisma.module';
 import { Web3Module } from '../web3/web3.module';
 import { HackathonModule } from '../hackathon/hackathon.module';
@@ -26,6 +28,7 @@ import { AuditModule } from '../audit/audit.module';
     DistributionHistoryController,
     ReportGenerationController,
     EmergencyControlsController,
+    PlatformFeeController,
   ],
   providers: [
     PrizePoolService,
@@ -35,6 +38,7 @@ import { AuditModule } from '../audit/audit.module';
     DistributionHistoryService,
     ReportGenerationService,
     EmergencyControlsService,
+    PlatformFeeListenerService,
   ],
   exports: [
     PrizePoolService,
@@ -44,6 +48,7 @@ import { AuditModule } from '../audit/audit.module';
     DistributionHistoryService,
     ReportGenerationService,
     EmergencyControlsService,
+    PlatformFeeListenerService,
   ],
 })
 export class PrizePoolModule {}

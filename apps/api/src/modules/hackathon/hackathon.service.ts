@@ -46,6 +46,7 @@ import {
   HackathonParticipantsPreviewDto,
   ParticipantPreviewDto,
 } from './dto';
+import { HackathonFeeInfoDto } from './dto/hackathon-response.dto';
 
 @Injectable()
 export class HackathonService {
@@ -178,6 +179,8 @@ export class HackathonService {
       },
     });
 
+    // For performance, we don't include fee details in the list view by default
+    // Fee information is available in the individual hackathon detail endpoint
     const data = hackathons.map((hackathon) =>
       this.hackathonTransformer.toResponseDto(hackathon),
     );
@@ -216,9 +219,55 @@ export class HackathonService {
       throw new NotFoundException(`Hackathon with ID ${id} not found`);
     }
 
+    // Try to get fee information if hackathon has a contract address
+    let feeInfo: HackathonFeeInfoDto | undefined;
+    if (hackathon.contractAddress) {
+      try {
+        const prizePool = await this.prisma.prizePool.findUnique({
+          where: { hackathonId: id },
+        });
+
+        if (prizePool) {
+          // Calculate platform fee and distribution amounts
+          const totalPrizePoolBigInt = BigInt(prizePool.totalAmount);
+          const feeRateBasisPoints = prizePool.lockedFeeRate;
+
+          // Calculate fee amount: totalAmount * feeRate / 10000
+          const platformFeeBigInt =
+            (totalPrizePoolBigInt * BigInt(feeRateBasisPoints)) / 10000n;
+          const distributionAmountBigInt =
+            totalPrizePoolBigInt - platformFeeBigInt;
+
+          // Format to KAIA (divide by 10^18)
+          const formatKaia = (amount: bigint): string => {
+            return (Number(amount) / 1e18).toFixed(2);
+          };
+
+          feeInfo = {
+            lockedFeeRate: feeRateBasisPoints,
+            totalPrizePool: prizePool.totalAmount,
+            platformFee: platformFeeBigInt.toString(),
+            distributionAmount: distributionAmountBigInt.toString(),
+            platformFeeFormatted: formatKaia(platformFeeBigInt),
+            distributionAmountFormatted: formatKaia(distributionAmountBigInt),
+            tokenAddress: prizePool.tokenAddress || null,
+          };
+        }
+      } catch (error) {
+        // Fee information not available, continue without it
+        this.logger.warn(
+          `Could not retrieve fee info for hackathon ${id}:`,
+          error,
+        );
+      }
+    }
+
     return includeParticipants
-      ? this.hackathonTransformer.toResponseDtoWithParticipants(hackathon)
-      : this.hackathonTransformer.toResponseDto(hackathon);
+      ? this.hackathonTransformer.toResponseDtoWithParticipantsAndFeeInfo(
+          hackathon,
+          feeInfo,
+        )
+      : this.hackathonTransformer.toResponseDtoWithFeeInfo(hackathon, feeInfo);
   }
 
   async updateHackathon(

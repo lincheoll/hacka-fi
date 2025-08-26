@@ -20,8 +20,21 @@ export interface Hackathon {
   maxParticipants?: number;
   coverImageUrl?: string;
   contractAddress?: string;
+  participantCount: number;
   createdAt: string;
   updatedAt: string;
+  participants?: Participant[];
+  feeInfo?: HackathonFeeInfo;
+}
+
+export interface HackathonFeeInfo {
+  lockedFeeRate: number; // Fee rate locked at creation (basis points)
+  totalPrizePool: string; // Original prize pool amount before fees
+  platformFee: string; // Platform fee amount
+  distributionAmount: string; // Amount distributed to winners (after fee)
+  platformFeeFormatted: string; // Formatted platform fee amount
+  distributionAmountFormatted: string; // Formatted distribution amount
+  tokenAddress?: string | null; // Token address for ERC20 prizes (null for native KAIA)
 }
 
 export enum HackathonStatus {

@@ -2,19 +2,22 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, Medal, Award, Coins } from "lucide-react";
+import { Trophy, Medal, Award, Coins, Receipt } from "lucide-react";
 import type { PrizeDistribution } from "@/types/api";
+import type { HackathonFeeInfo } from "@/types/global";
 
 interface PrizeDistributionChartProps {
   prizeDistribution: PrizeDistribution[];
   totalPrizePool: string;
   currency?: string;
+  feeInfo?: HackathonFeeInfo;
 }
 
 export function PrizeDistributionChart({
   prizeDistribution,
   totalPrizePool,
   currency = "KAIA",
+  feeInfo,
 }: PrizeDistributionChartProps) {
   const formatAmount = (amount: string) => {
     const num = parseFloat(amount);
@@ -187,11 +190,47 @@ export function PrizeDistributionChart({
             ))}
           </div>
 
+          {/* Platform Fee Information */}
+          {feeInfo && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Receipt className="h-4 w-4 text-blue-600" />
+                <span className="font-semibold text-blue-900">
+                  Platform Fee Breakdown
+                </span>
+              </div>
+              <div className="text-sm text-blue-800 space-y-2">
+                <div className="flex justify-between">
+                  <span>Original Prize Pool:</span>
+                  <span className="font-semibold">
+                    {formatAmount(feeInfo.totalPrizePool)} {currency}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>
+                    Platform Fee ({(feeInfo.lockedFeeRate / 100).toFixed(2)}%):
+                  </span>
+                  <span className="font-semibold text-red-700">
+                    {feeInfo.platformFeeFormatted ||
+                      `${formatAmount(feeInfo.platformFee)} ${currency}`}
+                  </span>
+                </div>
+                <div className="flex justify-between border-t border-blue-200 pt-2">
+                  <span>Distributed to Winners:</span>
+                  <span className="font-semibold text-green-700">
+                    {feeInfo.distributionAmountFormatted ||
+                      `${formatAmount(feeInfo.distributionAmount)} ${currency}`}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Summary */}
           <div className="bg-gray-50 rounded-lg p-4 mt-4">
             <div className="text-sm text-gray-600 space-y-1">
               <div className="flex justify-between">
-                <span>Total Prize Pool:</span>
+                <span>Distribution Amount:</span>
                 <span className="font-semibold">
                   {formatAmount(totalPrizePool)} {currency}
                 </span>

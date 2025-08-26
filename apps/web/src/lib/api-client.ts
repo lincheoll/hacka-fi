@@ -287,6 +287,96 @@ class ApiClient {
         skipAuth: true,
       }),
   };
+
+  /**
+   * Platform Fee Management API methods
+   */
+  platformFee = {
+    /**
+     * Get current platform fee information (public)
+     */
+    getFeeInfo: () =>
+      this.get<{
+        currentFeeRate: number;
+        feeRecipient: string;
+        lastUpdated?: string;
+      }>("/platform/fee-info", { skipAuth: true }),
+
+    /**
+     * Get hackathon-specific fee details (public)
+     */
+    getHackathonFeeDetails: (hackathonId: string) =>
+      this.get<{
+        totalPrizePool: string;
+        feeRate: number;
+        feeAmount: string;
+        distributionAmount: string;
+        feeAmountFormatted: string;
+        distributionAmountFormatted: string;
+      }>(`/hackathons/${hackathonId}/fee-details`, { skipAuth: true }),
+
+    /**
+     * Update platform fee rate (admin only)
+     */
+    setPlatformFeeRate: (data: { feeRate: number; reason?: string }) =>
+      this.post<{
+        success: boolean;
+        txHash: string;
+        message: string;
+      }>("/admin/platform-fee/rate", data),
+
+    /**
+     * Update platform fee recipient (admin only)
+     */
+    setPlatformFeeRecipient: (data: { recipient: string }) =>
+      this.post<{
+        success: boolean;
+        txHash: string;
+        message: string;
+      }>("/admin/platform-fee/recipient", data),
+
+    /**
+     * Get platform fee rate change history (admin only)
+     */
+    getFeeHistory: (limit = 50) =>
+      this.get<
+        {
+          id: number;
+          oldFeeRate: number;
+          newFeeRate: number;
+          changedBy: string;
+          reason?: string;
+          createdAt: string;
+        }[]
+      >(`/admin/platform-fee/history?limit=${limit}`),
+
+    /**
+     * Get platform fee collection records (admin only)
+     */
+    getFeeCollections: (hackathonId?: string, limit = 50) => {
+      const params = new URLSearchParams({ limit: limit.toString() });
+      if (hackathonId) {
+        params.append("hackathonId", hackathonId);
+      }
+      return this.get<
+        {
+          id: number;
+          hackathonId: string;
+          prizePoolId: number;
+          feeAmount: string;
+          feeAmountFormatted: string;
+          feeRate: number;
+          tokenAddress?: string;
+          recipientAddress: string;
+          txHash: string;
+          blockNumber?: number;
+          status: string;
+          collectedAt: string;
+          confirmedAt?: string;
+        }[]
+      >(`/admin/fee-collections?${params.toString()}`);
+    },
+  };
 }
 
 // Export singleton instance

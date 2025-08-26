@@ -385,6 +385,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                 prizeDistribution={winnerData.prizeDistribution}
                 totalPrizePool={winnerData.totalPrizePool || "0"}
                 currency="KAIA"
+                feeInfo={hackathon.feeInfo}
               />
             </div>
           )}

@@ -81,6 +81,59 @@ export function useWeb3() {
     return `${whole}.${fractionStr}`;
   };
 
+  /**
+   * Format token amounts with proper decimals and currency symbol
+   */
+  const formatTokenAmount = (
+    amount: string | bigint,
+    decimals: number = 18,
+    symbol = "KAIA",
+  ) => {
+    const amountBigInt = typeof amount === "string" ? BigInt(amount) : amount;
+    const divisor = BigInt(10 ** decimals);
+    const whole = amountBigInt / divisor;
+    const fraction = amountBigInt % divisor;
+
+    if (whole === BigInt(0) && fraction === BigInt(0)) return `0 ${symbol}`;
+
+    // Show more precision for smaller amounts
+    const precisionDigits = whole === BigInt(0) ? 6 : 4;
+    const fractionStr = fraction
+      .toString()
+      .padStart(decimals, "0")
+      .slice(0, precisionDigits);
+    const trimmedFraction = fractionStr.replace(/0+$/, "");
+
+    if (trimmedFraction) {
+      return `${whole}.${trimmedFraction} ${symbol}`;
+    } else {
+      return `${whole} ${symbol}`;
+    }
+  };
+
+  /**
+   * Calculate platform fee amounts
+   */
+  const calculatePlatformFee = (
+    prizePoolAmount: string | bigint,
+    feeRateBasisPoints: number,
+  ) => {
+    const amount =
+      typeof prizePoolAmount === "string"
+        ? BigInt(prizePoolAmount)
+        : prizePoolAmount;
+    const feeAmount = (amount * BigInt(feeRateBasisPoints)) / BigInt(10000);
+    const distributionAmount = amount - feeAmount;
+
+    return {
+      totalPrizePool: amount.toString(),
+      platformFee: feeAmount.toString(),
+      distributionAmount: distributionAmount.toString(),
+      feeRate: feeRateBasisPoints,
+      feePercentage: (feeRateBasisPoints / 100).toFixed(2),
+    };
+  };
+
   return {
     // Basic wallet info
     address,
@@ -101,6 +154,8 @@ export function useWeb3() {
     // Formatting helpers
     formatAddress: () => formatAddress(address),
     formatBalance: () => formatBalance(balance?.value, balance?.decimals),
+    formatTokenAmount,
+    calculatePlatformFee,
 
     // Validation
     isSupported: isCorrectNetwork,

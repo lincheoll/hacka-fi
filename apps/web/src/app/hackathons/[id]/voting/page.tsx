@@ -244,12 +244,10 @@ export default function VotingPage({ params }: VotingPageProps) {
     );
   }
 
-
   // Get current user's votes
   const myVotes =
     votingResults?.participants?.reduce(
       (acc, participant) => {
-
         const myVote = participant.votes?.find(
           (vote) =>
             vote.judgeAddress.toLowerCase() === walletAddress?.toLowerCase(),
@@ -524,8 +522,7 @@ function VotingCard({
               {participant.walletAddress.slice(-4)}
             </CardTitle>
             <CardDescription>
-              Registered:{" "}
-              {new Date(participant.createdAt).toLocaleDateString()}
+              Registered: {new Date(participant.createdAt).toLocaleDateString()}
             </CardDescription>
           </div>
           <div className="flex items-center gap-2">
@@ -652,10 +649,11 @@ function VotingCard({
                 {/* Real-time comment validation */}
                 {realtimeValidation.commentError && (
                   <div
-                    className={`mt-2 flex items-center text-sm ${realtimeValidation.commentError.severity === "error"
-                      ? "text-red-600"
-                      : "text-yellow-600"
-                      }`}
+                    className={`mt-2 flex items-center text-sm ${
+                      realtimeValidation.commentError.severity === "error"
+                        ? "text-red-600"
+                        : "text-yellow-600"
+                    }`}
                   >
                     {realtimeValidation.commentError.severity === "error" ? (
                       <AlertCircle className="w-4 h-4 mr-1" />

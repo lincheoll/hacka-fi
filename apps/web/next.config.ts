@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   // Enable standalone output for Docker production builds
   output: process.env.NODE_ENV === "production" ? "standalone" : undefined,
 
+  // Disable static optimization for pages with Web3 hooks
+  experimental: {
+    esmExternals: false,
+  },
+
   turbopack: {
     rules: {
       "*.svg": {

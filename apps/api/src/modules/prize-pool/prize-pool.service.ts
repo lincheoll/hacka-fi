@@ -18,6 +18,11 @@ import {
 } from '@prisma/client';
 
 import { parseEther, formatEther, Address, Hash } from 'viem';
+import {
+  PlatformFeeHistory,
+  PlatformFeeCollection,
+  FeeCollectionStatus,
+} from '@prisma/client';
 
 export interface CreatePrizePoolDto {
   hackathonId: string;
@@ -36,11 +41,14 @@ export interface PrizePoolInfo {
   totalAmountFormatted: string; // Formatted for display
   isDeposited: boolean;
   isDistributed: boolean;
-  depositTxHash?: string | undefined;
-  distributionTxHash?: string | undefined;
-  contractPoolId?: string | undefined;
+  depositTxHash?: string | null;
+  distributionTxHash?: string | null;
+  contractPoolId?: string | null;
+  lockedFeeRate: number; // Fee rate locked at creation (basis points)
+  tokenAddress?: string | null; // ERC20 token address (null for native KAIA)
   deposits: PrizePoolDepositInfo[];
   distributions: PrizeDistributionInfo[];
+  feeCollections: PlatformFeeCollectionInfo[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -69,6 +77,46 @@ export interface PrizeDistributionInfo {
   createdAt: Date;
 }
 
+export interface PlatformFeeInfo {
+  currentFeeRate: number; // Current platform fee rate (basis points)
+  feeRecipient: string; // Address receiving fees
+  lastUpdated?: Date; // Timestamp of last update
+}
+
+export interface PlatformFeeHistoryInfo {
+  id: number;
+  oldFeeRate: number;
+  newFeeRate: number;
+  changedBy: string;
+  reason?: string | null;
+  createdAt: Date;
+}
+
+export interface PlatformFeeCollectionInfo {
+  id: number;
+  hackathonId: string;
+  prizePoolId: number;
+  feeAmount: string;
+  feeAmountFormatted: string;
+  feeRate: number; // Fee rate used (basis points)
+  tokenAddress?: string | null;
+  recipientAddress: string;
+  txHash: string;
+  blockNumber?: number | null;
+  status: FeeCollectionStatus;
+  collectedAt: Date;
+  confirmedAt?: Date | null;
+}
+
+export interface FeeDistributionCalculation {
+  totalPrizePool: string;
+  feeRate: number; // In basis points
+  feeAmount: string;
+  distributionAmount: string; // Amount after fee deduction
+  feeAmountFormatted: string;
+  distributionAmountFormatted: string;
+}
+
 @Injectable()
 export class PrizePoolService {
   private readonly logger = new Logger(PrizePoolService.name);
@@ -78,6 +126,211 @@ export class PrizePoolService {
     private readonly prizePoolContract: PrizePoolContractService,
     private readonly configService: ConfigService,
   ) {}
+
+  /**
+   * Platform Fee Management
+   */
+
+  async getPlatformFeeInfo(): Promise<PlatformFeeInfo> {
+    try {
+      // Get current fee info from contract
+      const feeInfo = await this.prizePoolContract.getPlatformFeeInfo();
+
+      // Get most recent fee history for last updated timestamp
+      const lastHistory = await this.prisma.platformFeeHistory.findFirst({
+        orderBy: { createdAt: 'desc' },
+      });
+
+      const result: PlatformFeeInfo = {
+        currentFeeRate: Number(feeInfo.feeRate),
+        feeRecipient: feeInfo.recipient,
+      };
+
+      if (lastHistory?.createdAt) {
+        result.lastUpdated = lastHistory.createdAt;
+      }
+
+      return result;
+    } catch (error) {
+      this.logger.error('Failed to get platform fee info', error);
+      throw error;
+    }
+  }
+
+  async setPlatformFeeRate(
+    newFeeRate: number,
+    changedBy: string,
+    reason?: string,
+  ): Promise<{ txHash: string }> {
+    this.logger.log(`Setting platform fee rate to ${newFeeRate} basis points`);
+
+    try {
+      // Get current fee rate for history
+      const currentFeeRate = await this.prizePoolContract.getPlatformFeeRate();
+
+      // Execute contract transaction
+      const txHash = await this.prizePoolContract.setPlatformFeeRate(
+        BigInt(newFeeRate),
+      );
+
+      // Record fee rate change in history
+      await this.prisma.platformFeeHistory.create({
+        data: {
+          oldFeeRate: Number(currentFeeRate),
+          newFeeRate,
+          changedBy,
+          reason: reason || null,
+        },
+      });
+
+      this.logger.log(
+        `Platform fee rate updated to ${newFeeRate}, tx: ${txHash}`,
+      );
+      return { txHash };
+    } catch (error) {
+      this.logger.error('Failed to set platform fee rate', error);
+      throw error;
+    }
+  }
+
+  async setPlatformFeeRecipient(
+    newRecipient: string,
+    changedBy: string,
+  ): Promise<{ txHash: string }> {
+    this.logger.log(`Setting platform fee recipient to ${newRecipient}`);
+
+    try {
+      const txHash = await this.prizePoolContract.setPlatformFeeRecipient(
+        newRecipient as Address,
+      );
+
+      this.logger.log(
+        `Platform fee recipient updated to ${newRecipient}, tx: ${txHash}`,
+      );
+      return { txHash };
+    } catch (error) {
+      this.logger.error('Failed to set platform fee recipient', error);
+      throw error;
+    }
+  }
+
+  async calculateFeeDistribution(
+    hackathonId: string,
+  ): Promise<FeeDistributionCalculation> {
+    const prizePool = await this.prisma.prizePool.findUnique({
+      where: { hackathonId },
+    });
+
+    if (!prizePool) {
+      throw new NotFoundException(
+        `Prize pool not found for hackathon ${hackathonId}`,
+      );
+    }
+
+    const totalAmount = BigInt(prizePool.totalAmount);
+    const feeRate = prizePool.lockedFeeRate; // Use locked fee rate
+
+    // Calculate fee amount: totalAmount * feeRate / 10000
+    const feeAmount = (totalAmount * BigInt(feeRate)) / BigInt(10000);
+    const distributionAmount = totalAmount - feeAmount;
+
+    return {
+      totalPrizePool: totalAmount.toString(),
+      feeRate,
+      feeAmount: feeAmount.toString(),
+      distributionAmount: distributionAmount.toString(),
+      feeAmountFormatted: formatEther(feeAmount),
+      distributionAmountFormatted: formatEther(distributionAmount),
+    };
+  }
+
+  async getFeeHistory(limit = 50): Promise<PlatformFeeHistoryInfo[]> {
+    const history = await this.prisma.platformFeeHistory.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: limit,
+    });
+
+    return history.map(this.formatFeeHistoryInfo);
+  }
+
+  async getFeeCollections(
+    hackathonId?: string,
+    limit = 50,
+  ): Promise<PlatformFeeCollectionInfo[]> {
+    const where = hackathonId ? { hackathonId } : {};
+
+    const collections = await this.prisma.platformFeeCollection.findMany({
+      where,
+      orderBy: { collectedAt: 'desc' },
+      take: limit,
+    });
+
+    return collections.map(this.formatFeeCollectionInfo);
+  }
+
+  async recordFeeCollection(
+    hackathonId: string,
+    feeAmount: string,
+    feeRate: number,
+    recipientAddress: string,
+    txHash: string,
+    tokenAddress?: string,
+    blockNumber?: number,
+  ): Promise<PlatformFeeCollectionInfo> {
+    const prizePool = await this.prisma.prizePool.findUnique({
+      where: { hackathonId },
+    });
+
+    if (!prizePool) {
+      throw new NotFoundException(
+        `Prize pool not found for hackathon ${hackathonId}`,
+      );
+    }
+
+    const collection = await this.prisma.platformFeeCollection.create({
+      data: {
+        hackathonId,
+        prizePoolId: prizePool.id,
+        feeAmount,
+        feeRate,
+        tokenAddress: tokenAddress || null,
+        recipientAddress,
+        txHash,
+        blockNumber: blockNumber || null,
+        status: FeeCollectionStatus.PENDING,
+      },
+    });
+
+    this.logger.log(
+      `Fee collection recorded for hackathon ${hackathonId}, tx: ${txHash}`,
+    );
+    return this.formatFeeCollectionInfo(collection);
+  }
+
+  async confirmFeeCollection(
+    txHash: string,
+  ): Promise<PlatformFeeCollectionInfo> {
+    const collection = await this.prisma.platformFeeCollection.findFirst({
+      where: { txHash },
+    });
+
+    if (!collection) {
+      throw new NotFoundException(
+        `Fee collection with tx hash ${txHash} not found`,
+      );
+    }
+
+    const updatedCollection = await this.prisma.platformFeeCollection.update({
+      where: { id: collection.id },
+      data: {
+        status: FeeCollectionStatus.CONFIRMED,
+        confirmedAt: new Date(),
+      },
+    });
+
+    this.logger.log(`Fee collection ${collection.id} confirmed`);
+    return this.formatFeeCollectionInfo(updatedCollection);
+  }
 
   /**
    * Create a new prize pool for a hackathon
@@ -122,15 +375,20 @@ export class PrizePoolService {
       throw new BadRequestException('Prize pool amount must be greater than 0');
     }
 
+    // Get current platform fee rate to lock it for this prize pool
+    const currentFeeRate = await this.prizePoolContract.getPlatformFeeRate();
+
     // Create prize pool in database
     const prizePool = await this.prisma.prizePool.create({
       data: {
         hackathonId: dto.hackathonId,
         totalAmount: totalAmountWei.toString(),
+        lockedFeeRate: Number(currentFeeRate), // Lock the current fee rate
       },
       include: {
         deposits: true,
         distributions: true,
+        feeCollections: true,
       },
     });
 
@@ -159,6 +417,9 @@ export class PrizePoolService {
         },
         distributions: {
           orderBy: { position: 'asc' },
+        },
+        feeCollections: {
+          orderBy: { collectedAt: 'desc' },
         },
       },
     });
@@ -372,6 +633,7 @@ export class PrizePoolService {
     prizePool: PrizePool & {
       deposits: PrizePoolDeposit[];
       distributions: PrizeDistribution[];
+      feeCollections: PlatformFeeCollection[];
     },
   ): PrizePoolInfo {
     return {
@@ -381,12 +643,17 @@ export class PrizePoolService {
       totalAmountFormatted: formatEther(BigInt(prizePool.totalAmount)),
       isDeposited: prizePool.isDeposited,
       isDistributed: prizePool.isDistributed,
-      depositTxHash: prizePool.depositTxHash || undefined,
-      distributionTxHash: prizePool.distributionTxHash || undefined,
-      contractPoolId: prizePool.contractPoolId || undefined,
+      depositTxHash: prizePool.depositTxHash || null,
+      distributionTxHash: prizePool.distributionTxHash || null,
+      contractPoolId: prizePool.contractPoolId || null,
+      lockedFeeRate: prizePool.lockedFeeRate,
+      tokenAddress: prizePool.tokenAddress || null,
       deposits: prizePool.deposits.map((d) => this.formatDepositInfo(d)),
       distributions: prizePool.distributions.map((d) =>
         this.formatDistributionInfo(d),
+      ),
+      feeCollections: prizePool.feeCollections.map((f) =>
+        this.formatFeeCollectionInfo(f),
       ),
       createdAt: prizePool.createdAt,
       updatedAt: prizePool.updatedAt,
@@ -426,6 +693,45 @@ export class PrizePoolService {
       status: distribution.status,
       executedAt: distribution.executedAt || undefined,
       createdAt: distribution.createdAt,
+    };
+  }
+
+  /**
+   * Format fee history info for response
+   */
+  private formatFeeHistoryInfo(
+    history: PlatformFeeHistory,
+  ): PlatformFeeHistoryInfo {
+    return {
+      id: history.id,
+      oldFeeRate: history.oldFeeRate,
+      newFeeRate: history.newFeeRate,
+      changedBy: history.changedBy,
+      reason: history.reason || null,
+      createdAt: history.createdAt,
+    };
+  }
+
+  /**
+   * Format fee collection info for response
+   */
+  private formatFeeCollectionInfo(
+    collection: PlatformFeeCollection,
+  ): PlatformFeeCollectionInfo {
+    return {
+      id: collection.id,
+      hackathonId: collection.hackathonId,
+      prizePoolId: collection.prizePoolId,
+      feeAmount: collection.feeAmount,
+      feeAmountFormatted: formatEther(BigInt(collection.feeAmount)),
+      feeRate: collection.feeRate,
+      tokenAddress: collection.tokenAddress || null,
+      recipientAddress: collection.recipientAddress,
+      txHash: collection.txHash,
+      blockNumber: collection.blockNumber || null,
+      status: collection.status,
+      collectedAt: collection.collectedAt,
+      confirmedAt: collection.confirmedAt || null,
     };
   }
 }
